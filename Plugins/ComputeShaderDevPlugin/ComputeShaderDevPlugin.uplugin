@@ -1,0 +1,17 @@
+{
+    "FileVersion": 3,
+    "FriendlyName": "Weather Simulator Plugin",
+    "Version": 1,
+    "VersionName": "1.0",
+    "CreatedBy": "Sascha Elble",
+    "CreatedByURL": "",
+    "Description": "An example stand alone compute shader that can be run from a plugin",
+    "Category": "Shader",
+    "Modules": [
+        {
+            "Name": "ComputeShaderDevPlugin",
+            "Type": "Runtime",
+            "LoadingPhase": "PostConfigInit"
+        }
+    ]
+}  

@@ -1,16 +1,16 @@
 #include "/Engine/Private/Common.ush"
 
 //This struct needs to match struct FWeatherXYPointState in ComputeShaderFrontEnd.h
-struct TInfo{
-	int instanceId;
+struct FStruct_Array_Shader_GPU{
+	int runCount;
 };
 
 //Bound and declared in ComputeShaderDeclarations.cpp @FGlobalComputeShader (Initializer)
 //Then is filled in before use in ComputeShaderFrontEnd.cpp @ExecuteInRenderThread
-RWStructuredBuffer<TInfo> data;
+RWStructuredBuffer<FStruct_Array_Shader_GPU> data;
 
 [numthreads(1, 1, 1)]
 void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
-    data[0].instanceId = data[0].instanceId + 10;
+    data[0].runCount = data[0].runCount + 1;
 }

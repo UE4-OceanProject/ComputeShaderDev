@@ -32,27 +32,46 @@ class FGlobalComputeShader : public FGlobalShader
 public:
 
 	FGlobalComputeShader() {}
-
-	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
-	{
-		// XXX Biggs ???
-		return true;
-	}
 	
 	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer);
 
-	static bool ShouldCache(EShaderPlatform Platform) { return IsFeatureLevelSupported(Platform, ERHIFeatureLevel::SM5); }
+
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
+	{
+		// ShouldCompilePermutation and ShouldCache both must return true if you want the shader to compile for the platform
+		return true;
+	}
+
+	static bool ShouldCache(EShaderPlatform Platform)
+	{
+		return IsFeatureLevelSupported(Platform, ERHIFeatureLevel::SM5);
+	}
 
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment);
 
-	virtual bool Serialize(FArchive& Ar) override { bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar); Ar << CS_ShaderResourceDataStruct; return bShaderHasOutdatedParams; }
+
+
+
+	virtual bool Serialize(FArchive& Ar) override
+	{
+		bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar); Ar << CS_ShaderResourceDataStruct;
+		return bShaderHasOutdatedParams;
+	}
 
 	//This function is required to let us bind our runtime surface to the shader using an UAV.
 	void SetSurfaces(FRHICommandList& commandList, FUnorderedAccessViewRHIRef uav);
+
+
+
 	//This function is required to bind our constant / uniform buffers to the shader.
 	void SetUniformBuffers(FRHICommandList& commandList, FConstantParameters& constants, FVariableParameters& variables);
+
+
+
 	//This is used to clean up the buffer binds after each invocation to let them be changed and used elsewhere if needed.
 	void UnbindBuffers(FRHICommandList& commandList);
+
+
 
 private:
 	//This is the actual output resource that we will bind to the compute shader

@@ -35,10 +35,12 @@ public:
 	
 	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer);
 
-
+	//ShouldCompilePermutation and ShouldCache both need to return true, in order to be compiled for whatever platform
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
-		// ShouldCompilePermutation and ShouldCache both must return true if you want the shader to compile for the platform
+		//if current platform = x, return true, else false
+		//or
+		//if current platform = x, return false (not compatible) else true
 		return true;
 	}
 
@@ -47,8 +49,12 @@ public:
 		return IsFeatureLevelSupported(Platform, ERHIFeatureLevel::SM5);
 	}
 
-	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment);
-
+	//Here you can modify compiliation flags and also modify Defines in the usf file before compiliation
+	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
+	{
+		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
+		OutEnvironment.CompilerFlags.Add(CFLAG_StandardOptimization);
+	}
 
 	//UE4 uses the ParameterMap to manage all resources that declared in shaders
 	//UE4 will read a cached version of your ParameterMap unless this function tells it to update
@@ -61,18 +67,32 @@ public:
 	}
 
 	//This function is required to let us bind our runtime surface to the shader using an UAV.
-	void SetSurfaces(FRHICommandList& commandList, FUnorderedAccessViewRHIRef uav);
+	//So we can read and write to it
+	//Sets the OutputSurface the WeatherComputeShader can use
+	void SetSurfaces(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
+	{
+		if (TArray_Struct_Data.IsBound())
+			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Data.GetBaseIndex(), uav);
+	}
 
 
-
+	//Set the names of the OutputSurface the WeatherComputeShader can use
 	//This function is required to bind our constant / uniform buffers to the shader.
-	void SetUniformBuffers(FRHICommandList& commandList, FConstantParameters& constants, FVariableParameters& variables);
+	void SetUniformBuffers(FRHICommandList& RHICmdList, FConstantParameters& constants, FVariableParameters& variables)
+	{
+		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FConstantParameters>(),
+			FConstantParametersRef::CreateUniformBufferImmediate(constants, UniformBuffer_SingleDraw));
+		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FVariableParameters>(),
+			FVariableParametersRef::CreateUniformBufferImmediate(variables, UniformBuffer_SingleDraw));
+	}
 
-
-
+	/* Unbinds buffers that will be used elsewhere */
 	//This is used to clean up the buffer binds after each invocation to let them be changed and used elsewhere if needed.
-	void UnbindBuffers(FRHICommandList& commandList);
-
+	void UnbindBuffers(FRHICommandList& RHICmdList)
+	{
+		if (TArray_Struct_Data.IsBound())
+			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Data.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	}
 
 
 private:

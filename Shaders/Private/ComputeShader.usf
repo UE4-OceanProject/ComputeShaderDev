@@ -12,5 +12,5 @@ RWStructuredBuffer<TArray_FStruct_Shader_GPU> TArray_Struct_Data;
 [numthreads(1, 1, 1)]
 void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
-    TArray_Struct_Data[0].runCount = TArray_Struct_Data[0].runCount + 10;
+    TArray_Struct_Data[0].runCount = TArray_Struct_Data[0].runCount + 1;
 }

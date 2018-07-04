@@ -30,14 +30,14 @@ void FGlobalComputeShader::SetUniformBuffers(FRHICommandList& RHICmdList, FConst
 FGlobalComputeShader::FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 	: FGlobalShader(Initializer)
 {
-	CS_ShaderResourceDataStruct.Bind(Initializer.ParameterMap, TEXT("data"));
+	TArray_Struct_Data.Bind(Initializer.ParameterMap, TEXT("TArray_Struct_Data"));
 }
 
 //Sets the OutputSurface the WeatherComputeShader can use
 void FGlobalComputeShader::SetSurfaces(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
 {
-	if (CS_ShaderResourceDataStruct.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), CS_ShaderResourceDataStruct.GetBaseIndex(), uav);
+	if (TArray_Struct_Data.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Data.GetBaseIndex(), uav);
 }
 
 void FGlobalComputeShader::ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
@@ -49,6 +49,6 @@ void FGlobalComputeShader::ModifyCompilationEnvironment(const FGlobalShaderPermu
 /* Unbinds buffers that will be used elsewhere */
 void FGlobalComputeShader::UnbindBuffers(FRHICommandList& RHICmdList)
 {
-	if (CS_ShaderResourceDataStruct.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), CS_ShaderResourceDataStruct.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	if (TArray_Struct_Data.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Data.GetBaseIndex(), FUnorderedAccessViewRHIRef());
 }

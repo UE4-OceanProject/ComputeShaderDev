@@ -50,11 +50,13 @@ public:
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment);
 
 
-
-
+	//UE4 uses the ParameterMap to manage all resources that declared in shaders
+	//UE4 will read a cached version of your ParameterMap unless this function tells it to update
 	virtual bool Serialize(FArchive& Ar) override
 	{
-		bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar); Ar << CS_ShaderResourceDataStruct;
+		bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar);
+		//Ar << YourResourceName1 << YourResourceName2 << YourResourceName3 << ......;
+		Ar << TArray_Struct_Data;
 		return bShaderHasOutdatedParams;
 	}
 
@@ -75,5 +77,5 @@ public:
 
 private:
 	//This is the actual output resource that we will bind to the compute shader
-	FShaderResourceParameter CS_ShaderResourceDataStruct;
+	FShaderResourceParameter TArray_Struct_Data;
 };

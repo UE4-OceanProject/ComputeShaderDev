@@ -25,13 +25,13 @@ typedef TUniformBufferRef<FVariableParameters> FVariableParametersRef;
 /* This class is what encapsulates the shader in the engine.                 */
 /* It is the main bridge between the HLSL (.usf file) and the engine itself. */
 /*****************************************************************************/
-class FComputeShaderDevPluginModule : public FGlobalShader
+class FGlobalComputeShader : public FGlobalShader
 {
-	DECLARE_SHADER_TYPE(FComputeShaderDevPluginModule, Global);
+	DECLARE_SHADER_TYPE(FGlobalComputeShader, Global);
 
 public:
 
-	FComputeShaderDevPluginModule() {}
+	FGlobalComputeShader() {}
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
@@ -39,7 +39,7 @@ public:
 		return true;
 	}
 	
-	explicit FComputeShaderDevPluginModule(const ShaderMetaType::CompiledShaderInitializerType& Initializer);
+	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer);
 
 	static bool ShouldCache(EShaderPlatform Platform) { return IsFeatureLevelSupported(Platform, ERHIFeatureLevel::SM5); }
 

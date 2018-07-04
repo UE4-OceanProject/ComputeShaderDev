@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ComputeShaderFrontEnd.h"
+#include "ShaderController.h"
 #include "ConstructorHelpers.h"
 #include "Engine/World.h"
 #include "Engine/Level.h"
@@ -9,12 +9,12 @@
 
 #define NUM_THREADS_PER_GROUP_DIMENSION 1 
 
-AComputeShaderFrontEnd::AComputeShaderFrontEnd()
+AShaderController::AShaderController()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AComputeShaderFrontEnd::OnConstruction(const FTransform& Transform)
+void AShaderController::OnConstruction(const FTransform& Transform)
 {
 	//This will be a for loop based on a blueprint available variable
 	//Basically we will allow the user to feed in an array, and we will auto
@@ -30,7 +30,7 @@ void AComputeShaderFrontEnd::OnConstruction(const FTransform& Transform)
 		 
 }
 
-void AComputeShaderFrontEnd::BeginPlay()
+void AShaderController::BeginPlay()
 {
 	//Init our instance of compute shader controller
 
@@ -40,12 +40,12 @@ void AComputeShaderFrontEnd::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AComputeShaderFrontEnd::Tick(float DeltaTime)
+void AShaderController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AComputeShaderFrontEnd::Compute(float DeltaTime)
+void AShaderController::Compute(float DeltaTime)
 {
 		ExecuteComputeShader(CS_WeatherPointStates, DeltaTime);
 		//Fencing forces the game thread to wait for the render thread to finish
@@ -54,14 +54,14 @@ void AComputeShaderFrontEnd::Compute(float DeltaTime)
 }
 
 
-void AComputeShaderFrontEnd::ExecuteComputeShader(TArray<FWeatherXYZPointState> &currentStates, float DeltaTime)
+void AShaderController::ExecuteComputeShader(TArray<FWeatherXYZPointState> &currentStates, float DeltaTime)
 {
 	//This is ran in the Game Thread!
 	
 	CS_VariableParameters.DeltaTime = DeltaTime;
 	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
 		FComputeShaderRunner,		//TypeName - Arbitrary name of the render command
-		AComputeShaderFrontEnd*,	//ParamType1 - The type of the parameter
+		AShaderController*,	//ParamType1 - The type of the parameter
 		FrontEnd,					//ParamName1 - Name of the parameter inside the render command
 		this,						//ParamValue1 - the value of the parameter passed from the outside
 		TArray<FWeatherXYZPointState>&, states, currentStates,		//ParamType/Name/Value 2
@@ -75,7 +75,7 @@ void AComputeShaderFrontEnd::ExecuteComputeShader(TArray<FWeatherXYZPointState> 
 }
 
 //This can only run after begin play!
-void AComputeShaderFrontEnd::ExecuteInRenderThread(TArray<FWeatherXYZPointState> &currentStates)
+void AShaderController::ExecuteInRenderThread(TArray<FWeatherXYZPointState> &currentStates)
 {
 	check(IsInRenderingThread());
 
@@ -94,7 +94,7 @@ void AComputeShaderFrontEnd::ExecuteInRenderThread(TArray<FWeatherXYZPointState>
 
 	/* Get global RHI command list */
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
-	TShaderMapRef<FComputeShaderDevPluginModule> shader(GetGlobalShaderMap(GetWorld()->Scene->GetFeatureLevel()));
+	TShaderMapRef<FGlobalComputeShader> shader(GetGlobalShaderMap(GetWorld()->Scene->GetFeatureLevel()));
 	//-------------------------------
 
 	RHICmdList.SetComputeShader(shader->GetComputeShader());

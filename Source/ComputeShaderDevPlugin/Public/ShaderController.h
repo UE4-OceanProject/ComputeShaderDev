@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "ComputeShaderDeclarations.h"
+#include "GlobalComputeShader.h"
 #include "RenderCommandFence.h"
 #include "GameFramework/Actor.h"
-#include "ComputeShaderFrontEnd.generated.h"
+#include "ShaderController.generated.h"
 
 //This needs to match the struct in the shader
 USTRUCT(BlueprintType)
@@ -19,13 +19,13 @@ struct FWeatherXYZPointState {
 };
 
 UCLASS(BlueprintType)
-class AComputeShaderFrontEnd : public AActor
+class AShaderController : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AComputeShaderFrontEnd();
+	AShaderController();
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;

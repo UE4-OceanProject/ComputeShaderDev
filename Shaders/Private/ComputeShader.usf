@@ -5,12 +5,12 @@ struct TInfo{
 	int instanceId;
 };
 
-//Bound and declared in ComputeShaderDeclarations.cpp @FComputeShaderDevPluginModule (Initializer)
+//Bound and declared in ComputeShaderDeclarations.cpp @FGlobalComputeShader (Initializer)
 //Then is filled in before use in ComputeShaderFrontEnd.cpp @ExecuteInRenderThread
 RWStructuredBuffer<TInfo> data;
 
 [numthreads(1, 1, 1)]
 void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
-    data[0].instanceId = data[0].instanceId + 1;
+    data[0].instanceId = data[0].instanceId + 10;
 }

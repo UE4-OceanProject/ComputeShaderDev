@@ -89,7 +89,7 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 	resource.ResourceArray = &data;
 	//--------------------------------------------------------
 
-	FStructuredBufferRHIRef buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | 0, resource);
+	FStructuredBufferRHIRef buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | BUF_ShaderResource | BUF_KeepCPUAccessible| 0, resource);
 	FUnorderedAccessViewRHIRef uav = RHICreateUnorderedAccessView(buffer, false, false);
 
 	/* Get global RHI command list */
@@ -105,7 +105,7 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 
 	// Dispatch compute shader
 	DispatchComputeShader(RHICmdList, *shader, 1, 1, 1);
-
+	RHICmdList.UnlockStructuredBuffer(buffer);
 	//Release buffers so another shader can use them (buffers are global thats why)
 	shader->UnbindBuffers(RHICmdList);
 	

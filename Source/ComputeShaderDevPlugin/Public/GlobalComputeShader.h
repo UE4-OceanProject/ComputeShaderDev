@@ -28,24 +28,46 @@ typedef TUniformBufferRef<FVariableParameters> FVariableParametersRef;
 class FGlobalComputeShader : public FGlobalShader
 {
 	DECLARE_SHADER_TYPE(FGlobalComputeShader, Global);
-
-public:
+	//Not exporting to an external module
+	//DECLARE_EXPORTED_SHADER_TYPE(FGlobalComputeShader, Global, SHADERCONTROLLER_API);
 
 	FGlobalComputeShader() {}
-	
-	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer);
 
-	//ShouldCompilePermutation and ShouldCache both need to return true, in order to be compiled for whatever platform
+	//This will be used in the Serialize function which keeps the ParameterMap updated
+	//holds information for the runtime to be able to find the bindings, allowing the value of the parameter to be set at runtime.
+	FShaderResourceParameter TArray_Struct_Parameter_CPU;
+	//This is bound to the same data, but exposed to the shader as a UAV
+	FShaderResourceParameter OutputSurface_CPU;
+		
+	//Assign a name for each FShaderResourceParamteter for use in the .usf file
+	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
+		: FGlobalShader(Initializer)
+	{
+		TArray_Struct_Parameter_CPU.Bind(Initializer.ParameterMap, TEXT("TArray_Struct_Parameter_GPU"));
+		OutputSurface_CPU.Bind(Initializer.ParameterMap, TEXT("OutputSurface_GPU"));
+		//InputSurface.Bind(Initializer.ParameterMap, TEXT("InputSurfaceCS"));
+	}
+
+	// FShader interface: tells ParameterMap which FShaderResourceParameters we want to bind
+	//Updates cached ParameterMap if we add a new param here
+	virtual bool Serialize(FArchive& Ar) override
+	{
+		bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar);
+		//Ar << YourResourceName1 << YourResourceName2 << YourResourceName3 << ......;
+		Ar << TArray_Struct_Parameter_CPU << OutputSurface_CPU;
+		return bShaderHasOutdatedParams;
+	}
+
+	//ShouldCompilePermutation and ShouldCache both need to return true, in order to be compiled for whatever platform/permutation
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 	{
-		//if current platform = x, return true, else false
-		//or
-		//if current platform = x, return false (not compatible) else true
+		// Useful when adding a permutation of a particular shader
 		return true;
 	}
 
 	static bool ShouldCache(EShaderPlatform Platform)
 	{
+		// Could skip compiling for Platform == SP_METAL for example
 		return IsFeatureLevelSupported(Platform, ERHIFeatureLevel::SM5);
 	}
 
@@ -54,29 +76,19 @@ public:
 	{
 		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
 		OutEnvironment.CompilerFlags.Add(CFLAG_StandardOptimization);
-	}
+		// Add your own defines for the shader code
+		//OutEnvironment.SetDefine(TEXT("MY_DEFINE"), 1);
 
-	//UE4 uses the ParameterMap to manage all resources that declared in shaders
-	//UE4 will read a cached version of your ParameterMap unless this function tells it to update
-	virtual bool Serialize(FArchive& Ar) override
-	{
-		bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar);
-		//Ar << YourResourceName1 << YourResourceName2 << YourResourceName3 << ......;
-		Ar << TArray_Struct_Data;
-		return bShaderHasOutdatedParams;
 	}
 
 	//This function is required to let us bind our runtime surface to the shader using an UAV.
-	//So we can read and write to it
-	//Sets the OutputSurface the WeatherComputeShader can use
+	//UAV is RW
 	void SetSurfaces(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
 	{
-		if (TArray_Struct_Data.IsBound())
-			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Data.GetBaseIndex(), uav);
+		if (TArray_Struct_Parameter_CPU.IsBound())
+			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Parameter_CPU.GetBaseIndex(), uav);
 	}
 
-
-	//Set the names of the OutputSurface the WeatherComputeShader can use
 	//This function is required to bind our constant / uniform buffers to the shader.
 	void SetUniformBuffers(FRHICommandList& RHICmdList, FConstantParameters& constants, FVariableParameters& variables)
 	{
@@ -86,16 +98,11 @@ public:
 			FVariableParametersRef::CreateUniformBufferImmediate(variables, UniformBuffer_SingleDraw));
 	}
 
-	/* Unbinds buffers that will be used elsewhere */
 	//This is used to clean up the buffer binds after each invocation to let them be changed and used elsewhere if needed.
 	void UnbindBuffers(FRHICommandList& RHICmdList)
 	{
-		if (TArray_Struct_Data.IsBound())
-			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Data.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		if (TArray_Struct_Parameter_CPU.IsBound())
+			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Parameter_CPU.GetBaseIndex(), FUnorderedAccessViewRHIRef());
 	}
 
-
-private:
-	//This is the actual output resource that we will bind to the compute shader
-	FShaderResourceParameter TArray_Struct_Data;
 };

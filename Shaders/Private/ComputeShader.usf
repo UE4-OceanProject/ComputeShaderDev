@@ -7,10 +7,12 @@ struct TArray_FStruct_Shader_GPU{
 
 //Bound and declared in ComputeShaderDeclarations.cpp @FGlobalComputeShader (Initializer)
 //Then is filled in before use in ComputeShaderFrontEnd.cpp @ExecuteInRenderThread
-RWStructuredBuffer<TArray_FStruct_Shader_GPU> TArray_Struct_Data;
+RWStructuredBuffer<TArray_FStruct_Shader_GPU> TArray_Struct_Parameter_GPU;
+Texture2D<float> InputSurfaceCS;
+RWTexture2D<float> OutputSurface_GPU;
 
 [numthreads(1, 1, 1)]
 void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
-    TArray_Struct_Data[0].runCount = TArray_Struct_Data[0].runCount + 1;
-}
+    TArray_Struct_Parameter_GPU[0].runCount = TArray_Struct_Parameter_GPU[0].runCount + 1;
+} 

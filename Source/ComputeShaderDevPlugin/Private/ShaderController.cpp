@@ -105,7 +105,6 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 
 	// Dispatch compute shader
 	DispatchComputeShader(RHICmdList, *shader, 1, 1, 1);
-	RHICmdList.UnlockStructuredBuffer(buffer);
 	//Release buffers so another shader can use them (buffers are global thats why)
 	shader->UnbindBuffers(RHICmdList);
 	

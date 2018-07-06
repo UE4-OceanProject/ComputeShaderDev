@@ -38,6 +38,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ComputeShader")
 		TArray<FStruct_Shader_CPU> TArray_FStruct_Shader_CPU;
 
+	//Global StructuredBuffer that is referenceable by another shader!
+	FStructuredBufferRHIRef Interface_FStruct_Shader_GPU_Buffer;
+
+	//Not referenceable by another shader?
+	FUnorderedAccessViewRHIRef Interface_FStruct_Shader_GPU_Buffer_UAV;
+
 protected:
 	//This runs on the game thread
 	void ExecuteComputeShader(TArray<FStruct_Shader_CPU> &currentStates, float DeltaTime);
@@ -45,7 +51,7 @@ protected:
 	void ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &currentStates);
 
 private:
-	//These are the CPU accessable versions of our buffer structs that the shader uses
+	//These are the CPU accessable versions of our FStruct_Shader_GPU_Buffer structs that the shader uses
 	//Note making changes are one way, any changes made to these inside of the 
 	//shader hlsl code will not reflect on the CPU side
 	FConstantParameters Shader_Constant_Params;

@@ -11,8 +11,21 @@ RWStructuredBuffer<TArray_FStruct_Shader_GPU> TArray_Struct_Parameter_GPU;
 Texture2D<float> InputSurfaceCS;
 RWTexture2D<float> OutputSurface_GPU;
 
+//each x,y,z of numthreads is multiplied by the respective DispatchShader x,y,z
+//So for 1024x1024 threads, we could do:
+//DispatchShader (32,32,1) in cpp
+//numthreads(32,32,1) in usf
+//equals (1024,1024,1)!
+//Then you can just use ThreadId.xy for each pixel without fancy math (using a 1024x1024 texture)
+
 [numthreads(1, 1, 1)]
 void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
     TArray_Struct_Parameter_GPU[0].runCount = TArray_Struct_Parameter_GPU[0].runCount + 1;
 } 
+
+
+//Multiplatform notes:
+//Differences between different graphics APIs:
+//For example, Metal won't support more than 256 threads per axis. While DX10 standard supports 1024. 
+//Android API won't let you use more than 4 buffers per kernel. While DX10 allows 8, DX11 - even more.

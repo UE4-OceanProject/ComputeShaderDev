@@ -7,13 +7,13 @@
 #include "RHICommandList.h"
 
 //Declare the variables inside of our struct
-//This buffer should contain variables that never, or rarely change
+//This FStruct_Shader_GPU_Buffer should contain variables that never, or rarely change
 BEGIN_UNIFORM_BUFFER_STRUCT(FConstantParameters, )
 DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(int, ArrayNum)
 END_UNIFORM_BUFFER_STRUCT(FConstantParameters)
 
 //Declare the variables inside of our struct
-//This buffer is for variables that change very often (each frame for example)
+//This FStruct_Shader_GPU_Buffer is for variables that change very often (each frame for example)
 BEGIN_UNIFORM_BUFFER_STRUCT(FVariableParameters, )
 DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(float, DeltaTime)
 END_UNIFORM_BUFFER_STRUCT(FVariableParameters)
@@ -68,22 +68,22 @@ class FGlobalComputeShader : public FGlobalShader
 	}
 
 
-	//This function is required to let us bind our runtime surface to the shader using an UAV.
-	//UAV is RW
-	void SetSurfaces(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
+	//We declared TArray_Struct_Parameter_CPU as TArray_Struct_Parameter_GPU,
+	//now we bind the uav data to this!
+	void BindInterfaceToShaderParamName(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
 	{
-		if (TArray_Struct_Parameter_CPU.IsBound())
-			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Parameter_CPU.GetBaseIndex(), uav);
+		if (TArray_Struct_Parameter_CPU.IsBound()) //This should be bound to TArray_Struct_Parameter_GPU name
+			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Parameter_CPU.GetBaseIndex(), uav); //bind uav data to TArray_Struct_Parameter_GPU name
 	}
 
 	//This function is required to bind our constant / uniform buffers to the shader.
-	void SetUniformBuffers(FRHICommandList& RHICmdList, FConstantParameters& constants, FVariableParameters& variables)
+	void BintInterfaceToUniformBuffersParamName(FRHICommandList& RHICmdList, FConstantParameters& constants, FVariableParameters& variables)
 	{
-			// the uniform buffer is temporary, used for a single draw call then discarded
+			// the uniform FStruct_Shader_GPU_Buffer is temporary, used for a single draw call then discarded
 			//UniformBuffer_SingleDraw = 0,
-			// the uniform buffer is used for multiple draw calls but only for the current frame
+			// the uniform FStruct_Shader_GPU_Buffer is used for multiple draw calls but only for the current frame
 			//UniformBuffer_SingleFrame,
-			// the uniform buffer is used for multiple draw calls, possibly across multiple frames
+			// the uniform FStruct_Shader_GPU_Buffer is used for multiple draw calls, possibly across multiple frames
 			//UniformBuffer_MultiFrame,
 		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FConstantParameters>(),
 			FConstantParametersRef::CreateUniformBufferImmediate(constants, UniformBuffer_SingleDraw));
@@ -91,7 +91,7 @@ class FGlobalComputeShader : public FGlobalShader
 			FVariableParametersRef::CreateUniformBufferImmediate(variables, UniformBuffer_SingleDraw));
 	}
 
-	//This is used to clean up the buffer binds after each invocation to let them be changed and used elsewhere if needed.
+	//This is used to clean up the FStruct_Shader_GPU_Buffer binds after each invocation to let them be changed and used elsewhere if needed.
 	void UnbindBuffers(FRHICommandList& RHICmdList)
 	{
 		if (TArray_Struct_Parameter_CPU.IsBound())

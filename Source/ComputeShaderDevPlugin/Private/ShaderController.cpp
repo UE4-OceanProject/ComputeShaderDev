@@ -32,7 +32,7 @@ void AShaderController::OnConstruction(const FTransform& Transform)
 
 void AShaderController::BeginPlay()
 {
-	//Init our instance of compute shader controller
+	//Init our instance of compute ComputeShaderInstance controller
 
 	Shader_Constant_Params.ArrayNum = TArray_FStruct_Shader_CPU.Num();
 		Shader_Variable_Params = FVariableParameters();
@@ -57,8 +57,9 @@ void AShaderController::Compute(float DeltaTime)
 void AShaderController::ExecuteComputeShader(TArray<FStruct_Shader_CPU> &currentStates, float DeltaTime)
 {
 	//This is ran in the Game Thread!
-	//Everything sent here is passed by value, changes are lost
 	Shader_Variable_Params.DeltaTime = DeltaTime;
+
+	//Everything sent here is passed by value, changes are lost
 	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
 		FComputeShaderRunner,		//TypeName - Arbitrary name of the render command
 		AShaderController*,	//ParamType1 - The type of the parameter
@@ -67,7 +68,7 @@ void AShaderController::ExecuteComputeShader(TArray<FStruct_Shader_CPU> &current
 		TArray<FStruct_Shader_CPU>&, states, currentStates,		//ParamType/Name/Value 2
 		{
 			//This code block is ran inside of the Render Thread!
-			//Which is why we need the referenec to our FrontEnd class
+			//Which is why we need the reference to our FrontEnd class
 			FrontEnd->ExecuteInRenderThread(states);
 		}
 		//This is now back in the Game Thread!
@@ -79,37 +80,42 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 {
 	check(IsInRenderingThread());
 
-	//This is our bound data struct for use inside the shader
-	//Data is filled in here, before being sent over
-	TResourceArray<FStruct_Shader_CPU> data;
+	//Create TResourceArray, and fill it with out data
+	//This should be the actual data sent to the GPU;
+	TResourceArray<FStruct_Shader_CPU> FStruct_Shader_CPU_Data;
 	for (int i = 0; i < Shader_Constant_Params.ArrayNum; i++) {
-		data.Add(currentStates[i]);
+		FStruct_Shader_CPU_Data.Add(currentStates[i]);
 	}
+	//This lets the gpu know about our resource? Pointer?
 	FRHIResourceCreateInfo resource;
-	resource.ResourceArray = &data;
+	resource.ResourceArray = &FStruct_Shader_CPU_Data;
 	//--------------------------------------------------------
 
-	FStructuredBufferRHIRef buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | BUF_ShaderResource | BUF_KeepCPUAccessible| 0, resource);
-	FUnorderedAccessViewRHIRef uav = RHICreateUnorderedAccessView(buffer, false, false);
+	//Create various interfaces for our TResourceArray Data (resource)
+	Interface_FStruct_Shader_GPU_Buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | BUF_ShaderResource | 0, resource);
+	Interface_FStruct_Shader_GPU_Buffer_UAV = RHICreateUnorderedAccessView(Interface_FStruct_Shader_GPU_Buffer, false, false);
 
 	/* Get global RHI command list */
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
-	TShaderMapRef<FGlobalComputeShader> shader(GetGlobalShaderMap(GetWorld()->Scene->GetFeatureLevel()));
-	//-------------------------------
 
-	RHICmdList.SetComputeShader(shader->GetComputeShader());
+	//Declares our shader
+	TShaderMapRef<FGlobalComputeShader> ComputeShaderInstance(GetGlobalShaderMap(GetWorld()->Scene->GetFeatureLevel()));
 
-	// Set shader inputs/outputs
-	shader->SetSurfaces(RHICmdList, uav);
-	shader->SetUniformBuffers(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
+	//Creates an instance of our shader
+	RHICmdList.SetComputeShader(ComputeShaderInstance->GetComputeShader());
 
-	// Dispatch compute shader
-	DispatchComputeShader(RHICmdList, *shader, 1, 1, 1);
-	//Release buffers so another shader can use them (buffers are global thats why)
-	shader->UnbindBuffers(RHICmdList);
+	// Set ComputeShaderInstance inputs/outputs
+	ComputeShaderInstance->BindInterfaceToShaderParamName(RHICmdList, Interface_FStruct_Shader_GPU_Buffer_UAV);
+	ComputeShaderInstance->BintInterfaceToUniformBuffersParamName(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
+
+	// Dispatch compute ComputeShaderInstance
+	DispatchComputeShader(RHICmdList, *ComputeShaderInstance, 1, 1, 1);
 	
-	//Lock buffer to enable CPU read
-	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(buffer, 0, sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, EResourceLockMode::RLM_ReadOnly);
+	//Release buffers so another shader instance can use them (buffers are global thats why)
+	ComputeShaderInstance->UnbindBuffers(RHICmdList);
+	
+	//Lock Interface_FStruct_Shader_GPU_Buffer to enable CPU read
+	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(Interface_FStruct_Shader_GPU_Buffer, 0, sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, EResourceLockMode::RLM_ReadOnly);
 	
 	//Copy the GPU data back to CPU side (&currentStates)
 	FStruct_Shader_CPU* p = (FStruct_Shader_CPU*)shaderData;
@@ -118,6 +124,6 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 		p++;
 	}
 
-	//Unlock buffer when finished
-	RHICmdList.UnlockStructuredBuffer(buffer);
+	//Unlock Interface_FStruct_Shader_GPU_Buffer when finished
+	RHICmdList.UnlockStructuredBuffer(Interface_FStruct_Shader_GPU_Buffer);
 }

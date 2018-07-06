@@ -9,7 +9,7 @@ struct TArray_FStruct_Shader_GPU{
 //Then is filled in before use in ComputeShaderFrontEnd.cpp @ExecuteInRenderThread
 RWStructuredBuffer<TArray_FStruct_Shader_GPU> TArray_Struct_Parameter_GPU;
 Texture2D<float> InputSurfaceCS;
-RWTexture2D<float> OutputSurface_GPU;
+RWTexture2D<float> OutputSurface_Parameter_GPU;
 
 //each x,y,z of numthreads is multiplied by the respective DispatchShader x,y,z
 //So for 1024x1024 threads, we could do:
@@ -19,8 +19,13 @@ RWTexture2D<float> OutputSurface_GPU;
 //Then you can just use ThreadId.xy for each pixel without fancy math (using a 1024x1024 texture)
 
 [numthreads(1, 1, 1)]
+//If using more than 1,1,1, threads:
+//Be aware that parrellel thread are running, make sure that no thread can stomp on another threads calculations by
+//writing to the same buffer/texture point
 void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
+    //Be aware that it may be faster to copy buffer data to a local variable here, as local memory is faster than buffer memory
+    //So for huge datasets with massive random read/write, its better to do this locally, and just copy it back when done.
     TArray_Struct_Parameter_GPU[0].runCount = TArray_Struct_Parameter_GPU[0].runCount + 1;
 } 
 

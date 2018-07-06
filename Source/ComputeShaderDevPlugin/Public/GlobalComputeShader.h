@@ -38,15 +38,15 @@ class FGlobalComputeShader : public FGlobalShader
 
 	FShaderResourceParameter TArray_Struct_Parameter_CPU;
 	//This is bound to the same data, but exposed to the shader as a UAV
-	FShaderResourceParameter OutputSurface_CPU;
+	FShaderResourceParameter OutputSurface_Parameter_CPU;
 		
 	//Assign a name for each FShaderResourceParamteter for use in the .usf file
 	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 		: FGlobalShader(Initializer)
 	{
 		TArray_Struct_Parameter_CPU.Bind(Initializer.ParameterMap, TEXT("TArray_Struct_Parameter_GPU"), SPF_Mandatory);
-		OutputSurface_CPU.Bind(Initializer.ParameterMap, TEXT("OutputSurface_GPU"), SPF_Optional);
-		MyColorParameter.Bind(Initializer.ParameterMap, TEXT("MyColor"), SPF_Optional);
+		OutputSurface_Parameter_CPU.Bind(Initializer.ParameterMap, TEXT("OutputSurface_Parameter_GPU"), SPF_Optional);
+		//MyColorParameter.Bind(Initializer.ParameterMap, TEXT("MyColor"), SPF_Optional);
 
 		//InputSurface.Bind(Initializer.ParameterMap, TEXT("InputSurfaceCS"));
 	}
@@ -57,7 +57,7 @@ class FGlobalComputeShader : public FGlobalShader
 	{
 		bool bShaderHasOutdatedParams = FGlobalShader::Serialize(Ar);
 		//Ar << YourResourceName1 << YourResourceName2 << YourResourceName3 << ......;
-		Ar << TArray_Struct_Parameter_CPU << OutputSurface_CPU << MyColorParameter;
+		Ar << TArray_Struct_Parameter_CPU << OutputSurface_Parameter_CPU << MyColorParameter;
 		return bShaderHasOutdatedParams;
 	}
 

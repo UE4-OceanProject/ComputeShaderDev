@@ -91,6 +91,7 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 	resource.ResourceArray = &FStruct_Shader_CPU_Data;
 	//--------------------------------------------------------
 
+	//Initializing the buffer and writing data to GPU
 	//Create various interfaces for our TResourceArray Data (resource)
 	Interface_FStruct_Shader_GPU_Buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | BUF_ShaderResource | 0, resource);
 	Interface_FStruct_Shader_GPU_Buffer_UAV = RHICreateUnorderedAccessView(Interface_FStruct_Shader_GPU_Buffer, false, false);
@@ -105,6 +106,7 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 	RHICmdList.SetComputeShader(ComputeShaderInstance->GetComputeShader());
 
 	// Set ComputeShaderInstance inputs/outputs
+	//Mapping the interfaces to the names the shader expects
 	ComputeShaderInstance->BindInterfaceToShaderParamName(RHICmdList, Interface_FStruct_Shader_GPU_Buffer_UAV);
 	ComputeShaderInstance->BintInterfaceToUniformBuffersParamName(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
 

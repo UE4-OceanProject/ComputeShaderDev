@@ -5,21 +5,22 @@
 #include "GlobalShader.h"
 #include "UniformBuffer.h"
 #include "RHICommandList.h"
+#include "ShaderParameterUtils.h"
 
 //Declare the variables inside of our struct
 //This FStruct_Shader_GPU_Buffer should contain variables that never, or rarely change
-BEGIN_UNIFORM_BUFFER_STRUCT(FConstantParameters, )
+BEGIN_UNIFORM_BUFFER_STRUCT(FConstantParameters_CPU, )
 DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(int, ArrayNum)
-END_UNIFORM_BUFFER_STRUCT(FConstantParameters)
+END_UNIFORM_BUFFER_STRUCT(FConstantParameters_CPU)
 
 //Declare the variables inside of our struct
 //This FStruct_Shader_GPU_Buffer is for variables that change very often (each frame for example)
-BEGIN_UNIFORM_BUFFER_STRUCT(FVariableParameters, )
+BEGIN_UNIFORM_BUFFER_STRUCT(FVariableParameters_CPU, )
 DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(float, DeltaTime)
-END_UNIFORM_BUFFER_STRUCT(FVariableParameters)
+END_UNIFORM_BUFFER_STRUCT(FVariableParameters_CPU)
 
-typedef TUniformBufferRef<FConstantParameters> FConstantParametersRef;
-typedef TUniformBufferRef<FVariableParameters> FVariableParametersRef;
+typedef TUniformBufferRef<FConstantParameters_CPU> FConstantParametersRef;
+typedef TUniformBufferRef<FVariableParameters_CPU> FVariableParametersRef;
 
 /*****************************************************************************/
 /* This class is what encapsulates the shader in the engine.                 */
@@ -70,14 +71,15 @@ class FGlobalComputeShader : public FGlobalShader
 
 	//We declared TArray_Struct_Parameter_CPU as TArray_Struct_Parameter_GPU,
 	//now we bind the uav data to this!
-	void BindInterfaceToShaderParamName(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
+	void BindDataInterfaceToShaderParamName(FRHICommandList& RHICmdList, FUnorderedAccessViewRHIRef uav)
 	{
-		if (TArray_Struct_Parameter_CPU.IsBound()) //This should be bound to TArray_Struct_Parameter_GPU name
+		if (TArray_Struct_Parameter_CPU.IsBound()) //This should be bound to the TArray_Struct_Parameter_GPU name
 			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Parameter_CPU.GetBaseIndex(), uav); //bind uav data to TArray_Struct_Parameter_GPU name
+
 	}
 
 	//This function is required to bind our constant / uniform buffers to the shader.
-	void BintInterfaceToUniformBuffersParamName(FRHICommandList& RHICmdList, FConstantParameters& constants, FVariableParameters& variables)
+	void BindDataInterfaceToUniformBuffersParamName(FRHICommandList& RHICmdList, FConstantParameters_CPU& constants, FVariableParameters_CPU& variables)
 	{
 			// the uniform FStruct_Shader_GPU_Buffer is temporary, used for a single draw call then discarded
 			//UniformBuffer_SingleDraw = 0,
@@ -85,9 +87,9 @@ class FGlobalComputeShader : public FGlobalShader
 			//UniformBuffer_SingleFrame,
 			// the uniform FStruct_Shader_GPU_Buffer is used for multiple draw calls, possibly across multiple frames
 			//UniformBuffer_MultiFrame,
-		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FConstantParameters>(),
+		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FConstantParameters_CPU>(),
 			FConstantParametersRef::CreateUniformBufferImmediate(constants, UniformBuffer_SingleDraw));
-		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FVariableParameters>(),
+		SetUniformBufferParameter(RHICmdList, GetComputeShader(), GetUniformBufferParameter<FVariableParameters_CPU>(),
 			FVariableParametersRef::CreateUniformBufferImmediate(variables, UniformBuffer_SingleDraw));
 	}
 

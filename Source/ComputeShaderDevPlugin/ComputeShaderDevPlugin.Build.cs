@@ -6,7 +6,14 @@ public class ComputeShaderDevPlugin : ModuleRules
 {
 	public ComputeShaderDevPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		//Our PrivatePCH that we want to globally #include
+        PrivatePCHHeaderFile = "Private/PrivatePCH.h";
+
+        // Make sure UBT reminds us of how to keep the project IWYU compliant
+        bEnforceIWYU = true;
+
+        //Enable IWYU but keep our PrivatePCH in use
+        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
 		PublicIncludePaths.AddRange(
 			new string[] {

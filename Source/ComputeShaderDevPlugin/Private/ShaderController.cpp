@@ -35,7 +35,7 @@ void AShaderController::BeginPlay()
 	//Init our instance of compute ComputeShaderInstance controller
 
 	Shader_Constant_Params.ArrayNum = TArray_FStruct_Shader_CPU.Num();
-		Shader_Variable_Params = FVariableParameters();
+		Shader_Variable_Params = FVariableParameters_CPU();
 
 	Super::BeginPlay();
 }
@@ -107,8 +107,8 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 
 	// Set ComputeShaderInstance inputs/outputs
 	//Mapping the interfaces to the names the shader expects
-	ComputeShaderInstance->BindInterfaceToShaderParamName(RHICmdList, Interface_FStruct_Shader_GPU_Buffer_UAV);
-	ComputeShaderInstance->BintInterfaceToUniformBuffersParamName(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
+	ComputeShaderInstance->BindDataInterfaceToShaderParamName(RHICmdList, Interface_FStruct_Shader_GPU_Buffer_UAV);
+	ComputeShaderInstance->BindDataInterfaceToUniformBuffersParamName(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
 
 	// Dispatch compute ComputeShaderInstance
 	DispatchComputeShader(RHICmdList, *ComputeShaderInstance, 1, 1, 1);

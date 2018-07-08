@@ -73,8 +73,8 @@ private:
 	//These are the CPU accessable versions of our FStruct_Shader_GPU_Buffer structs that the shader uses
 	//Note making changes are one way, any changes made to these inside of the 
 	//shader hlsl code will not reflect on the CPU side
-	FConstantParameters_CPU Shader_Constant_Params;
-	FVariableParameters_CPU Shader_Variable_Params;
+	FShaderConstants_Class Shader_Constant_Params;
+	FVariables_Class Shader_Variable_Params;
 
 	//Fencing forces the game thread to wait for the render thread to finish
 	FRenderCommandFence ReleaseResourcesFence;

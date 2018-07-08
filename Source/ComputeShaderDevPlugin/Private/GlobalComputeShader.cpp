@@ -9,5 +9,5 @@ IMPLEMENT_SHADER_TYPE(, FGlobalComputeShader, TEXT("/Plugin/ComputeShaderDevPlug
 
 //Define the name of the FStruct_Shader_GPU_Buffer structs we use in the shader itself
 //They also need to be unique over the entire solution since they can in fact be accessed from any shader
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FConstantParameters_CPU, TEXT(" FConstantParameters_GPU"))
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FVariableParameters_CPU, TEXT("FVariableParameters_GPU"))
+IMPLEMENT_UNIFORM_BUFFER_STRUCT(FShaderConstants_Class, TEXT(" FConstantParameters_GPU"))
+IMPLEMENT_UNIFORM_BUFFER_STRUCT(FVariables_Class, TEXT("FVariableParameters_GPU"))

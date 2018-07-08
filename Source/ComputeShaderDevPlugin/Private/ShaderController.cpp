@@ -16,10 +16,7 @@ AShaderController::AShaderController()
 
 void AShaderController::OnConstruction(const FTransform& Transform)
 {
-	//This will be a for loop based on a blueprint available variable
-	//Basically we will allow the user to feed in an array, and we will auto
-	//fill the TArray_FStruct_Shader_CPU. Or we could expect the user to have already
-	//filled TArray_FStruct_Shader_CPU in blueprints.
+
 	TArray_FStruct_Shader_CPU.Empty();
 	//Create our data struct
 	FStruct_Shader_CPU instanceData;
@@ -35,7 +32,7 @@ void AShaderController::BeginPlay()
 	//Init our instance of compute ComputeShaderInstance controller
 
 	Shader_Constant_Params.ArrayNum = TArray_FStruct_Shader_CPU.Num();
-		Shader_Variable_Params = FVariableParameters_CPU();
+		Shader_Variable_Params = FVariables_Class();
 
 	Super::BeginPlay();
 }
@@ -78,22 +75,41 @@ void AShaderController::ExecuteComputeShader(TArray<FStruct_Shader_CPU> &current
 //This can only run after begin play!
 void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &currentStates)
 {
+	//This code block is ran inside of the Render Thread!
 	check(IsInRenderingThread());
 
-	//Create TResourceArray, and fill it with out data
-	//This should be the actual data sent to the GPU;
+
+
+	//struct of information for a future resource on the GPU
+	FRHIResourceCreateInfo FGPU_Resource_Info;
+
+	//Create TResourceArray class
+	//If we set bNeedsCPUAccess, we could remove the middleman (currentStates) and call Discard() ourselves ?
+	//when we don't need it anymore (does this have to be render thread data?
 	TResourceArray<FStruct_Shader_CPU> FStruct_Shader_CPU_Data;
+	//FStruct_Shader_CPU_Data.SetAllowCPUAccess(true);
+
+	//LETS SEE IF WE CAN SKIP THIS
+	//Fill it with our data to be sent to the GPU
 	for (int i = 0; i < Shader_Constant_Params.ArrayNum; i++) {
 		FStruct_Shader_CPU_Data.Add(currentStates[i]);
 	}
-	//This lets the gpu know about our resource? Pointer?
-	FRHIResourceCreateInfo resource;
-	resource.ResourceArray = &FStruct_Shader_CPU_Data;
-	//--------------------------------------------------------
+	//AND RIGHT HERE JUST PASS THE REFERENCE TO OUR ARRAY!
+	//Now put a reference to this data into our FGPU_Resource_Info class
+	FGPU_Resource_Info.ResourceArray = &FStruct_Shader_CPU_Data;
+	//FGPU_Resource_Info.ResourceArray = &FrontEnd->TArray_FStruct_Shader_CPU
+
+	//FResourceBulkDataInterface <- Allows for direct GPU mem allocation for bulk resource types.
+
+
+
 
 	//Initializing the buffer and writing data to GPU
-	//Create various interfaces for our TResourceArray Data (resource)
-	Interface_FStruct_Shader_GPU_Buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | BUF_ShaderResource | 0, resource);
+	//Create various interfaces for our TResourceArray Data (FGPU_Resource_Info)
+	Interface_FStruct_Shader_GPU_Buffer = RHICreateStructuredBuffer(sizeof(FStruct_Shader_CPU), sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, BUF_UnorderedAccess | BUF_ShaderResource | 0, FGPU_Resource_Info);
+	//--------------------------------------------------------
+	//At this point our TResourceArray (FStruct_Shader_CPU_Data) will destroy itself once its finished copying its data to gpu!
+	//Unless bNeedsCPUAccess is set to true!
 	Interface_FStruct_Shader_GPU_Buffer_UAV = RHICreateUnorderedAccessView(Interface_FStruct_Shader_GPU_Buffer, false, false);
 
 	/* Get global RHI command list */
@@ -112,13 +128,13 @@ void AShaderController::ExecuteInRenderThread(TArray<FStruct_Shader_CPU> &curren
 
 	// Dispatch compute ComputeShaderInstance
 	DispatchComputeShader(RHICmdList, *ComputeShaderInstance, 1, 1, 1);
-	
+
 	//Release buffers so another shader instance can use them (buffers are global thats why)
 	ComputeShaderInstance->UnbindBuffers(RHICmdList);
-	
+
 	//Lock Interface_FStruct_Shader_GPU_Buffer to enable CPU read
 	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(Interface_FStruct_Shader_GPU_Buffer, 0, sizeof(FStruct_Shader_CPU) * Shader_Constant_Params.ArrayNum, EResourceLockMode::RLM_ReadOnly);
-	
+
 	//Copy the GPU data back to CPU side (&currentStates)
 	FStruct_Shader_CPU* p = (FStruct_Shader_CPU*)shaderData;
 	for (int32 Row = 0; Row < Shader_Constant_Params.ArrayNum; ++Row) {

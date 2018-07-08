@@ -18,7 +18,7 @@ RWTexture2D<float> OutputSurface_Parameter_GPU;
 //equals (1024,1024,1)!
 //Then you can just use ThreadId.xy for each pixel without fancy math (using a 1024x1024 texture)
 
-[numthreads(1, 1, 1)]
+[numthreads(256, 1, 1)]
 //If using more than 1,1,1, threads:
 //Be aware that parrellel thread are running, make sure that no thread can stomp on another threads calculations by
 //writing to the same buffer/texture point
@@ -26,7 +26,7 @@ void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
     //Be aware that it may be faster to copy buffer data to a local variable here, as local memory is faster than buffer memory
     //So for huge datasets with massive random read/write, its better to do this locally, and just copy it back when done.
-    TArray_Struct_Parameter_GPU[0].runCount = TArray_Struct_Parameter_GPU[0].runCount + 1;
+    TArray_Struct_Parameter_GPU[ThreadId.x].runCount = TArray_Struct_Parameter_GPU[ThreadId.x].runCount + 1;
 } 
 
 

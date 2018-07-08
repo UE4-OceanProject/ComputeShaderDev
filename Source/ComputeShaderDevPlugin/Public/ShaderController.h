@@ -16,6 +16,12 @@ struct FStruct_Shader_CPU {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ComputeShader")
 	int32 runCount = 1;
+
+	//Have to have this initializer or you will have "optimized out" issues when 
+	//creating new structs
+	FStruct_Shader_CPU()
+	{
+	}
 };
 
 UCLASS(BlueprintType)

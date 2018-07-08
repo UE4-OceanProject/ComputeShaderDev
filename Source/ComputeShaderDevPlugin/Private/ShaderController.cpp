@@ -17,19 +17,24 @@ AShaderController::AShaderController()
 void AShaderController::OnConstruction(const FTransform& Transform)
 {
 
-	TArray_FStruct_Shader_CPU.Empty();
-	//Create our data struct
-	FStruct_Shader_CPU instanceData;
-	//Set our data struct values
-	instanceData.runCount = 0;
-	//Add our data struct to the array
-	TArray_FStruct_Shader_CPU.Add(instanceData);
+
+
+
 		 
 }
 
 void AShaderController::BeginPlay()
 {
 	//Init our instance of compute ComputeShaderInstance controller
+	TArray_FStruct_Shader_CPU.Empty();
+	TArray_FStruct_Shader_CPU.Reserve(256);
+
+	//Add our default data struct to the array
+	for (int i = 0; i<256; i++)
+	{
+		TArray_FStruct_Shader_CPU.Add(FStruct_Shader_CPU());
+	}
+
 
 	Shader_Constant_Params.ArrayNum = TArray_FStruct_Shader_CPU.Num();
 		Shader_Variable_Params = FVariables_Class();

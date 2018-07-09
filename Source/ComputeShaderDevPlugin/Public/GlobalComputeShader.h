@@ -19,6 +19,18 @@ BEGIN_UNIFORM_BUFFER_STRUCT(FVariables_Class, )
 UNIFORM_MEMBER(float, DeltaTime)
 END_UNIFORM_BUFFER_STRUCT(FVariables_Class)
 
+//#define UNIFORM_MEMBER_ARRAY_EX(MemberType,MemberName,ArrayDecl,Precision)
+//#define UNIFORM_MEMBER_ARRAY(MemberType,MemberName,ArrayDecl)
+//#define UNIFORM_MEMBER(MemberType,MemberName)
+//#define UNIFORM_MEMBER_EX(MemberType,MemberName,Precision)
+//#define UNIFORM_MEMBER_SRV(ShaderType,MemberName)
+// NOT SUPPORTED YET
+//#define DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER_UAV(ShaderType,MemberName)
+//#define UNIFORM_MEMBER_SAMPLER(ShaderType,MemberName)
+//#define UNIFORM_MEMBER_TEXTURE(ShaderType,MemberName)
+//#define UNIFORM_MEMBER_STRUCT(StructType,MemberName)
+
+
 typedef TUniformBufferRef<FShaderConstants_Class> FShaderConstants_ClassInstance;
 typedef TUniformBufferRef<FVariables_Class> FShaderVariables_ClassInstance;
 

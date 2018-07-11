@@ -30,6 +30,78 @@ class AWeatherManager : public AActor
 	GENERATED_UCLASS_BODY()
 
 public:
+	
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
+		int simulationTime = 0; // Current Local Clock Time (LCT)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
+		int dT = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
+		int side = 10000; // world will be side x side meters
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
+		float gridXSize = 1000; // size of the grid
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
+		float gridYSize = 1000; // size of the grid
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> gridSizeK;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> gridSizeKAcc;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
+		int gridX = int(side / gridXSize);
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
+		int gridY = int(side / gridYSize);
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
+		int gridZ = 56;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
+		int gridXY = gridX * gridY;
+
+	//not used in code, but used in bp to allocate array sizes
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
+		int gridXYZ = gridXY * gridZ; //Size of Weather array for 1 variable
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
+		int gridXYx10 = gridXY * 10; //Size of Ground array with 10 variables
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
+		int gridXYZx10 = gridXYZ * 10; //Size of Weather array with 10 variables
+
+
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> ground;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> gridInit;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> gridRslow;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> Grid3D0; //Past
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> Grid3D1; //Current
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> Grid3D2; //Future
+
+
+
+
+
+
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "weather step"), Category = "Weather")
+		void WeatherStep(UPARAM(ref) TArray<float>& prevGC, UPARAM(ref) TArray<float>& currGC, UPARAM(ref) TArray<float>& nextGC);
+	
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xy"), Category = "Weather")
+		int preCalcIJ(int x, int y);
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xyz"), Category = "Weather")
+		int preCalcIJK(int x, int y, int z);
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
+		int preCalc_WIJK(int x, int y, int z);
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
+		int preCalc_CIJK(int c, int x, int y, int z);
+
 
 	///////////////////////////////////////
 	// WEATHER Constants
@@ -88,36 +160,22 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
 		float DEG2RAD = M_PI / 180.0f;
 
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int simulationTime = 0; // Current Local Clock Time (LCT)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int dT = 1;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		float gridXSize = 1000;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		float gridYSize = 1000;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int side = 10000;
+	// Radiation parameters (book values)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float initDayInYearUTC = 100.0f; // out of 355.5f
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float initTimeUTC_hours = 12.0f; // 0-24h
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float timeZone = -6.0f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float latitudeRad = 37.0f*DEG2RAD; // in radians 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float longitudeRad = -122.0f*DEG2RAD; // in radians
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float rainProbability = 1.0f;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridX = side / gridXSize;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridY = side / gridYSize;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridZ = 56;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridXY = gridX * gridY;
-
-	//not used in code, but used in bp to allocate array sizes
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridXYZ = gridXY * gridZ;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridXYx10 = gridXY * 10;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int gridXYZx10 = gridXYZ * 10;
 
 
 	///////////////////////////////////////////////////////
@@ -167,53 +225,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
 		int GR_CLOUD_COVER = 9;	// Cloud coverage: Used in simulation and shadows
 
-
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> ground;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridSizeK;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridSizeKAcc;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridInit;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridRslow;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> Grid3D0; //Past
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> Grid3D1; //Current
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> Grid3D2; //Future
-
-
-	// Radiation parameters (book values)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float initDayInYearUTC = 100.0f; // out of 355.5f
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float initTimeUTC_hours = 12.0f; // 0-24h
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float timeZone = -6.0f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float latitudeRad = 37.0f*DEG2RAD; // in radians 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float longitudeRad = -122.0f*DEG2RAD; // in radians
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float rainProbability = 1.0f;
-
-
-
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "weather step"), Category = "Weather")
-		void WeatherStep(UPARAM(ref) TArray<float>& prevGC, UPARAM(ref) TArray<float>& currGC, UPARAM(ref) TArray<float>& nextGC);
-	
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xy"), Category = "Weather")
-		int preCalcIJ(int x, int y);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xyz"), Category = "Weather")
-		int preCalcIJK(int x, int y, int z);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
-		int preCalc_WIJK(int x, int y, int z);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
-		int preCalc_CIJK(int c, int x, int y, int z);
 
 	
 

@@ -21,6 +21,25 @@
 #pragma once
 #include "WeatherManager.generated.h"
 
+//This needs to match the struct in the shader
+USTRUCT(BlueprintType)
+struct FGridVariablesContainer {
+	GENERATED_USTRUCT_BODY()
+		// Always make USTRUCT variables into UPROPERTY()
+		// Any non-UPROPERTY() struct vars are not replicated
+		// Always initialize your USTRUCT variables!
+
+		///////////////////////////////////////////////////////
+		// INDEX TO VARIABLES
+		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridVariables")
+		TArray<float> Variable;
+
+		//Have to have this initializer or you will have "optimized out" issues when 
+		//creating new structs
+	FGridVariablesContainer()
+		{
+		}
+};
 
 
 //An actor based weather system for simulating weather
@@ -47,7 +66,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
 		TArray<float> gridSizeK;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridSizeKAcc;
+		TArray<float> gridSizeKAcc; // It is the size(in meters) of each gridcell accumulated in Z direction(Note: this contains the accumulated values, not the heights)
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
 		int gridX = int(side / gridXSize);
@@ -57,6 +76,22 @@ public:
 		int gridZ = 56;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
 		int gridXY = gridX * gridY;
+
+
+	// Radiation parameters (book values)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float initDayInYearUTC = 100.0f; // out of 355.5f
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float initTimeUTC_hours = 12.0f; // 0-24h
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float timeZone = -6.0f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float latitudeRad = 37.0f*DEG2RAD; // in radians 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float longitudeRad = -122.0f*DEG2RAD; // in radians
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
+		float rainProbability = 1.0f;
+
 
 	//not used in code, but used in bp to allocate array sizes
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
@@ -70,20 +105,23 @@ public:
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> ground;
+		TArray<FGridVariablesContainer> ground;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridInit;
+		TArray<FGridVariablesContainer> gridInit;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridRslow;
+		TArray<FGridVariablesContainer> grid0Var;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> Grid3D0; //Past
+		TArray<FGridVariablesContainer> gridRslow;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> Grid3D1; //Current
+		TArray<FGridVariablesContainer> Grid3D0; //Past
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> Grid3D2; //Future
+		TArray<FGridVariablesContainer> Grid3D1; //Current
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<FGridVariablesContainer> Grid3D2; //Future
 
 
 
@@ -101,6 +139,54 @@ public:
 		int preCalc_WIJK(int x, int y, int z);
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
 		int preCalc_CIJK(int c, int x, int y, int z);
+
+
+	// INDEX TO GROUND VARIABLES
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_TG = 0;		// Tg: Temperature of ground of first ds centimeters
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_TA = 1;		// Ta: Temperature of air above grouind z>0
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_ALBEDO = 2;	// a: Albedo of the gridcell (heat absorbtion)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_CGA = 3;		// Soild-heat capacity per area of the gridcell
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_TG_RESET = 4;	// Variables to reset after 24h
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_TA_RESET = 5;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_TG_CORR = 6;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_TA_CORR = 7;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_BETA_INV = 8;	// Inverse of the Bowen ratio
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
+		int GR_CLOUD_COVER = 9;	// Cloud coverage: Used in simulation and shadows
+
+	///////////////////////////////////////////////////////
+	// INDEX TO VARIABLES
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int U = 0;		// u: wind component in the X direction
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int V = 1;		// v: wind component in the Y direction
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int W = 2;		// w: wind component in the Z direction
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int THETA = 3;	// Theta: Potential temperature
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int Pi = 4;		// Pi: Exener function
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int RO = 5;		// RO: Density (Temp)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int QV = 6;		// qv: Vapor mixing ratio
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int QC = 7;		// qc: Condensation mixing ratio
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int QR = 8;		// qr: Rain mixing ratio
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
+		int VORT = 9;	// Vort: Vorticity
 
 
 	///////////////////////////////////////
@@ -160,73 +246,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
 		float DEG2RAD = M_PI / 180.0f;
 
-
-
-	// Radiation parameters (book values)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float initDayInYearUTC = 100.0f; // out of 355.5f
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float initTimeUTC_hours = 12.0f; // 0-24h
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float timeZone = -6.0f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float latitudeRad = 37.0f*DEG2RAD; // in radians 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float longitudeRad = -122.0f*DEG2RAD; // in radians
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float rainProbability = 1.0f;
-
-
-
-	///////////////////////////////////////////////////////
-	// INDEX TO VARIABLES
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int U = 0;		// u: wind component in the X direction
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int V = 1;		// v: wind component in the Y direction
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int W = 2;		// w: wind component in the Z direction
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int THETA = 3;	// Theta: Potential temperature
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int Pi = 4;		// Pi: Exener function
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int RO = 5;		// RO: Density
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int QV = 6;		// qv: Vapor mixing ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int QC = 7;		// qc: Condensation mixing ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int QR = 8;		// qr: Rain mixing ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int VORT = 9;	// Vort: Vorticity
-
-						// INDEX TO GROUND VARIABLES
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TG = 0;		// Tg: Temperature of ground of first ds centimeters
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TA = 1;		// Ta: Temperature of air above grouind z>0
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_ALBEDO = 2;	// a: Albedo of the gridcell (heat absorbtion)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_CGA = 3;		// Soild-heat capacity per area of the gridcell
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TG_RESET = 4;	// Variables to reset after 24h
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TA_RESET = 5;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TG_CORR = 6;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TA_CORR = 7;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_BETA_INV = 8;	// Inverse of the Bowen ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_CLOUD_COVER = 9;	// Cloud coverage: Used in simulation and shadows
-
-
-	
 
 private:
 

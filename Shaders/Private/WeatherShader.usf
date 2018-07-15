@@ -12,40 +12,53 @@
 int AirRef(RWStructuredBuffer<FStruct_Columns_GPU> var, int arr, int x, int y, int z)
 {
     int aI = x; // Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
-    if (aI < 0)
+        
+        if (aI < 0)
         aI = gridX + x;
-    if (aI >= gridX)
+    
+        if (aI >= gridX)
         aI = (x % gridX);
+
     int aJ = y; // Toroidal
-    if (aJ < 0)
+    
+        if (aJ < 0)
         aJ = gridY + y;
-    if (aJ >= gridY)
+    
+        if (aJ >= gridY)
         aJ = (y % gridY);
+
     int aZ = z;
     int gridK = gridZ;
-    if (arr == W)
+    
+        if (arr == W)
         gridK++;
-    if ((z < 0 || z >= gridK) && (arr <= 2 || arr == 8))
-    { //for values (under z<0, or higher than the gridK) AND they are arr<=2 (u,v,w) or arr==8 (rL)
+    
+        if ((z < 0 || z >= gridK) && (arr <= 2 || arr == 8))
+        { //for values (under z<0, or higher than the gridK) AND they are arr<=2 (u,v,w) or arr==8 (rL)
         return 0.0f;
-    }
+        }
+    
+    //We could prevent this by using a texure with x/y clamping?
     aZ = max(0, aZ); //not under
     aZ = min(aZ, gridK - 2); //not over top
 
-    return var[arr].Column[aI + aJ * gridX + aZ * (gridX * gridY)];
+    return var[0].Column[arr].Cell[aI + aJ * gridX + aZ * (gridX * gridY)];
 }
 
 /* Operators to acces the data in a toroidal manner */
 float GroundRef(RWStructuredBuffer<FStruct_Columns_GPU> var,  int arr,  int x,  int y)
 {
-		int aY = y;  // toroidal behavior
-		if (y < 0)aY = gridY + y;
-		if (y >= gridY)aY = (y % gridY);
+    int aY = y;  // toroidal behavior
 
-		int aX = x;  // toroidal behavior
-		if (x < 0)aX = gridX + x;
-		if (x >= gridX)aX = (x % gridX);
-		return var[arr].Column[aX + aY*gridY];
+        if (y < 0)aY = gridY + y;
+        if (y >= gridY)aY = (y % gridY);
+
+    int aX = x;  // toroidal behavior
+
+        if (x < 0)aX = gridX + x;
+        if (x >= gridX)aX = (x % gridX);
+    
+    return var[0].Column[arr].Cell[aX + aY * gridY];
 }
 
 

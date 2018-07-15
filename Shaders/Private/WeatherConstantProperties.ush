@@ -8,7 +8,7 @@ int gridSizeI = 1;
 int gridSizeJ = 1;
 
     // INDEX TO GROUND VARIABLES
-
+#define airGridSize 10
 int GR_TG = 0; // Tg: Temperature of ground of first ds centimeters
 int GR_TA = 1; // Ta: Temperature of air above ground z>0
 int GR_ALBEDO = 2; // a: Albedo of the gridcell (heat absorbtion)
@@ -24,7 +24,7 @@ int GR_CLOUD_COVER = 9; // Cloud coverage: Used in simulation and shadows
 
     ///////////////////////////////////////////////////////
     // INDEX TO VARIABLES
-
+#define groundGridSize 10
 int U = 0; // u: wind component in the X direction
 int V = 1; // v: wind component in the Y direction
 int W = 2; // w: wind component in the Z direction
@@ -67,5 +67,7 @@ float phi = 0.785398163f; // 45 degree in radians
 float ro_0 = 1.225f; // kg m-3
 float cmax = 50.0f; // anelastic speed of sound (300ms-1)
 
+//Not correct??      |
+//           3.1415926535897932384626433832795028841
 float M_PI = 3.1415927410125732421875f;
-float DEG2RAD = M_PI / 180.0f;
+float DEG2RAD = 3.1415927410125732421875f / 180.0f;

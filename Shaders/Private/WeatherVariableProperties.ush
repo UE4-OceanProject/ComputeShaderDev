@@ -1,5 +1,4 @@
-#pragma once
-//#include "WeatherConstantProperties.ush"
+
 int currGC = 0;
 int prevGC = 0;
 int nextGC = 0;
@@ -7,13 +6,20 @@ int nextGC = 0;
 float dT = 0;
 float simulationTime = 0;
 
-struct FStruct_Columns_GPU
-{ //x10
-    float Column[];
+struct FStruct_Cell_GPU
+{   //gridX * gridY
+    //or
+    //gridX * gridY * gridZ depending on use
+    RWStructuredBuffer<float> Cell;
 };
 
+struct FStruct_Columns_GPU
+{ //x10
+    RWStructuredBuffer<FStruct_Cell_GPU> Column;
+};
+   
 struct FStruct_GridContainers_GPU
-{
+{// x1 or x3 depending on use
     RWStructuredBuffer<FStruct_Columns_GPU> Grid;
 };
 

@@ -115,8 +115,9 @@ void simulateSTEP1()
                 if (km1 < 0)
                     km1 = 0;
 
-                const float Kx = 500.0f; // diffusion coefficients
-                const float Kz = 100.0f;
+                //These two floats are const, they can be moved to constants.ush file
+                float Kx = 500.0f; // diffusion coefficients
+                float Kz = 100.0f;
 
                 AirRef(gridRslow, U, i, j, k) =
           -1.0f / gridSizeI * (pow(0.5f * (AirRef(grid3D[currGC].Grid, U,  i + 1,  j,  k) + AirRef(grid3D[currGC].Grid, U,  i,  j,  k)), 2) - pow(0.5f * (AirRef(grid3D[currGC].Grid, U,  i,  j,  k) + AirRef(grid3D[currGC].Grid, U,  i - 1,  j,  k)), 2)) // -duu/dx
@@ -383,10 +384,10 @@ void simulateSTEP4()
     {
         for (int i = 0; i < gridX; i++)
         {
-
-            const float T_M = 29.0f + 273.15f; // Invariable slab temperature //INIT 10.0f 32.0f
-            const float dur = 3600.0f * 24.0f; // * 5.0f;//24h
-            const float S_const = -1.127f; //Solar constant km/s
+            //These three floats are const, they can be moved to constants.ush file
+            float T_M = 29.0f + 273.15f; // Invariable slab temperature //INIT 10.0f 32.0f
+            float dur = 3600.0f * 24.0f; // * 5.0f;//24h
+            float S_const = -1.127f; //Solar constant km/s
 
       ////////////////////////////////////////
       // INIT VALUES
@@ -475,7 +476,8 @@ void simulateSTEP4()
 
             float sig_l = GroundRef(ground, GR_CLOUD_COVER,  i,  j);
             float sig_m = GroundRef(ground, GR_CLOUD_COVER,  i,  j);
-            const float sig_h = 0.1f;
+            //This float is const, it can be moved to constants.ush file
+            float sig_h = 0.1f;
 
             float I = 0.08f * (1.0f - 0.1f * sig_h - 0.3f * sig_m - 0.6f * sig_l);
 
@@ -541,7 +543,9 @@ void simulateStep(uint3 DTid : SV_DispatchThreadID)
 {
 
   // Run sumulation.
-    const bool check = true;
+    //This book is never used?
+    //can't have const here anyways
+    //const bool check = true;
     for (int nS = 0; nS < numSteps; nS++)
     {
         int nextInd = (currInd + 1) % 3; //3 number of time array

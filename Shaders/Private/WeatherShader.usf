@@ -1,3 +1,5 @@
+//Reference LICENSE_2 for the simulation code contained in here!
+
 #include "/Engine/Private/Common.ush"
 #pragma once
 #include "WeatherConstantProperties.ush"

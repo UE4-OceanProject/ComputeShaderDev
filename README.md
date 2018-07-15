@@ -1,3 +1,9 @@
-This is a very simple compute shader that takes a value from the cpu side, and computes value +1 on the gpu, and sends the data back. This is then printed by the blueprint example.
+Completely dynamic weather simulation designed for runtime use! Thanks to Ignacio Garcia - Dorado and Daniel Aliaga!
 
 This does not use data packing inside of textures, this uses structs that are created on the cpu and gpu (both must match)
+
+Simulation code contained in the WeatherSimulation.usf file belongs to:
+https://github.com/igarciad/weather_simulation
+License is available in :
+LICENSE_2
+or via the github link above

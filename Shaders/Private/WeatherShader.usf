@@ -63,7 +63,7 @@ float GroundRef(RWStructuredBuffer<FStruct_Columns_GPU> var,  int arr,  int x,  
 
 
 /*//////////////////////////////////////
-    FIND AND REPLACE CONVERSTIONS:
+    FIND AND REPLACE CONVERSIONS:
 (gridRslow)\((.*?),(.*?),(.*?),(.*?)\)
 (gridInit)\((.*?),(.*?),(.*?),(.*?)\)
 AirRef($1, $2, $3, $4, $5)
@@ -92,7 +92,7 @@ sqrtf
 sqrt
 
 gridSizeK
-gridSizeK[0].Column
+gridSizeK[0].Cell
 
 *///////////////////////////////////////
 
@@ -123,15 +123,15 @@ void simulateSTEP1()
           0.5f * (AirRef(grid3D[currGC].Grid, U,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, U,  i,  j,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, V,  i - 1,  j + 1,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, U,  i,  j,  k) + AirRef(grid3D[currGC].Grid, U,  i,  j - 1,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j,  k) + AirRef(grid3D[currGC].Grid, V,  i - 1,  j,  k))) // -duv/dy
 
-          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, W,  i - 1,  j,  k + 1)) * 0.5f * (AirRef(grid3D[currGC].Grid, U,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, U,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * 0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k) + AirRef(grid3D[currGC].Grid, W,  i - 1,  j,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, U,  i,  j,  k - 1) + AirRef(grid3D[currGC].Grid, U,  i,  j,  k))) // -dpuw/dz
           - 1.0f / gridSizeI * (cpd * (AirRef(gridInit, THETA,  i,  j,  k) + 0.61f * AirRef(gridInit, QV,  i,  j,  k)) * (AirRef(grid3D[currGC].Grid, Pi,  i,  j,  k) - AirRef(grid3D[currGC].Grid, Pi,  i - 1,  j,  k))) // -cpd*T*dP/dx
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, U,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, U,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, U,  i - 1,  j,  k))
           + Ky / pow(gridSizeJ, 2) * (AirRef(grid3D[prevGC].Grid, U,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, U,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, U,  i,  j - 1,  k))
-          + Kz / pow(gridSizeK[0].Column[k], 2) * ((AirRef(grid3D[prevGC].Grid, U,  i,  j,  k + 1) - AirRef(gridInit, U,  i,  j,  k + 1)) - 2.0f * (AirRef(grid3D[prevGC].Grid, U,  i,  j,  k) - AirRef(gridInit, U,  i,  j,  k)) + (AirRef(grid3D[prevGC].Grid, U,  i,  j,  k - 1) - AirRef(gridInit, U,  i,  j,  k - 1))); // Diffusion (implicit)
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * ((AirRef(grid3D[prevGC].Grid, U,  i,  j,  k + 1) - AirRef(gridInit, U,  i,  j,  k + 1)) - 2.0f * (AirRef(grid3D[prevGC].Grid, U,  i,  j,  k) - AirRef(gridInit, U,  i,  j,  k)) + (AirRef(grid3D[prevGC].Grid, U,  i,  j,  k - 1) - AirRef(gridInit, U,  i,  j,  k - 1))); // Diffusion (implicit)
 
-
+                
                 AirRef(gridRslow, V,  i,  j,  k) =
           -1.0f / gridSizeI * (
           0.5f * (AirRef(grid3D[currGC].Grid, V,  i + 1,  j,  k) + AirRef(grid3D[currGC].Grid, V,  i,  j,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, U,  i + 1,  j,  k) + AirRef(grid3D[currGC].Grid, U,  i + 1,  j - 1,  k))
@@ -139,13 +139,13 @@ void simulateSTEP1()
 
           - 1.0f / gridSizeJ * (pow(0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, V,  i,  j,  k)), 2) - pow(0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j,  k) + AirRef(grid3D[currGC].Grid, V,  i,  j - 1,  k)), 2)) // -dvv/dy
 
-          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, W,  i,  j - 1,  k + 1)) * 0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, V,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * 0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k) + AirRef(grid3D[currGC].Grid, W,  i,  j - 1,  k)) * 0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j,  k - 1) + AirRef(grid3D[currGC].Grid, V,  i,  j,  k))) // -dpvw/dz
           - 1.0f / gridSizeJ * (cpd * (AirRef(gridInit, THETA,  i,  j,  k) + 0.61f * AirRef(gridInit, QV,  i,  j,  k)) * (AirRef(grid3D[currGC].Grid, Pi,  i,  j,  k) - AirRef(grid3D[currGC].Grid, Pi,  i,  j - 1,  k))) // -cpd*T*dP/dx
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, V,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, V,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, V,  i - 1,  j,  k))
           + Ky / pow(gridSizeJ, 2) * (AirRef(grid3D[prevGC].Grid, V,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, V,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, V,  i,  j - 1,  k))
-          + Kz / pow(gridSizeK[0].Column[k], 2) * ((AirRef(grid3D[prevGC].Grid, V,  i,  j,  k + 1) - AirRef(gridInit, V,  i,  j,  k + 1)) - 2.0f * (AirRef(grid3D[prevGC].Grid, V,  i,  j,  k) - AirRef(gridInit, V,  i,  j,  k)) + (AirRef(grid3D[prevGC].Grid, V,  i,  j,  k - 1) - AirRef(gridInit, V,  i,  j,  k - 1))); // Diffusion (implicit)
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * ((AirRef(grid3D[prevGC].Grid, V,  i,  j,  k + 1) - AirRef(gridInit, V,  i,  j,  k + 1)) - 2.0f * (AirRef(grid3D[prevGC].Grid, V,  i,  j,  k) - AirRef(gridInit, V,  i,  j,  k)) + (AirRef(grid3D[prevGC].Grid, V,  i,  j,  k - 1) - AirRef(gridInit, V,  i,  j,  k - 1))); // Diffusion (implicit)
 
                 AirRef(gridRslow, W,  i,  j,  k) =
           -1.0f / gridSizeI * (
@@ -156,16 +156,16 @@ void simulateSTEP1()
           0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k - 1)) * 0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, W,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, V,  i,  j,  k) + AirRef(grid3D[currGC].Grid, V,  i,  j,  k - 1)) * 0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k) + AirRef(grid3D[currGC].Grid, W,  i,  j - 1,  k))) // -duw/dx
 
-          - 1.0f / (0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * 0.5f * (gridSizeK[0].Column[k] + gridSizeK[0].Column[km1])) *
+          - 1.0f / (0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * 0.5f * (gridSizeK[0].Cell[k] + gridSizeK[0].Cell[km1])) *
           (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * pow(0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, W,  i,  j,  k)), 2) - AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1) * pow(0.5f * (AirRef(grid3D[currGC].Grid, W,  i,  j,  k) + AirRef(grid3D[currGC].Grid, W,  i,  j,  k - 1)), 2)) // -dpww/dz
-          - 1.0f / (0.5f * (gridSizeK[0].Column[k] + gridSizeK[0].Column[km1])) *
+          - 1.0f / (0.5f * (gridSizeK[0].Cell[k] + gridSizeK[0].Cell[km1])) *
           (cpd * 0.5f * (AirRef(gridInit, THETA,  i,  j,  k) + 0.61f * AirRef(gridInit, QV,  i,  j,  k) + AirRef(gridInit, THETA,  i,  j,  k - 1) + 0.61f * AirRef(gridInit, QV,  i,  j,  k - 1))
           * (AirRef(grid3D[currGC].Grid, Pi,  i,  j,  k) - AirRef(grid3D[currGC].Grid, Pi,  i,  j,  k - 1))) // -cpd* T*dP/dz
           + g * 0.5f * (AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k) / AirRef(gridInit, THETA,  i,  j,  k) + AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k - 1) / AirRef(gridInit, THETA,  i,  j,  k - 1)
           + 0.61f * (AirRef(grid3D[currGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QV,  i,  j,  k - 1)) - (AirRef(grid3D[currGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QC,  i,  j,  k - 1) + AirRef(grid3D[currGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QR,  i,  j,  k - 1))) // B=g* T'/T
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, W,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, W,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, W,  i - 1,  j,  k)) // Diffusion (implicit)
           + Ky / pow(gridSizeJ, 2) * (AirRef(grid3D[prevGC].Grid, W,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, W,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, W,  i,  j - 1,  k)) // Diffusion (implicit)
-          + Kz / pow(gridSizeK[0].Column[k], 2) * (AirRef(grid3D[prevGC].Grid, W,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, W,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, W,  i,  j,  k - 1)); // d2w/dx2+d2w/dz2
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * (AirRef(grid3D[prevGC].Grid, W,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, W,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, W,  i,  j,  k - 1)); // d2w/dx2+d2w/dz2
 
                 AirRef(gridRslow, THETA,  i,  j,  k) =
           -1.0f / gridSizeI * (AirRef(grid3D[currGC].Grid, U,  i + 1,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, THETA,  i + 1,  j,  k) + AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k))
@@ -174,15 +174,15 @@ void simulateSTEP1()
           - 1.0f / gridSizeJ * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, THETA,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k))
           - AirRef(grid3D[currGC].Grid, V,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k) + AirRef(grid3D[currGC].Grid, THETA,  i,  j - 1,  k))) // -dvT/dx NN
 
-          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * 0.5f * (AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k) + AirRef(grid3D[currGC].Grid, THETA,  i,  j,  k - 1))) // -dpwT/dz
           - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * 0.5f * (
-          0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * (AirRef(gridInit, THETA,  i,  j,  k + 1) - AirRef(gridInit, THETA,  i,  j,  k)) / gridSizeK[0].Column[k + 1]
-          + 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * (AirRef(gridInit, THETA,  i,  j,  k) - AirRef(gridInit, THETA,  i,  j,  k - 1)) / gridSizeK[0].Column[k]) // -w/p*dpT/dz (mean state)
+          0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * (AirRef(gridInit, THETA,  i,  j,  k + 1) - AirRef(gridInit, THETA,  i,  j,  k)) / gridSizeK[0].Cell[k + 1]
+          + 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * (AirRef(gridInit, THETA,  i,  j,  k) - AirRef(gridInit, THETA,  i,  j,  k - 1)) / gridSizeK[0].Cell[k]) // -w/p*dpT/dz (mean state)
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, THETA,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, THETA,  i - 1,  j,  k)) // Diffusion (implicit)
           + Ky / pow(gridSizeJ, 2) * (AirRef(grid3D[prevGC].Grid, THETA,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, THETA,  i,  j - 1,  k)) // Diffusion (implicit)
-          + Kz / pow(gridSizeK[0].Column[k], 2) * (AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k - 1)); // d2T/dx2+d2T/dz2
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * (AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, THETA,  i,  j,  k - 1)); // d2T/dx2+d2T/dz2
 
                 AirRef(gridRslow, Pi,  i,  j,  k) =
           -1.0f * (pow(cmax, 2) / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * cpd * pow(AirRef(gridInit, THETA,  i,  j,  k) + 0.61f * AirRef(gridInit, QV,  i,  j,  k), 2))) * ( // multiplier -cs^2/(cpd* p*T^2)
@@ -191,11 +191,11 @@ void simulateSTEP1()
           + (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * (AirRef(gridInit, THETA,  i,  j,  k) + 0.61f * AirRef(gridInit, QV,  i,  j,  k)) * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) - AirRef(grid3D[currGC].Grid, V,  i,  j,  k))) / gridSizeJ // pTdv/dx
 
           + (0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * 0.5f * (AirRef(gridInit, THETA,  i,  j,  k + 1) + AirRef(gridInit, THETA,  i,  j,  k))
-          - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * 0.5f * (AirRef(gridInit, THETA,  i,  j,  k) + AirRef(gridInit, THETA,  i,  j,  k - 1))) / gridSizeK[0].Column[k] // pTdw/dz
+          - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * 0.5f * (AirRef(gridInit, THETA,  i,  j,  k) + AirRef(gridInit, THETA,  i,  j,  k - 1))) / gridSizeK[0].Cell[k] // pTdw/dz
           )
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, Pi,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, Pi,  i - 1,  j,  k)) // Diffusion (implicit)
           + Ky / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, Pi,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, Pi,  i,  j - 1,  k)) // Diffusion (implicit)
-          + Kz / pow(gridSizeK[0].Column[k], 2) * (AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k - 1)); // d2P/dx2+d2P/dz2
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * (AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, Pi,  i,  j,  k - 1)); // d2P/dx2+d2P/dz2
 
         // Moisture terms
                 AirRef(gridRslow, QV,  i,  j,  k) =
@@ -205,15 +205,15 @@ void simulateSTEP1()
           - 1.0f / gridSizeJ * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QV,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, QV,  i,  j,  k))
           - AirRef(grid3D[currGC].Grid, V,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QV,  i,  j - 1,  k))) // -dvqv/dy
 
-          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * 0.5f * (AirRef(grid3D[currGC].Grid, QV,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, QV,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QV,  i,  j,  k - 1))) // -dpwqv/dz
           - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * 0.5f * (
-          0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * (AirRef(gridInit, QV,  i,  j,  k + 1) - AirRef(gridInit, QV,  i,  j,  k)) / gridSizeK[0].Column[k + 1]
-          + 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * (AirRef(gridInit, QV,  i,  j,  k) - AirRef(gridInit, QV,  i,  j,  k - 1)) / gridSizeK[0].Column[k]) // -w/p*dpqv/dz (mean state)
+          0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * (AirRef(gridInit, QV,  i,  j,  k + 1) - AirRef(gridInit, QV,  i,  j,  k)) / gridSizeK[0].Cell[k + 1]
+          + 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * (AirRef(gridInit, QV,  i,  j,  k) - AirRef(gridInit, QV,  i,  j,  k - 1)) / gridSizeK[0].Cell[k]) // -w/p*dpqv/dz (mean state)
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, QV,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QV,  i - 1,  j,  k)) // Diffusion (implicit)
           + Ky / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, QV,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QV,  i,  j - 1,  k)) // Diffusion (implicit)
-          + Kz / pow(gridSizeK[0].Column[k], 2) * (AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k - 1)); // d2q/dx2+d2q/dz2
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * (AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QV,  i,  j,  k - 1)); // d2q/dx2+d2q/dz2
 
                 AirRef(gridRslow, QC,  i,  j,  k) =
           -1.0f / gridSizeI * (AirRef(grid3D[currGC].Grid, U,  i + 1,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QC,  i + 1,  j,  k) + AirRef(grid3D[currGC].Grid, QC,  i,  j,  k))
@@ -222,12 +222,12 @@ void simulateSTEP1()
           - 1.0f / gridSizeJ * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QC,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, QC,  i,  j,  k))
           - AirRef(grid3D[currGC].Grid, V,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QC,  i,  j - 1,  k))) // -duqv/dx
 
-          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * 0.5f * (AirRef(grid3D[currGC].Grid, QC,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, QC,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QC,  i,  j,  k - 1))) // -dpwqv/dz
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, QC,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QC,  i - 1,  j,  k)) // Diffusion (implicit)
           + Ky / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, QC,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QC,  i,  j - 1,  k)) // Diffusion (implicit)
-          + Kz / pow(gridSizeK[0].Column[k], 2) * (AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k - 1)); // d2q/dx2+d2q/dz2
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * (AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QC,  i,  j,  k - 1)); // d2q/dx2+d2q/dz2
 
                 AirRef(gridRslow, QR,  i,  j,  k) =
           -1.0f / gridSizeI * (AirRef(grid3D[currGC].Grid, U,  i + 1,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QR,  i + 1,  j,  k) + AirRef(grid3D[currGC].Grid, QR,  i,  j,  k))
@@ -236,12 +236,12 @@ void simulateSTEP1()
           - 1.0f / gridSizeJ * (AirRef(grid3D[currGC].Grid, V,  i,  j + 1,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QR,  i,  j + 1,  k) + AirRef(grid3D[currGC].Grid, QR,  i,  j,  k))
           - AirRef(grid3D[currGC].Grid, V,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QR,  i,  j - 1,  k))) // -dvqv/dy
 
-          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          - 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k + 1) * 0.5f * (AirRef(grid3D[currGC].Grid, QR,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, QR,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * AirRef(grid3D[currGC].Grid, W,  i,  j,  k) * 0.5f * (AirRef(grid3D[currGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[currGC].Grid, QR,  i,  j,  k - 1))) // -dpwqv/dz
           + Kx / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, QR,  i + 1,  j,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QR,  i - 1,  j,  k)) // Diffusion (implicit)
           + Ky / pow(gridSizeI, 2) * (AirRef(grid3D[prevGC].Grid, QR,  i,  j + 1,  k) - 2.0f * AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QR,  i,  j - 1,  k)) // Diffusion (implicit)
-          + Kz / pow(gridSizeK[0].Column[k], 2) * (AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k - 1)); // d2q/dx2+d2q/dz2
+          + Kz / pow(gridSizeK[0].Cell[k], 2) * (AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k + 1) - 2.0f * AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k - 1)); // d2q/dx2+d2q/dz2
 
                 AirRef(gridRslow, RO,  i,  j,  k) = 0.0f;
             }
@@ -304,7 +304,7 @@ void simulateSTEP2()
         // note, it's possible that vT > CFL.
 
                 AirRef(gridRslow, QR,  i,  j,  k) = AirRef(gridRslow, QR,  i,  j,  k) + A_conv + B_acc - Evap // Net mass change
-          + 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Column[k]) * (
+          + 1.0f / (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) * gridSizeK[0].Cell[k]) * (
           0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k + 1) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k)) * vterm1 * 0.5f * (AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k + 1) + AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k))
           - 0.5f * (AirRef(grid3D[currGC].Grid, RO,  i,  j,  k) + AirRef(grid3D[currGC].Grid, RO,  i,  j,  k - 1)) * vterm0 * 0.5f * (AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k) + AirRef(grid3D[prevGC].Grid, QR,  i,  j,  k - 1))); // Falling rain
 
@@ -526,7 +526,7 @@ void simulateSTEP4()
                 GroundRef(ground, GR_TA_CORR,  i,  j) = (TA_diff / (24.0f * 3600.0f)) * dT * 1.2f;
             }
 
-            AirRef(grid3D[nextGC].Grid, THETA,  i,  j,  0) = GroundRef(ground, GR_TA,  i,  j) + gamma * gridSizeK[0].Column[0] / 100.0f - AirRef(gridInit,  THETA,  i,  j,  0); //transfer of Ta to THETA
+            AirRef(grid3D[nextGC].Grid, THETA,  i,  j,  0) = GroundRef(ground, GR_TA,  i,  j) + gamma * gridSizeK[0].Cell[0] / 100.0f - AirRef(gridInit,  THETA,  i,  j,  0); //transfer of Ta to THETA
         }
     }
 } //STEP 4

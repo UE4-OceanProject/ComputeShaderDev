@@ -23,9 +23,8 @@ struct FStruct_GridContainers_GPU
     RWStructuredBuffer<FStruct_Columns_GPU> Grid;
 };
 
-
+RWStructuredBuffer<FStruct_Cell_GPU> gridSizeK;
 RWStructuredBuffer<FStruct_Columns_GPU> ground;
-RWStructuredBuffer<FStruct_Columns_GPU> gridSizeK;
 RWStructuredBuffer<FStruct_Columns_GPU> gridRslow;
 RWStructuredBuffer<FStruct_Columns_GPU> gridInit;
 RWStructuredBuffer<FStruct_GridContainers_GPU> grid3D;

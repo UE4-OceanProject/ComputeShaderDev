@@ -1,0 +1,71 @@
+#define FLT_MAX 3.402823466e+38F
+int numSteps = 1;
+int currInd = 0;
+int gridX = 10;
+int gridY = 10;
+int gridZ = 56;
+int gridSizeI = 1;
+int gridSizeJ = 1;
+
+    // INDEX TO GROUND VARIABLES
+
+int GR_TG = 0; // Tg: Temperature of ground of first ds centimeters
+int GR_TA = 1; // Ta: Temperature of air above ground z>0
+int GR_ALBEDO = 2; // a: Albedo of the gridcell (heat absorbtion)
+int GR_CGA = 3; // Soild-heat capacity per area of the gridcell
+
+int GR_TG_RESET = 4; // Variables to reset after 24h
+int GR_TA_RESET = 5;
+int GR_TG_CORR = 6;
+int GR_TA_CORR = 7;
+
+int GR_BETA_INV = 8; // Inverse of the Bowen ratio
+int GR_CLOUD_COVER = 9; // Cloud coverage: Used in simulation and shadows
+
+    ///////////////////////////////////////////////////////
+    // INDEX TO VARIABLES
+
+int U = 0; // u: wind component in the X direction
+int V = 1; // v: wind component in the Y direction
+int W = 2; // w: wind component in the Z direction
+int THETA = 3; // Theta: Potential temperature
+int Pi = 4; // Pi: Exener function
+int RO = 5; // RO: Density (Temp)
+int QV = 6; // qv: Vapor mixing ratio
+int QC = 7; // qc: Condensation mixing ratio
+int QR = 8; // qr: Rain mixing ratio
+int VORT = 9; // Vort: Vorticity
+
+    ///////////////////////////////////////
+    // WEATHER Constants
+
+float Kx = 500.; // diffusion coefficients
+float Ky = 500.; // diffusion coefficients
+float Kz = 100.;
+
+float Aw = 1.0f; // is there vertical advection
+float Ab = 1.0f; // is there buoyancy
+
+float Rd = 287.05f; // J kg-1 K-1
+float epsilon = 0.622f;
+
+float p_0 = 100000.0f; // PA
+float T0 = 273.15f; // K
+float cpd = 1004.5f; // PA
+
+float cvd = 717.5f; // J kg-1 K-1
+float Llv = 2.501e6; // J kg-1
+float Rv = 461.5f; // J kg-1 K-1
+float cpv = 1850.0f; // J kg-1 K-1
+float cvv = 1390.0f; // J kg-1 K-1
+float cpL = 4186.; // J kg-1 K-1
+
+float es_T0 = 610.7f; // PA
+float g = 9.81f; // m s-2
+float phi = 0.785398163f; // 45 degree in radians
+
+float ro_0 = 1.225f; // kg m-3
+float cmax = 50.0f; // anelastic speed of sound (300ms-1)
+
+float M_PI = 3.1415927410125732421875f;
+float DEG2RAD = M_PI / 180.0f;

@@ -1,0 +1,32 @@
+#pragma once
+//#include "WeatherConstantProperties.ush"
+int currGC = 0;
+int prevGC = 0;
+int nextGC = 0;
+
+float dT = 0;
+float simulationTime = 0;
+
+struct FStruct_Columns_GPU
+{ //x10
+    float Column[];
+};
+
+struct FStruct_GridContainers_GPU
+{
+    RWStructuredBuffer<FStruct_Columns_GPU> Grid;
+};
+
+
+RWStructuredBuffer<FStruct_Columns_GPU> ground;
+RWStructuredBuffer<FStruct_Columns_GPU> gridSizeK;
+RWStructuredBuffer<FStruct_Columns_GPU> gridRslow;
+RWStructuredBuffer<FStruct_Columns_GPU> gridInit;
+RWStructuredBuffer<FStruct_GridContainers_GPU> grid3D;
+
+float initDayInYearUTC = 100.0f; 
+float initTimeUTC_hours = 12.0f; 
+float timeZone = -6.0f; 
+float longitudeRad = 1.564f; 
+float latitudeRad = 0.784f;  
+float rainProbability=1.0f;//book values

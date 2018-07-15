@@ -1,13 +1,14 @@
 #include "/Engine/Private/Common.ush"
 
 //This struct needs to match struct FWeatherXYPointState in ComputeShaderFrontEnd.h
-struct TArray_FStruct_Shader_GPU{
+struct FStruct_Shader_GPU
+{
 	int runCount;
 };
 
 //Bound and declared in ComputeShaderDeclarations.cpp @FGlobalComputeShader (Initializer)
 //Then is filled in before use in ComputeShaderFrontEnd.cpp @ExecuteInRenderThread
-RWStructuredBuffer<TArray_FStruct_Shader_GPU> TArray_Struct_Parameter_GPU;
+RWStructuredBuffer<FStruct_Shader_GPU> TArray_FStruct_Parameter_GPU;
 Texture2D<float> InputSurfaceCS;
 RWTexture2D<float> OutputSurface_Parameter_GPU;
 
@@ -26,7 +27,7 @@ void VS_test(uint3 ThreadId : SV_DispatchThreadID)
 {
     //Be aware that it may be faster to copy buffer data to a local variable here, as local memory is faster than buffer memory
     //So for huge datasets with massive random read/write, its better to do this locally, and just copy it back when done.
-    TArray_Struct_Parameter_GPU[ThreadId.x].runCount = TArray_Struct_Parameter_GPU[ThreadId.x].runCount + 1;
+    TArray_FStruct_Parameter_GPU[ThreadId.x].runCount = TArray_FStruct_Parameter_GPU[ThreadId.x].runCount + 1;
 } 
 
 

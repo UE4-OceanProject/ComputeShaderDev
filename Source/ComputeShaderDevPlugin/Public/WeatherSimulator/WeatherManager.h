@@ -1,252 +1,59 @@
-/*=================================================
-* FileName: WeatherSimulator.h
-*
-* Created by: SaschaElble
-* Project name: OceanProject
-* Unreal Engine version: 4.18.3
-* Created on: 2018/02/21
-*
-* Last Edited on:
-* Last Edited by:
-*
-* -------------------------------------------------
-* For parts referencing UE4 code, the following copyright applies:
-* Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
-*
-* Feel free to use this software in any commercial/free game.
-* Selling this as a plugin/item, in whole or part, is not allowed.
-* See "OceanProject\License.md" for full licensing details.
-* =================================================*/
-
 #pragma once
+#include "WeatherManager_Properties.h"
+#include "WeatherStructs.h"
+#include "Shader_Interface.h"
+#include "RenderCommandFence.h"
 #include "WeatherManager.generated.h"
-
-//This needs to match the struct in the shader
-USTRUCT(BlueprintType)
-struct FGridVariablesContainer {
-	GENERATED_USTRUCT_BODY()
-		// Always make USTRUCT variables into UPROPERTY()
-		// Any non-UPROPERTY() struct vars are not replicated
-		// Always initialize your USTRUCT variables!
-
-		///////////////////////////////////////////////////////
-		// INDEX TO VARIABLES
-		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridVariables")
-		TArray<float> Variable;
-
-		//Have to have this initializer or you will have "optimized out" issues when 
-		//creating new structs
-	FGridVariablesContainer()
-		{
-		}
-};
-
 
 //An actor based weather system for simulating weather
 UCLASS(Blueprintable, BlueprintType)
-class AWeatherManager : public AActor
+class AWeatherManager : public AWeatherManager_Properties
 {
 	GENERATED_UCLASS_BODY()
 
 public:
-	
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int simulationTime = 0; // Current Local Clock Time (LCT)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
-		int dT = 1;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
-		int side = 10000; // world will be side x side meters
+	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
-		float gridXSize = 1000; // size of the grid
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
-		float gridYSize = 1000; // size of the grid
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridSizeK;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridSizeKAcc; // It is the size(in meters) of each gridcell accumulated in Z direction(Note: this contains the accumulated values, not the heights)
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
-		int gridX = int(side / gridXSize);
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
-		int gridY = int(side / gridYSize);
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
-		int gridZ = 56;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
-		int gridXY = gridX * gridY;
-
-
-	// Radiation parameters (book values)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float initDayInYearUTC = 100.0f; // out of 355.5f
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float initTimeUTC_hours = 12.0f; // 0-24h
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float timeZone = -6.0f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float latitudeRad = 37.0f*DEG2RAD; // in radians 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float longitudeRad = -122.0f*DEG2RAD; // in radians
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
-		float rainProbability = 1.0f;
-
-
-	//not used in code, but used in bp to allocate array sizes
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
-		int gridXYZ = gridXY * gridZ; //Size of Weather array for 1 variable
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
-		int gridXYx10 = gridXY * 10; //Size of Ground array with 10 variables
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|AutoInit")
-		int gridXYZx10 = gridXYZ * 10; //Size of Weather array with 10 variables
-
-
-
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> ground;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> gridInit;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> grid0Var;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> gridRslow;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> Grid3D0; //Past
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> Grid3D1; //Current
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FGridVariablesContainer> Grid3D2; //Future
+	//This is manually called in blueprints, everything else is automatically handled
+	UFUNCTION(BlueprintCallable, Category = "ComputeShader")
+		void Compute(float DeltaTime);
 
 
 
 
 
+	//A structured buffer is just an array of data consisting of a single data type.
+	//You can make a structured buffer of floats, or one of integers, but not one of floats and integers.
 
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "weather step"), Category = "Weather")
-		void WeatherStep(UPARAM(ref) TArray<float>& prevGC, UPARAM(ref) TArray<float>& currGC, UPARAM(ref) TArray<float>& nextGC);
-	
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xy"), Category = "Weather")
-		int preCalcIJ(int x, int y);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xyz"), Category = "Weather")
-		int preCalcIJK(int x, int y, int z);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
-		int preCalc_WIJK(int x, int y, int z);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
-		int preCalc_CIJK(int c, int x, int y, int z);
+	//Global StructuredBuffer that is referenceable by another shader!
+	//This is the output texture from the compute shader that we will pass to the pixel shader.
+	//This is done when we set the reference (there are various flags that can be sent when setting the reference)
+	//BUF_ShaderResource = Shareable between shaders
+	//BUF_UnorderedAccess = Allows a UAV interface of this buffer to be created, which allows writting to this buffer
 
+	FStructuredBufferRHIRef Interface_FStruct_Shader_GPU_Buffer;
+	//Since the above parent buffer struct has the BUF_UnorderedAccess flag, we can use this as a writable buffer
+	FUnorderedAccessViewRHIRef Interface_FStruct_Shader_GPU_Buffer_UAV;
 
-	// INDEX TO GROUND VARIABLES
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TG = 0;		// Tg: Temperature of ground of first ds centimeters
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TA = 1;		// Ta: Temperature of air above grouind z>0
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_ALBEDO = 2;	// a: Albedo of the gridcell (heat absorbtion)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_CGA = 3;		// Soild-heat capacity per area of the gridcell
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TG_RESET = 4;	// Variables to reset after 24h
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TA_RESET = 5;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TG_CORR = 6;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_TA_CORR = 7;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_BETA_INV = 8;	// Inverse of the Bowen ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundIndexing")
-		int GR_CLOUD_COVER = 9;	// Cloud coverage: Used in simulation and shadows
-
-	///////////////////////////////////////////////////////
-	// INDEX TO VARIABLES
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int U = 0;		// u: wind component in the X direction
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int V = 1;		// v: wind component in the Y direction
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int W = 2;		// w: wind component in the Z direction
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int THETA = 3;	// Theta: Potential temperature
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int Pi = 4;		// Pi: Exener function
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int RO = 5;		// RO: Density (Temp)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int QV = 6;		// qv: Vapor mixing ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int QC = 7;		// qc: Condensation mixing ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int QR = 8;		// qr: Rain mixing ratio
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridAirIndexing")
-		int VORT = 9;	// Vort: Vorticity
+	//You can do the same thing with a regular texture
+	//FTexture2DRHIRef Texture;
+	//FUnorderedAccessViewRHIRef TextureUAV;
 
 
-	///////////////////////////////////////
-	// WEATHER Constants
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Kx = 500.; // diffusion coefficients
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Ky = 500.; // diffusion coefficients
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Kz = 100.;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Aw = 1.0f; // is there vertical advection
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Ab = 1.0f; // is there buoyancy
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Rd = 287.05f; // J kg-1 K-1
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float epsilon = 0.622f;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float p_0 = 100000.0f;// PA
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float T0 = 273.15f;	// K
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float cpd = 1004.5f;	// PA
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float cvd = 717.5f;	// J kg-1 K-1
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Llv = 2.501e6;	// J kg-1
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float Rv = 461.5f;	// J kg-1 K-1
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float cpv = 1850.0f;	// J kg-1 K-1
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float cvv = 1390.0f;	// J kg-1 K-1
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float cpL = 4186.;	// J kg-1 K-1
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float es_T0 = 610.7f; // PA
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float g = 9.81f;		// m s-2
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float phi = 0.785398163f;  // 45 degree in radians
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float ro_0 = 1.225f;  // kg m-3
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float cmax = 50.0f;   // anelastic speed of sound (300ms-1)
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float M_PI = 3.1415927410125732421875f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Constants")
-		float DEG2RAD = M_PI / 180.0f;
-
+protected:
+	//This runs on the game thread
+	void ExecuteComputeShader(TArray<FStruct_Columns_CPU> &currentStates, float DeltaTime);
+	//This runs on the render thread
+	void ExecuteInRenderThread(TArray<FStruct_Columns_CPU> &currentStates);
 
 private:
 
+	//Fencing forces the game thread to wait for the render thread to finish
+	FRenderCommandFence ReleaseResourcesFence;
 };

@@ -1,27 +1,13 @@
-/*=================================================
-* FileName: WeatherManager.cpp
-*
-* Created by: SaschaElble
-* Project name: OceanProject
-* Unreal Engine version: 4.18.3
-* Created on: 2018/02/21
-*
-* Last Edited on:
-* Last Edited by:
-*
-* -------------------------------------------------
-* For parts referencing UE4 code, the following copyright applies:
-* Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
-*
-* Feel free to use this software in any commercial/free game.
-* Selling this as a plugin/item, in whole or part, is not allowed.
-* See "OceanProject\License.md" for full licensing details.
-* =================================================*/
-
-
 #pragma once
 #include "WeatherSimulator/WeatherManager.h"
 #include <algorithm> // for FMath::Min/max
+#include "ConstructorHelpers.h"
+#include "Engine/World.h"
+#include "Engine/Level.h"
+#include "SceneInterface.h"
+#include "DynamicRHIResourceArray.h"
+
+#define NUM_THREADS_PER_GROUP_DIMENSION 1 
 
 
 AWeatherManager::AWeatherManager(const class FObjectInitializer& PCIP) : Super(PCIP)
@@ -29,78 +15,143 @@ AWeatherManager::AWeatherManager(const class FObjectInitializer& PCIP) : Super(P
 	//	PrimaryActorTick.bCanEverTick = true;
 }
 
-/* Operators to acces the data in a toroidal manner */
-int AWeatherManager::preCalcIJK(int x, int y, int z)
+void AWeatherManager::OnConstruction(const FTransform& Transform)
 {
-	int test = 0;
-	if (x == 9 && y == 9 && z == 55) {
-		test = 0;
-			
-	};
-	//Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
- 	if (x < 0) x = gridX + x;
-	else if (x >= gridX)x = (x%gridX);
-
-	if (y < 0)y = gridY + y;
-	else if (y >= gridY)y = (y%gridY);
-
-	z = FMath::Max(0, z);//not under
-	z = FMath::Min(z, gridZ - 2);//not over top
-	
-	// *10 = the amount of variables per cell
-	return (x + y * gridX + z * (gridXY)*10);
 }
 
-int AWeatherManager::preCalc_CIJK(int c, int x, int y, int z)
+void AWeatherManager::BeginPlay()
 {
-	//Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
-	if (x < 0) x = gridX + x;
-	else if (x >= gridX)x = (x%gridX);
+	//Init our instance of compute ComputeShaderInstance controller
+	TArray_FStruct_Columns_CPU_gridInit.Empty();
+	TArray_FStruct_Columns_CPU_gridInit.Reserve(256);
 
-	if (y < 0)y = gridY + y;
-	else if (y >= gridY)y = (y%gridY);
+	//Add our default data struct to the array
+	for (int i = 0; i<256; i++)
+	{
+		TArray_FStruct_Columns_CPU_gridInit.Add(FStruct_Columns_CPU());
+	}
 
-	z = FMath::Max(0, z);//not under
-	z = FMath::Min(z, gridZ - 2);//not over top
 
-	// *10 = the amount of variables per cell
-	return (x + y * gridX + z * (gridXY) * 10) + c;
+//	Shader_Constant_Params.ArrayNum = TArray_FStruct_Columns_CPU_gridInit.Num();
+	//Shader_Constant_Params = FShaderConstants_Class();
+	//Shader_Variable_Params = FVariables_Class();
+
+	Super::BeginPlay();
 }
 
- /* Operators to acces the data in a toroidal manner */
-int AWeatherManager::preCalc_WIJK(int x, int y, int z)
+void AWeatherManager::Tick(float DeltaTime)
 {
-	//Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
-
-	if (x < 0) x = gridX + x;
-	else if (x >= gridX)x = (x%gridX);
-
-	if (y < 0)y = gridY + y;
-	else if (y >= gridY)y = (y%gridY);
-
-	z = FMath::Max(0, z);//not under
-	z = FMath::Min(z, gridZ - 1);//not over top
-
-	return (x + y * gridX + z * (gridXY));
-}//
-
- /* Operators to acces the data in a toroidal manner */
-int AWeatherManager::preCalcIJ(int x, int y)
-{
-	int aY = y;  // toroidal behavior
-	if (y < 0)aY = gridY + y;
-	if (y >= gridY)aY = (y % gridY);
-
-	int aX = x;  // toroidal behavior
-	if (x < 0)aX = gridX + x;
-	if (x >= gridX)aX = (x % gridX);
-	// *10 = the amount of variables per cell
-	return (aX + aY * gridY)*10;
+	Super::Tick(DeltaTime);
 }
 
-void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& prevGC, UPARAM(ref) TArray<float>& currGC, UPARAM(ref) TArray<float>& nextGC)
+void AWeatherManager::Compute(float DeltaTime)
 {
-
+	ExecuteComputeShader(TArray_FStruct_Columns_CPU_gridInit, DeltaTime);
+	//Fencing forces the game thread to wait for the render thread to finish
+	ReleaseResourcesFence.BeginFence();
+	ReleaseResourcesFence.Wait();
 }
+
+void AWeatherManager::ExecuteComputeShader(TArray<FStruct_Columns_CPU> &currentStates, float DeltaTime)
+{
+	//This is ran in the Game Thread!
+//	Shader_Variable_Params.DeltaTime = DeltaTime;
+
+	//Everything sent here is passed by value, changes are lost
+	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
+		FComputeShaderRunner,		//TypeName - Arbitrary name of the render command
+		AWeatherManager*,	//ParamType1 - The type of the parameter
+		FrontEnd,					//ParamName1 - Name of the parameter inside the render command
+		this,						//ParamValue1 - the value of the parameter passed from the outside
+		TArray<FStruct_Columns_CPU>&, states, currentStates,		//ParamType/Name/Value 2
+		{
+			//This code block is ran inside of the Render Thread!
+			//Which is why we need the reference to our FrontEnd class
+			FrontEnd->ExecuteInRenderThread(states);
+		}
+		//This is now back in the Game Thread!
+	);
+}
+
+//This can only run after begin play!
+void AWeatherManager::ExecuteInRenderThread(TArray<FStruct_Columns_CPU> &currentStates)
+{
+	//This code block is ran inside of the Render Thread!
+	check(IsInRenderingThread());
+
+
+
+	//struct of information for a future resource on the GPU
+	FRHIResourceCreateInfo FGPU_Resource_Info;
+
+	//Create TResourceArray class
+	//If we set bNeedsCPUAccess, we could remove the middleman (currentStates) and call Discard() ourselves ?
+	//when we don't need it anymore (does this have to be render thread data?
+	TResourceArray<FStruct_Columns_CPU> FStruct_Columns_CPU_Data;
+	//FStruct_Columns_CPU_Data.SetAllowCPUAccess(true);
+
+	//LETS SEE IF WE CAN SKIP THIS
+	//Fill it with our data to be sent to the GPU
+	for (int i = 0; i < 10; i++) {
+		FStruct_Columns_CPU_Data.Add(currentStates[i]);
+	}
+	//AND RIGHT HERE JUST PASS THE REFERENCE TO OUR ARRAY!
+	//Now put a reference to this data into our FGPU_Resource_Info class
+	FGPU_Resource_Info.ResourceArray = &FStruct_Columns_CPU_Data;
+	//FGPU_Resource_Info.ResourceArray = &FrontEnd->TArray_FStruct_Columns_CPU_gridInit
+
+	//FResourceBulkDataInterface <- Allows for direct GPU mem allocation for bulk resource types.
+
+
+
+
+	//Initializing the buffer and writing data to GPU
+	//Create various interfaces for our TResourceArray Data (FGPU_Resource_Info)
+	Interface_FStruct_Shader_GPU_Buffer = RHICreateStructuredBuffer(sizeof(FStruct_Columns_CPU), sizeof(FStruct_Columns_CPU) * 10, BUF_UnorderedAccess | BUF_ShaderResource | 0, FGPU_Resource_Info);
+	//--------------------------------------------------------
+	//At this point our TResourceArray (FStruct_Columns_CPU_Data) will destroy itself once its finished copying its data to gpu!
+	//Unless bNeedsCPUAccess is set to true!
+	Interface_FStruct_Shader_GPU_Buffer_UAV = RHICreateUnorderedAccessView(Interface_FStruct_Shader_GPU_Buffer, false, false);
+
+	/* Get global RHI command list */
+	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
+
+
+	// Get the actual shader instances off the ShaderMap		// Get the collection of Global Shaders
+	TShaderMapRef<FGlobalComputeShader> ComputeShaderInstance(GetGlobalShaderMap(GetWorld()->Scene->GetFeatureLevel()));
+
+	// Call our function to set up parameters	
+	ComputeShaderInstance->SetShaderParameters(RHICmdList, numSteps, dT,
+		gridX, gridY, gridZ, gridXSize, gridYSize,
+		currInd, simulationTime);
+
+	//Creates an instance of our shader
+	RHICmdList.SetComputeShader(ComputeShaderInstance->GetComputeShader());
+
+	//// Set ComputeShaderInstance inputs/outputs
+	////Mapping the interfaces to the names the shader expects
+	//ComputeShaderInstance->BindDataInterfaceToShaderParamName(RHICmdList, Interface_FStruct_Shader_GPU_Buffer_UAV);
+	//ComputeShaderInstance->BindDataInterfaceToUniformBuffersParamName(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
+
+	// Dispatch compute ComputeShaderInstance
+	DispatchComputeShader(RHICmdList, *ComputeShaderInstance, 1, 1, 1);
+
+	//Release buffers so another shader instance can use them (buffers are global thats why)
+	ComputeShaderInstance->UnbindBuffers(RHICmdList);
+
+	//Lock Interface_FStruct_Shader_GPU_Buffer to enable CPU read
+	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(Interface_FStruct_Shader_GPU_Buffer, 0, sizeof(FStruct_Columns_CPU) * 10, EResourceLockMode::RLM_ReadOnly);
+
+	//Copy the GPU data back to CPU side (&currentStates)
+	FStruct_Columns_CPU* p = (FStruct_Columns_CPU*)shaderData;
+	for (int32 Row = 0; Row < 10; ++Row) {
+		currentStates[Row] = *p;
+		p++;
+	}
+
+	//Unlock Interface_FStruct_Shader_GPU_Buffer when finished
+	RHICmdList.UnlockStructuredBuffer(Interface_FStruct_Shader_GPU_Buffer);
+}
+
 
 

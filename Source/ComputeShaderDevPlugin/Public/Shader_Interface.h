@@ -90,7 +90,7 @@ class FGlobalComputeShader : public FGlobalShader
 	//Assign a name for each FShaderResourceParamteter for use in the .usf file
 	explicit FGlobalComputeShader(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 		: FGlobalShader(Initializer)
-	{
+	{//SPF_Mandatory
 		numStepsParameter.Bind(Initializer.ParameterMap, TEXT("numSteps"), SPF_Mandatory);
 		dTParameter.Bind(Initializer.ParameterMap, TEXT("dT"), SPF_Mandatory);
 		gridXParameter.Bind(Initializer.ParameterMap, TEXT("gridX"), SPF_Mandatory);
@@ -173,6 +173,8 @@ class FGlobalComputeShader : public FGlobalShader
 	static bool ShouldCache(EShaderPlatform Platform)
 	{
 		// Could skip compiling for Platform == SP_METAL for example
+		//if (Platform != PLATFORM_WINDOWS)
+		//	return false;
 		return IsFeatureLevelSupported(Platform, ERHIFeatureLevel::SM5);
 	}
 
@@ -181,8 +183,11 @@ class FGlobalComputeShader : public FGlobalShader
 	{
 		FGlobalShader::ModifyCompilationEnvironment(Parameters, OutEnvironment);
 		OutEnvironment.CompilerFlags.Add(CFLAG_StandardOptimization);
+		OutEnvironment.CompilerFlags.Add(CFLAG_OnChip);
+		OutEnvironment.CompilerFlags.Add(CFLAG_AvoidFlowControl);
 		// Add your own defines for the shader code
 		//OutEnvironment.SetDefine(TEXT("MY_DEFINE"), 1);
+		//OutEnvironment.SetDefine(TEXT("NAME"), TEXT("Test"));
 
 	}
 

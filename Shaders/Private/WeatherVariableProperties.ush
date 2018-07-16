@@ -10,23 +10,24 @@ struct FStruct_Cell_GPU
 {   //gridX * gridY
     //or
     //gridX * gridY * gridZ depending on use
-    RWStructuredBuffer<float> Cell;
+    float Cell[5600];
 };
 
 struct FStruct_Columns_GPU
 { //x10
-    RWStructuredBuffer<FStruct_Cell_GPU> Column;
+
+    FStruct_Cell_GPU Column[10];
 };
    
 struct FStruct_GridContainers_GPU
 {// x1 or x3 depending on use
-    RWStructuredBuffer<FStruct_Columns_GPU> Grid;
+    FStruct_Columns_GPU Grid; 
 };
 
 RWStructuredBuffer<FStruct_Cell_GPU> gridSizeK;
-RWStructuredBuffer<FStruct_Columns_GPU> ground;
-RWStructuredBuffer<FStruct_Columns_GPU> gridRslow;
-RWStructuredBuffer<FStruct_Columns_GPU> gridInit;
+RWStructuredBuffer<FStruct_GridContainers_GPU> ground;
+RWStructuredBuffer<FStruct_GridContainers_GPU> gridRslow;
+RWStructuredBuffer<FStruct_GridContainers_GPU> gridInit;
 RWStructuredBuffer<FStruct_GridContainers_GPU> grid3D;
 
 float initDayInYearUTC = 100.0f; 

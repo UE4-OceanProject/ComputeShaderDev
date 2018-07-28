@@ -28,7 +28,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
 		float gridYSize = 1000; // size of the grid
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> gridSizeK;
+		TArray<FStruct_Cell_CPU> gridSizeK;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
 		TArray<float> gridSizeKAcc; // It is the size(in meters) of each gridcell accumulated in Z direction(Note: this contains the accumulated values, not the heights)
 
@@ -57,27 +57,27 @@ public:
 		float rainProbability = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ComputeShader")
-		TArray<FStruct_Columns_CPU> TArray_FStruct_Columns_CPU_gridInit;
+		TArray<FStruct_AirGridContainer_CPU> TArray_FStruct_AirGridContainer_CPU_gridInit;
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> ground;
+		TArray<FStruct_GroundGridContainer_CPU> ground;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> gridInit;
+		TArray<FStruct_AirGridContainer_CPU> gridInit;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> grid0Var;
+		TArray<FStruct_AirGridContainer_CPU> grid0Var;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> gridRslow;
+		TArray<FStruct_AirGridContainer_CPU> gridRslow;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> Grid3D0; //Past
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> Grid3D1; //Current
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Columns_CPU> Grid3D2; //Future
+		TArray<FStruct_AirGridContainer_CPU> Grid3D0; //Past
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<FStruct_AirGridContainer_CPU> Grid3D1; //Current
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<FStruct_AirGridContainer_CPU> Grid3D2; //Future
 
 
 

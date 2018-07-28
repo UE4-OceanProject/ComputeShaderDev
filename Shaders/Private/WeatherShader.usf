@@ -1,25 +1,44 @@
 //Reference LICENSE_2 for the simulation code contained in here!
 #pragma once
-#include "/Engine/Private/Common.ush"
+//#include "/Engine/Private/Common.ush"
 #include "WeatherConstantProperties.ush"
 #include "WeatherVariableProperties.ush"
 
-#define gridRslow(col, i, j, k) gridRslow[0].Grid.Column[col].Cell[GetAirIndex(col, i, j, k)]
-#define gridInit(col, i, j, k) gridInit[0].Grid.Column[col].Cell[GetAirIndex(col, i, j, k)]
-#define currGC(col, i, j, k) grid3D[currGC].Grid.Column[col].Cell[GetAirIndex(col, i, j, k)]
-#define prevGC(col, i, j, k) grid3D[prevGC].Grid.Column[col].Cell[GetAirIndex(col, i, j, k)]
-#define nextGC(col, i, j, k) grid3D[nextGC].Grid.Column[col].Cell[GetAirIndex(col, i, j, k)]
-#define ground(col, i, j) ground[0].Grid.Column[col].Cell[GetGroundIndex(col, i, j)]
+//Tricks so i don't have to re-write the c++ struct accessor functions
+#define gridRslow(col, i, j, k) gridRslow[GetAirIndex(col, i, j, k)].CellColumns.col
 
+#define gridInit(col, i, j, k) gridInit[GetAirIndex(col, i, j, k)].CellColumns.col
+#define currGC(col, i, j, k) grid3D[GetGridIndex(currGC)+GetAirIndex(col, i, j, k)].CellColumns.col
+#define prevGC(col, i, j, k) grid3D[GetGridIndex(prevGC)+GetAirIndex(col, i, j, k)].CellColumns.col
+#define nextGC(col, i, j, k) grid3D[GetGridIndex(nextGC)+GetAirIndex(col, i, j, k)].CellColumns.col
+#define ground(col, i, j) ground[GetGroundIndex(col, i, j)].CellColumns.col
+
+//More tricks to keep original code
+#define FLT_MAX 3.402823466e+38F
 #define powf pow
 #define logf log
 #define fmin min
 #define sqrtf sqrt
-#define gridSizeK(k) gridSizeK[0].Cell[k]
+//first rename gridSizeK[k] with gridSizeK(k)
+#define gridSizeK(k) gridSizeK[k].Cell
 
-
-int GetAirIndex(const int arr, const int x, const int y, const int z)
+int GetGridIndex(const int arr)
 {
+    return gridX * gridY * gridZ * arr;
+}
+
+
+int GetAirIndex(int arr, int x, int y, int z)
+{
+
+    int testx = x;
+    int testy = y;
+    x = 1;
+    y = 1;
+    x = testx;
+    y = testy;
+
+
     int aI = x; // Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
     if (aI < 0)
         aI = gridX + x;
@@ -44,8 +63,10 @@ int GetAirIndex(const int arr, const int x, const int y, const int z)
 }
 
 	/* Operators to acces the data in a toroidal manner */
-int GetGroundIndex(const int arr, const int x, const int y)
+int GetGroundIndex(int arr, int x, int y)
 {
+
+
     int aY = y; // toroidal behavior
     if (y < 0)
         aY = gridY + y;
@@ -67,23 +88,22 @@ int GetGroundIndex(const int arr, const int x, const int y)
 /* STEP 1 Fundamental Equations */
 void simulateSTEP1()
 {
-
+    //const float Kx = 500.0f; // diffusion coefficients
+    //const float Kz = 100.0f;
+    [loop]
     for (int k = 1; k < gridZ - 1; k++)
     {
+        int km1 = k - 1;
+        if (km1 < 0)
+            km1 = 0;
+        [loop]
         for (int j = 0; j < gridY; j++)
         {
+            [loop]
             for (int i = 0; i < gridX; i++)
             {
-
-                int km1 = k - 1;
-                if (km1 < 0)
-                    km1 = 0;
-
-                const float Kx = 500.0f; // diffusion coefficients
-                const float Kz = 100.0f;
-
                 gridRslow(U, i, j, k) =
-          -1.0f / gridSizeI * (powf(0.5f * (currGC(U, i + 1, j, k) + currGC(U, i, j, k)), 2) - powf(0.5f * (currGC(U, i, j, k) + currGC(U, i - 1, j, k)), 2)) // -duu/dx
+                -1.0f / gridSizeI * (powf(0.5f * (currGC(U, i + 1, j, k) + currGC(U, i, j, k)), 2) - powf(0.5f * (currGC(U, i, j, k) + currGC(U, i - 1, j, k)), 2)) // -duu/dx
 
           - 1.0f / gridSizeJ * (
           0.5f * (currGC(U, i, j + 1, k) + currGC(U, i, j, k)) * 0.5f * (currGC(V, i, j + 1, k) + currGC(V, i - 1, j + 1, k))
@@ -99,7 +119,7 @@ void simulateSTEP1()
 
 
                 gridRslow(V, i, j, k) =
-          -1.0f / gridSizeI * (
+                -1.0f / gridSizeI * (
           0.5f * (currGC(V, i + 1, j, k) + currGC(V, i, j, k)) * 0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j - 1, k))
           - 0.5f * (currGC(V, i, j, k) + currGC(V, i - 1, j, k)) * 0.5f * (currGC(U, i, j - 1, k) + currGC(U, i, j, k))) // -dvu/dx 
 
@@ -114,7 +134,7 @@ void simulateSTEP1()
           + Kz / powf(gridSizeK(k), 2) * ((prevGC(V, i, j, k + 1) - gridInit(V, i, j, k + 1)) - 2.0f * (prevGC(V, i, j, k) - gridInit(V, i, j, k)) + (prevGC(V, i, j, k - 1) - gridInit(V, i, j, k - 1))); // Diffusion (implicit)
 
                 gridRslow(W, i, j, k) =
-          -1.0f / gridSizeI * (
+                -1.0f / gridSizeI * (
           0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j, k - 1)) * 0.5f * (currGC(W, i + 1, j, k) + currGC(W, i, j, k))
           - 0.5f * (currGC(U, i, j, k) + currGC(U, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i - 1, j, k))) // -duw/dx
 
@@ -134,7 +154,7 @@ void simulateSTEP1()
           + Kz / powf(gridSizeK(k), 2) * (prevGC(W, i, j, k + 1) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j, k - 1)); // d2w/dx2+d2w/dz2
 
                 gridRslow(THETA, i, j, k) =
-          -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(THETA, i + 1, j, k) + currGC(THETA, i, j, k))
+                -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(THETA, i + 1, j, k) + currGC(THETA, i, j, k))
           - currGC(U, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i - 1, j, k))) // -duT/dx
 
           - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(THETA, i, j + 1, k) + currGC(THETA, i, j, k))
@@ -151,7 +171,7 @@ void simulateSTEP1()
           + Kz / powf(gridSizeK(k), 2) * (prevGC(THETA, i, j, k + 1) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j, k - 1)); // d2T/dx2+d2T/dz2
 
                 gridRslow(Pi, i, j, k) =
-          -1.0f * (powf(cmax, 2) / (currGC(RO, i, j, k) * cpd * powf(gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k), 2))) * ( // multiplier -cs^2/(cpd* p*T^2)
+                -1.0f * (powf(cmax, 2) / (currGC(RO, i, j, k) * cpd * powf(gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k), 2))) * ( // multiplier -cs^2/(cpd* p*T^2)
           +(currGC(RO, i, j, k) * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(U, i + 1, j, k) - currGC(U, i, j, k))) / gridSizeI // pTdu/dx
 
           + (currGC(RO, i, j, k) * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(V, i, j + 1, k) - currGC(V, i, j, k))) / gridSizeJ // pTdv/dx
@@ -165,7 +185,7 @@ void simulateSTEP1()
 
         // Moisture terms
                 gridRslow(QV, i, j, k) =
-          -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QV, i + 1, j, k) + currGC(QV, i, j, k))
+                -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QV, i + 1, j, k) + currGC(QV, i, j, k))
           - currGC(U, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i - 1, j, k))) // -duqv/dx
 
           - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QV, i, j + 1, k) + currGC(QV, i, j, k))
@@ -182,7 +202,7 @@ void simulateSTEP1()
           + Kz / powf(gridSizeK(k), 2) * (prevGC(QV, i, j, k + 1) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j, k - 1)); // d2q/dx2+d2q/dz2
 
                 gridRslow(QC, i, j, k) =
-          -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QC, i + 1, j, k) + currGC(QC, i, j, k))
+                -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QC, i + 1, j, k) + currGC(QC, i, j, k))
           - currGC(U, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i - 1, j, k))) // -duqv/dx
 
           - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QC, i, j + 1, k) + currGC(QC, i, j, k))
@@ -196,7 +216,7 @@ void simulateSTEP1()
           + Kz / powf(gridSizeK(k), 2) * (prevGC(QC, i, j, k + 1) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i, j, k - 1)); // d2q/dx2+d2q/dz2
 
                 gridRslow(QR, i, j, k) =
-          -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QR, i + 1, j, k) + currGC(QR, i, j, k))
+                -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QR, i + 1, j, k) + currGC(QR, i, j, k))
           - currGC(U, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i - 1, j, k))) // -duqv/dx
 
           - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QR, i, j + 1, k) + currGC(QR, i, j, k))
@@ -213,16 +233,19 @@ void simulateSTEP1()
             }
         }
     }
-} //
+}
 
 /* STEP2: Kelsner Microphysics */
 void simulateSTEP2()
 {
 
+    [loop]
     for (int k = 1; k < gridZ - 1; k++)
     {
+        [loop]
         for (int j = 0; j < gridY; j++)
         {
+            [loop]
             for (int i = 0; i < gridX; i++)
             {
 
@@ -284,10 +307,13 @@ void simulateSTEP2()
 void simulateSTEP3()
 {
 
+    [loop]
     for (int k = 1; k < gridZ - 1; k++)
     {
+        [loop]
         for (int j = 0; j < gridY; j++)
         {
+            [loop]
             for (int i = 0; i < gridX; i++)
             {
 
@@ -343,8 +369,10 @@ void simulateSTEP3()
 void simulateSTEP4()
 {
 
+    [loop]
     for (int j = 0; j < gridY; j++)
     {
+        [loop]
         for (int i = 0; i < gridX; i++)
         {
 
@@ -375,6 +403,7 @@ void simulateSTEP4()
             if ((int(simulationTime / dT) % (60 * 5)) == 0)
             { // each 300 steps
                 float cloudTotal = 0.0f;
+                [loop]
                 for (int z = (0.33f * gridZ);
                 z < (0.83f * gridZ);
                 z++)
@@ -504,37 +533,39 @@ void simulateSTEP4()
 ///////////////////////////////////////////////////////////////////////////
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
-void simulateStep(uint3 DTid : SV_DispatchThreadID)
+void simulateStep(int3 DTid : SV_DispatchThreadID)
 {
-    //float test = gridRslow[0].Grid.Column.Cell[1];
-    //float test = gridRslow[0].Grid.operator(1, 1, 1, 1);
-    //gridRslow[0].Grid.operator(1, 1, 1, 1) = test;
-  // Run sumulation.
-    //This book is never used?
-    //can't have const here anyways
-    //const bool check = true;
+
+		// Run sumulation.
+	//This bool is never used?
+	//can't have const here anyways
+	//const bool check = true;
+
+    //Here we rotate the past current and future values in our simulation
     for (int nS = 0; nS < numSteps; nS++)
     {
-        int nextInd = (currInd + 1) % 3; //3 number of time array
-        int prevInd = (currInd - 1);
-        if (prevInd < 0)
-            prevInd = 2; // Set the last step.
-
+        nextGC = (currGC + 1) % 3; //3 number of time array
+        prevGC = (currGC - 1);
+        if (prevGC < 0)
+            prevGC = 2; // Set the last step.
 
     // Fundamental equations.
-        //simulateSTEP1();
+        simulateSTEP1();
 
     // Microphysics.
-        //simulateSTEP2();
+        simulateSTEP2();
 
     // Move in time.
-        //simulateSTEP3();
+        simulateSTEP3();
 
     // Radiation.
-        //simulateSTEP4();
+        simulateSTEP4();
 
-        currInd = (currInd + 1) % 3; // 3 number of time array
+        currGC = (currGC + 1) % 3; // 3 number of time array
 
         simulationTime += dT;
     }
-}
+
+
+
+} 

@@ -1,73 +1,70 @@
-#define FLT_MAX 3.402823466e+38F
-int numSteps = 1;
-int currInd = 0;
-int gridX = 10;
-int gridY = 10;
-int gridZ = 56;
-int gridSizeI = 1;
-int gridSizeJ = 1;
-
     // INDEX TO GROUND VARIABLES
-#define airGridSize 10
-int GR_TG = 0; // Tg: Temperature of ground of first ds centimeters
-int GR_TA = 1; // Ta: Temperature of air above ground z>0
-int GR_ALBEDO = 2; // a: Albedo of the gridcell (heat absorbtion)
-int GR_CGA = 3; // Soild-heat capacity per area of the gridcell
 
-int GR_TG_RESET = 4; // Variables to reset after 24h
-int GR_TA_RESET = 5;
-int GR_TG_CORR = 6;
-int GR_TA_CORR = 7;
+static int GR_TG = 0; // Tg: Temperature of ground of first ds centimeters
+static int GR_TA = 1; // Ta: Temperature of air above ground z>0
+static int GR_ALBEDO = 2; // a: Albedo of the gridcell (heat absorbtion)
+static int GR_CGA = 3; // Soild-heat capacity per area of the gridcell
 
-int GR_BETA_INV = 8; // Inverse of the Bowen ratio
-int GR_CLOUD_COVER = 9; // Cloud coverage: Used in simulation and shadows
+static int GR_TG_RESET = 4; // Variables to reset after 24h
+static int GR_TA_RESET = 5;
+static int GR_TG_CORR = 6;
+static int GR_TA_CORR = 7;
+
+static int GR_BETA_INV = 8; // Inverse of the Bowen ratio
+static int GR_CLOUD_COVER = 9; // Cloud coverage: Used in simulation and shadows
 
     ///////////////////////////////////////////////////////
     // INDEX TO VARIABLES
-#define groundGridSize 10
-int U = 0; // u: wind component in the X direction
-int V = 1; // v: wind component in the Y direction
-int W = 2; // w: wind component in the Z direction
-int THETA = 3; // Theta: Potential temperature
-int Pi = 4; // Pi: Exener function
-int RO = 5; // RO: Density (Temp)
-int QV = 6; // qv: Vapor mixing ratio
-int QC = 7; // qc: Condensation mixing ratio
-int QR = 8; // qr: Rain mixing ratio
-int VORT = 9; // Vort: Vorticity
+static int U = 0; // u: wind component in the X direction
+static int V = 1; // v: wind component in the Y direction
+static int W = 2; // w: wind component in the Z direction
+static int THETA = 3; // Theta: Potential temperature
+static int Pi = 4; // Pi: Exener function
+static int RO = 5; // RO: Density (Temp)
+static int QV = 6; // qv: Vapor mixing ratio
+static int QC = 7; // qc: Condensation mixing ratio
+static int QR = 8; // qr: Rain mixing ratio
+static int VORT = 9; // Vort: Vorticity
 
     ///////////////////////////////////////
     // WEATHER Constants
 
-float Kx = 500.; // diffusion coefficients
-float Ky = 500.; // diffusion coefficients
-float Kz = 100.;
+static float Kx = 500.; // diffusion coefficients
+static float Ky = 500.; // diffusion coefficients
+static float Kz = 100.;
 
-float Aw = 1.0f; // is there vertical advection
-float Ab = 1.0f; // is there buoyancy
+static float Aw = 1.0f; // is there vertical advection
+static float Ab = 1.0f; // is there buoyancy
 
-float Rd = 287.05f; // J kg-1 K-1
-float epsilon = 0.622f;
+static float Rd = 287.05f; // J kg-1 K-1
+static float epsilon = 0.622f;
 
-float p_0 = 100000.0f; // PA
-float T0 = 273.15f; // K
-float cpd = 1004.5f; // PA
+static float p_0 = 100000.0f; // PA
+static float T0 = 273.15f; // K
+static float cpd = 1004.5f; // PA
 
-float cvd = 717.5f; // J kg-1 K-1
-float Llv = 2.501e6; // J kg-1
-float Rv = 461.5f; // J kg-1 K-1
-float cpv = 1850.0f; // J kg-1 K-1
-float cvv = 1390.0f; // J kg-1 K-1
-float cpL = 4186.; // J kg-1 K-1
+static float cvd = 717.5f; // J kg-1 K-1
+static float Llv = 2.501e6; // J kg-1
+static float Rv = 461.5f; // J kg-1 K-1
+static float cpv = 1850.0f; // J kg-1 K-1
+static float cvv = 1390.0f; // J kg-1 K-1
+static float cpL = 4186.; // J kg-1 K-1
 
-float es_T0 = 610.7f; // PA
-float g = 9.81f; // m s-2
-float phi = 0.785398163f; // 45 degree in radians
+static float es_T0 = 610.7f; // PA
+static float g = 9.81f; // m s-2
+static float phi = 0.785398163f; // 45 degree in radians
 
-float ro_0 = 1.225f; // kg m-3
-float cmax = 50.0f; // anelastic speed of sound (300ms-1)
+static float ro_0 = 1.225f; // kg m-3
+static float cmax = 50.0f; // anelastic speed of sound (300ms-1)
 
 //Not correct??      |
 //           3.1415926535897932384626433832795028841
-float M_PI = 3.1415927410125732421875f;
-float DEG2RAD = 3.1415927410125732421875f / 180.0f;
+static float M_PI = 3.1415927410125732421875f;
+static float DEG2RAD = 3.1415927410125732421875f / 180.0f;
+
+static float initDayInYearUTC = 100.0f;
+static float initTimeUTC_hours = 12.0f;
+static float timeZone = -6.0f;
+static float longitudeRad = 1.564f;
+static float latitudeRad = 0.784f;
+static float rainProbability = 1.0f; //book values

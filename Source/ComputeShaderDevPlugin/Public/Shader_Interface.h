@@ -48,6 +48,7 @@
 /*****************************************************************************/
 class FGlobalComputeShader : public FGlobalShader
 {
+
 	DECLARE_SHADER_TYPE(FGlobalComputeShader, Global);
 	//Not exporting to an external module
 	//DECLARE_EXPORTED_SHADER_TYPE(FGlobalComputeShader, Global, SHADERCONTROLLER_API);
@@ -61,7 +62,6 @@ class FGlobalComputeShader : public FGlobalShader
 	//These members are added to the FShaderParameter class, which will hold information for the runtime to be able
 	//to find the bindings, allowing the value of the parameter to be set at runtime.
 	//CAN BE UAV! 
-	FShaderParameter numStepsParameter;
 	FShaderParameter dTParameter;
 	FShaderParameter gridXParameter;
 	FShaderParameter gridYParameter;
@@ -69,7 +69,9 @@ class FGlobalComputeShader : public FGlobalShader
 	FShaderParameter gridSizeIParameter;
 	FShaderParameter gridSizeJParameter;
 	FShaderParameter simulationTimeParameter;
+	FShaderParameter prevGCParameter;
 	FShaderParameter currGCParameter;
+	FShaderParameter nextGCParameter;
 
 	FShaderResourceParameter FStruct_Cell_gridSizeK_CPU_ResourceParameter; //single stack of values
 	FShaderResourceParameter FStruct_GroundGridContainer_ground_CPU_ResourceParameter; //100
@@ -90,10 +92,11 @@ class FGlobalComputeShader : public FGlobalShader
 		gridZParameter.Bind(Initializer.ParameterMap, TEXT("gridZ"), SPF_Mandatory);
 		gridSizeIParameter.Bind(Initializer.ParameterMap, TEXT("gridSizeI"), SPF_Mandatory);
 		gridSizeJParameter.Bind(Initializer.ParameterMap, TEXT("gridSizeJ"), SPF_Mandatory);
+		prevGCParameter.Bind(Initializer.ParameterMap, TEXT("prevGC"), SPF_Mandatory);
 		currGCParameter.Bind(Initializer.ParameterMap, TEXT("currGC"), SPF_Mandatory);
+		nextGCParameter.Bind(Initializer.ParameterMap, TEXT("nextGC"), SPF_Mandatory);
 
 		//Variable
-		numStepsParameter.Bind(Initializer.ParameterMap, TEXT("numSteps"), SPF_Mandatory);
 		dTParameter.Bind(Initializer.ParameterMap, TEXT("dT"), SPF_Mandatory);
 		simulationTimeParameter.Bind(Initializer.ParameterMap, TEXT("simulationTime"), SPF_Mandatory);
 
@@ -105,14 +108,16 @@ class FGlobalComputeShader : public FGlobalShader
 		//InputSurface.Bind(Initializer.ParameterMap, TEXT("InputSurfaceCS"));
 	}
 
+	
 
 	//Example on how to set a simple parameter before shader use
-	void SetShaderParameters
+	FStructuredBufferRHIRef SetShaderParameters
 	(
 		FRHICommandList& RHICmdList,
-		int numSteps, float dT,
+		float dT,
 		int gridX, int gridY, int gridZ, int gridSizeI, int gridSizeJ,
-		float simulationTime, int currGC,
+		float simulationTime,
+		int prevGC, int currGC, int nextGC,
 		TArray<FStruct_Cell_CPU> gridSizeK,
 		TArray<FStruct_GroundGridContainer_CPU> ground,
 		TArray<FStruct_AirGridContainer_CPU> gridRslow,
@@ -120,7 +125,7 @@ class FGlobalComputeShader : public FGlobalShader
 		TArray<FStruct_AirGridContainer_CPU> Grid3D0
 	)
 	{
-		SetShaderValue(RHICmdList, GetComputeShader(), numStepsParameter, numSteps);
+
 		SetShaderValue(RHICmdList, GetComputeShader(), dTParameter, dT);
 		SetShaderValue(RHICmdList, GetComputeShader(), gridXParameter, gridX);
 		SetShaderValue(RHICmdList, GetComputeShader(), gridYParameter, gridY);
@@ -128,7 +133,9 @@ class FGlobalComputeShader : public FGlobalShader
 		SetShaderValue(RHICmdList, GetComputeShader(), gridSizeIParameter, gridSizeI);
 		SetShaderValue(RHICmdList, GetComputeShader(), gridSizeJParameter, gridSizeJ);
 		SetShaderValue(RHICmdList, GetComputeShader(), simulationTimeParameter, simulationTime);
+		SetShaderValue(RHICmdList, GetComputeShader(), prevGCParameter, prevGC);
 		SetShaderValue(RHICmdList, GetComputeShader(), currGCParameter, currGC);
+		SetShaderValue(RHICmdList, GetComputeShader(), nextGCParameter, nextGC);
 
 
 		//A structured buffer is just an array of data consisting of a single data type.
@@ -174,11 +181,13 @@ class FGlobalComputeShader : public FGlobalShader
 		TResourceArray<FStruct_AirGridContainer_CPU>FStruct_AirGridContainer_grid3D_CPU_Data; //x5600x3
 
 
-		FStruct_Cell_gridSizeK_CPU_Data.Add(gridSizeK[0]); //single stack of values
-		FStruct_GroundGridContainer_ground_CPU_Data.Add(ground[0]); //100
-		FStruct_AirGridContainer_gridRslow_CPU_Data.Add(gridRslow[0]); //x5600
-		FStruct_AirGridContainer_gridInit_CPU_Data.Add(gridInit[0]); //x5600
-		FStruct_AirGridContainer_grid3D_CPU_Data.Add(Grid3D0[0]); //x5600x3
+		FStruct_Cell_gridSizeK_CPU_Data.Append(gridSizeK); //single stack of values
+		FStruct_GroundGridContainer_ground_CPU_Data.Append(ground); //100
+		FStruct_AirGridContainer_gridRslow_CPU_Data.Append(gridRslow); //x5600
+		FStruct_AirGridContainer_gridInit_CPU_Data.Append(gridInit); //x5600
+		FStruct_AirGridContainer_grid3D_CPU_Data.Append(Grid3D0); //x5600x3
+//		FStruct_AirGridContainer_grid3D_CPU_Data.Append(Grid3D0[1]); //x5600x3
+//		FStruct_AirGridContainer_grid3D_CPU_Data.Append(Grid3D0[2]); //x5600x3
 
 		////FStruct_AirGridContainer_CPU_Data.SetAllowCPUAccess(true);
 		/**
@@ -193,22 +202,22 @@ class FGlobalComputeShader : public FGlobalShader
 
 		//struct of information for a future resource on the CPU
 		//FRHIResourceCreateInfo FCPU_Resource_Info;
-		FRHIResourceCreateInfo FStruct_Cell_gridSizeK_CPU_Data_Resource_Info;
-		FRHIResourceCreateInfo FStruct_GroundGridContainer_ground_CPU_Data_Resource_Info;
-		FRHIResourceCreateInfo FStruct_AirGridContainer_gridRslow_CPU_Data_Resource_Info;
-		FRHIResourceCreateInfo FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info;
-		FRHIResourceCreateInfo FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info;
+		FRHIResourceCreateInfo FStruct_Cell_gridSizeK_CPU_Data_Resource_Info(&FStruct_Cell_gridSizeK_CPU_Data);
+		FRHIResourceCreateInfo FStruct_GroundGridContainer_ground_CPU_Data_Resource_Info(&FStruct_GroundGridContainer_ground_CPU_Data);
+		FRHIResourceCreateInfo FStruct_AirGridContainer_gridRslow_CPU_Data_Resource_Info(&FStruct_AirGridContainer_gridRslow_CPU_Data);
+		FRHIResourceCreateInfo FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info(&FStruct_AirGridContainer_gridInit_CPU_Data);
+		FRHIResourceCreateInfo FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info(&FStruct_AirGridContainer_grid3D_CPU_Data);
 
 		//}
 		////AND RIGHT HERE JUST PASS THE REFERENCE TO OUR ARRAY!
 		////Now put a reference to this data into our FCPU_Resource_Info class
 
 		//FCPU_Resource_Info.ResourceArray = &FStruct_AirGridContainer_CPU_Data;
-		FStruct_Cell_gridSizeK_CPU_Data_Resource_Info.ResourceArray = &FStruct_Cell_gridSizeK_CPU_Data;
-		FStruct_GroundGridContainer_ground_CPU_Data_Resource_Info.ResourceArray = &FStruct_GroundGridContainer_ground_CPU_Data;
-		FStruct_AirGridContainer_gridRslow_CPU_Data_Resource_Info.ResourceArray = &FStruct_AirGridContainer_gridRslow_CPU_Data;
-		FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info.ResourceArray = &FStruct_AirGridContainer_gridInit_CPU_Data;
-		FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info.ResourceArray = &FStruct_AirGridContainer_grid3D_CPU_Data;
+		//FStruct_Cell_gridSizeK_CPU_Data_Resource_Info.ResourceArray = &FStruct_Cell_gridSizeK_CPU_Data;
+		//FStruct_GroundGridContainer_ground_CPU_Data_Resource_Info.ResourceArray = &FStruct_GroundGridContainer_ground_CPU_Data;
+		//FStruct_AirGridContainer_gridRslow_CPU_Data_Resource_Info.ResourceArray = &FStruct_AirGridContainer_gridRslow_CPU_Data;
+		//FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info.ResourceArray = &FStruct_AirGridContainer_gridInit_CPU_Data;
+		//FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info.ResourceArray = &FStruct_AirGridContainer_grid3D_CPU_Data;
 
 
 		////FResourceBulkDataInterface <- Allows for direct CPU mem allocation for bulk resource types.
@@ -221,29 +230,38 @@ class FGlobalComputeShader : public FGlobalShader
 		//UAV flag so we can read back to cpu
 		FStructuredBufferRHIRef FStruct_Cell_gridSizeK_CPU_Data_BufferInterfaceSRV = 
 			RHICreateStructuredBuffer(sizeof(FStruct_Cell_CPU),
-			FStruct_Cell_gridSizeK_CPU_Data_Resource_Info.ResourceArray->GetResourceDataSize(),
-			BUF_UnorderedAccess | BUF_ShaderResource | 0, FStruct_Cell_gridSizeK_CPU_Data_Resource_Info);
+				FStruct_Cell_gridSizeK_CPU_Data.Num() * sizeof(FStruct_Cell_CPU),
+			BUF_UnorderedAccess | BUF_ShaderResource | 0, FStruct_Cell_gridSizeK_CPU_Data_Resource_Info
+			);
 
 		FStructuredBufferRHIRef FStruct_GroundGridContainer_ground_CPU_Data_BufferInterfaceSRV = 
 		RHICreateStructuredBuffer(sizeof(FStruct_GroundGridContainer_CPU),
-			FStruct_GroundGridContainer_ground_CPU_Data_Resource_Info.ResourceArray->GetResourceDataSize(),
+			FStruct_GroundGridContainer_ground_CPU_Data.Num() * sizeof(FStruct_GroundGridContainer_CPU),
 			BUF_UnorderedAccess | BUF_ShaderResource | 0, FStruct_GroundGridContainer_ground_CPU_Data_Resource_Info);
 
 		FStructuredBufferRHIRef FStruct_AirGridContainer_gridRslow_CPU_Data_BufferInterfaceSRV = 
 		RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU),
-			FStruct_AirGridContainer_gridRslow_CPU_Data_Resource_Info.ResourceArray->GetResourceDataSize(),
+			FStruct_AirGridContainer_gridRslow_CPU_Data.Num() * sizeof(FStruct_AirGridContainer_CPU),
 			BUF_UnorderedAccess | BUF_ShaderResource | 0, FStruct_AirGridContainer_gridRslow_CPU_Data_Resource_Info);
 
 		FStructuredBufferRHIRef FStruct_AirGridContainer_gridInit_CPU_Data_BufferInterfaceSRV = 
-		RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU),
-			FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info.ResourceArray->GetResourceDataSize(),
-			BUF_UnorderedAccess | BUF_ShaderResource | 0, FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info);
+		RHICreateStructuredBuffer(
+			sizeof(FStruct_AirGridContainer_CPU),
+			FStruct_AirGridContainer_gridInit_CPU_Data.Num() * sizeof(FStruct_AirGridContainer_CPU),
+			BUF_UnorderedAccess | BUF_ShaderResource | 0, 
+			FStruct_AirGridContainer_gridInit_CPU_Data_Resource_Info);
+
+
+		int stride = sizeof(FStruct_AirCellColumns_CPU);
+		int size = FStruct_AirGridContainer_grid3D_CPU_Data[0].CellColumns.Num()* 3 * sizeof(FStruct_AirCellColumns_CPU);
+		int ActualSize = FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info.ResourceArray->GetResourceDataSize();
 
 		FStructuredBufferRHIRef FStruct_AirGridContainer_grid3D_CPU_Data_BufferInterfaceSRV = 
-		RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU),
-			FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info.ResourceArray->GetResourceDataSize(),
-			BUF_UnorderedAccess | BUF_ShaderResource | 0, FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info);
-
+		RHICreateStructuredBuffer(
+			sizeof(FStruct_AirGridContainer_CPU),
+			FStruct_AirGridContainer_grid3D_CPU_Data.Num() * sizeof(FStruct_AirGridContainer_CPU),
+			BUF_UnorderedAccess | BUF_ShaderResource | 0, 
+			FStruct_AirGridContainer_grid3D_CPU_Data_Resource_Info);
 
 		////--------------------------------------------------------
 		////At this point our TResourceArray (FStruct_AirGridContainer_CPU_Data) will destroy itself once its finished copying its data to CPU!
@@ -265,6 +283,7 @@ class FGlobalComputeShader : public FGlobalShader
 		
 		SetUAVParameter(RHICmdList, GetComputeShader(), FStruct_AirGridContainer_grid3D_CPU_ResourceParameter, FStruct_AirGridContainer_grid3D_CPU_Data_BufferInterfaceSRV_UAV); //x5600x3
 		
+		return FStruct_AirGridContainer_grid3D_CPU_Data_BufferInterfaceSRV;
 	}
 
 	
@@ -279,7 +298,6 @@ class FGlobalComputeShader : public FGlobalShader
 		Ar
 			//			<< TArray_Struct_Parameter_CPU 
 			//			<< OutputSurface_Parameter_CPU
-			<< numStepsParameter
 			<< dTParameter
 			<< gridXParameter
 			<< gridYParameter
@@ -287,7 +305,9 @@ class FGlobalComputeShader : public FGlobalShader
 			<< gridSizeIParameter
 			<< gridSizeJParameter
 			<< simulationTimeParameter
+			<< prevGCParameter
 			<< currGCParameter
+			<< nextGCParameter
 
 			<< FStruct_Cell_gridSizeK_CPU_ResourceParameter; //single stack of values
 			//<< FStruct_GroundGridContainer_ground_CPU_ResourceParameter //100
@@ -324,11 +344,19 @@ class FGlobalComputeShader : public FGlobalShader
 	//}
 
 	//This is used to clean up the FStruct_Shader_CPU_Buffer binds after each invocation to let them be changed and used elsewhere if needed.
-//	void UnbindBuffers(FRHICommandList& RHICmdList)
-//	{
-//		if (TArray_Struct_Parameter_CPU.IsBound())
-//			RHICmdList.SetUAVParameter(GetComputeShader(), TArray_Struct_Parameter_CPU.GetBaseIndex(), FUnorderedAccessViewRHIRef());
-//	}
+	void UnbindBuffers(FRHICommandList& RHICmdList)
+	{
+		if (FStruct_Cell_gridSizeK_CPU_ResourceParameter.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		if (FStruct_GroundGridContainer_ground_CPU_ResourceParameter.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		if (FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		if (FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		if (FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.IsBound())
+		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	}
 	
 	//ShouldCompilePermutation and ShouldCache both need to return true, in order to be compiled for whatever platform/permutation
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)

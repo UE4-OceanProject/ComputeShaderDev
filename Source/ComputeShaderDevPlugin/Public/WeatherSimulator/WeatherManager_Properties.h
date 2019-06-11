@@ -11,7 +11,10 @@ class AWeatherManager_Properties : public AActor
 
 public:
 
-	int currInd = 0;
+	int prevGC = 0;
+	int currGC = 0;
+	int nextGC = 0;
+
 	int numSteps = 1;
 
 
@@ -56,8 +59,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|RadiationParameters")
 		float rainProbability = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ComputeShader")
-		TArray<FStruct_AirGridContainer_CPU> TArray_FStruct_AirGridContainer_CPU_gridInit;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ComputeShader")
+	//	TArray<FStruct_AirGridContainer_CPU> TArray_FStruct_AirGridContainer_CPU_gridInit;
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")

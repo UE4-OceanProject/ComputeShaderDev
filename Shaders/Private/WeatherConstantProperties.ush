@@ -57,6 +57,12 @@ static float phi = 0.785398163f; // 45 degree in radians
 static float ro_0 = 1.225f; // kg m-3
 static float cmax = 50.0f; // anelastic speed of sound (300ms-1)
 
+static float T_M = 29.0f + 273.15f; // Invariable slab temperature //INIT 10.0f 32.0f
+static float dur = 3600.0f * 24.0f; // * 5.0f;//24h
+static float S_const = -1.127f; //Solar constant km/s
+
+static float sig_h = 0.1f;
+
 //Not correct??      |
 //           3.1415926535897932384626433832795028841
 static float M_PI = 3.1415927410125732421875f;

@@ -10,7 +10,7 @@
 	"CanContainContent": true,
     "Modules": [
         {
-            "Name": "ComputeShaderDevPlugin",
+            "Name": "ComputeShaderPlugin",
             "Type": "Runtime",
             "LoadingPhase": "PostConfigInit"
         }

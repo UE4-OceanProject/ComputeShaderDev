@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class ComputeShaderDevPlugin : ModuleRules
+public class ComputeShaderPlugin : ModuleRules
 {
-	public ComputeShaderDevPlugin(ReadOnlyTargetRules Target) : base(Target)
+	public ComputeShaderPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
 		//Our PrivatePCH that we want to globally #include
         PrivatePCHHeaderFile = "Private/PrivatePCH.h";
@@ -17,7 +17,6 @@ public class ComputeShaderDevPlugin : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				"ComputeShaderDevPlugin/Public"
 				// ... add public include paths required here ...
 			}
 			);
@@ -25,7 +24,6 @@ public class ComputeShaderDevPlugin : ModuleRules
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"ComputeShaderDevPlugin/Private",
 				// ... add other private include paths required here ...
 			}
 			);
@@ -38,7 +36,6 @@ public class ComputeShaderDevPlugin : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "RenderCore",
-                "ShaderCore",
                 "RHI"
 				// ... add other public dependencies that you statically link with here ...
 			}
@@ -52,6 +49,7 @@ public class ComputeShaderDevPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "Projects", //<-Needed for IPluginManager, so we can get the shader directory in our plugin
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

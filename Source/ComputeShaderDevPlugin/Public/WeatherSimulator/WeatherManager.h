@@ -5,6 +5,10 @@
 #include "RenderCommandFence.h"
 #include "WeatherManager.generated.h"
 
+
+//My Struct used to be here
+
+
 //An actor based weather system for simulating weather
 UCLASS(Blueprintable, BlueprintType)
 class AWeatherManager : public AWeatherManager_Properties

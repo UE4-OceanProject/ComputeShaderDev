@@ -22,7 +22,7 @@
 //first rename gridSizeK[k] with gridSizeK(k)
 #define gridSizeK(k) gridSizeK[k].Cell
 
-int GetGridIndex(const int arr)
+int GetGridIndex(int arr)
 {
     return gridX * gridY * gridZ * arr;
 }
@@ -31,35 +31,54 @@ int GetGridIndex(const int arr)
 int GetAirIndex(int arr, int x, int y, int z)
 {
 
-    int testx = x;
-    int testy = y;
-    x = 1;
-    y = 1;
-    x = testx;
-    y = testy;
+    float result;
+
 
 
     int aI = x; // Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
     if (aI < 0)
-        aI = gridX + x;
+        {
+            aI = gridX + x;
+        }
+
     if (aI >= gridX)
-        aI = (x % gridX);
+        {
+            aI = (x % gridX);
+        }
+
     int aJ = y; // Toroidal
     if (aJ < 0)
-        aJ = gridY + y;
+        {
+            aJ = gridY + y;
+        }
+
     if (aJ >= gridY)
-        aJ = (y % gridY);
+        {
+            aJ = (y % gridY);
+        }
+
     int aZ = z;
     int gridK = gridZ;
+
     if (arr == W)
-        gridK++;
-    if ((z < 0 || z >= gridK) && (arr <= 2 || arr == 8))
-    { //for values (under z<0, or higher than the gridK) AND they are arr<=2 (u,v,w) or arr==8 (rL)
-        return 0.0f;
-    }
+        {
+            gridK++;
+        }
+       
+
     aZ = max(0, aZ); //not under
     aZ = min(aZ, gridK - 2); //not over top
-    return aI + aJ * gridX + aZ * (gridX * gridY);
+
+
+    if ((z < 0 || z >= gridK) && (arr <= 2 || arr == 8))
+        { //for values (under z<0, or higher than the gridK) AND they are arr<=2 (u,v,w) or arr==8 (rL)
+            result = 0.0f;
+        }
+        else
+        {
+        result = aI + aJ * gridX + aZ * (gridX * gridY);
+        }
+    return result;
 }
 
 	/* Operators to acces the data in a toroidal manner */
@@ -69,15 +88,23 @@ int GetGroundIndex(int arr, int x, int y)
 
     int aY = y; // toroidal behavior
     if (y < 0)
+        {
         aY = gridY + y;
+        }
     if (y >= gridY)
+    {
         aY = (y % gridY);
+    }
 
     int aX = x; // toroidal behavior
     if (x < 0)
+    {
         aX = gridX + x;
+    }
     if (x >= gridX)
+    {
         aX = (x % gridX);
+    }
     return aX + aY * gridY;
 }
 
@@ -88,14 +115,15 @@ int GetGroundIndex(int arr, int x, int y)
 /* STEP 1 Fundamental Equations */
 void simulateSTEP1()
 {
-    //const float Kx = 500.0f; // diffusion coefficients
-    //const float Kz = 100.0f;
+
     [loop]
-    for (int k = 1; k < gridZ - 1; k++)
+    for (int k = 0; k < gridZ - 1; k++)
     {
         int km1 = k - 1;
         if (km1 < 0)
+        {
             km1 = 0;
+        }
         [loop]
         for (int j = 0; j < gridY; j++)
         {
@@ -105,131 +133,258 @@ void simulateSTEP1()
                 gridRslow(U, i, j, k) =
                 -1.0f / gridSizeI * (powf(0.5f * (currGC(U, i + 1, j, k) + currGC(U, i, j, k)), 2) - powf(0.5f * (currGC(U, i, j, k) + currGC(U, i - 1, j, k)), 2)) // -duu/dx
 
-          - 1.0f / gridSizeJ * (
-          0.5f * (currGC(U, i, j + 1, k) + currGC(U, i, j, k)) * 0.5f * (currGC(V, i, j + 1, k) + currGC(V, i - 1, j + 1, k))
-          - 0.5f * (currGC(U, i, j, k) + currGC(U, i, j - 1, k)) * 0.5f * (currGC(V, i, j, k) + currGC(V, i - 1, j, k))) // -duv/dy
+                - 1.0f / gridSizeJ * (
+                0.5f * (currGC(U, i, j + 1, k) + currGC(U, i, j, k)) * 0.5f * (currGC(V, i, j + 1, k) + currGC(V, i - 1, j + 1, k))
+                - 0.5f * (currGC(U, i, j, k) + currGC(U, i, j - 1, k)) * 0.5f * (currGC(V, i, j, k) + currGC(V, i - 1, j, k))) // -duv/dy
 
-          - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * 0.5f * (currGC(W, i, j, k + 1) + currGC(W, i - 1, j, k + 1)) * 0.5f * (currGC(U, i, j, k + 1) + currGC(U, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i - 1, j, k)) * 0.5f * (currGC(U, i, j, k - 1) + currGC(U, i, j, k))) // -dpuw/dz
-          - 1.0f / gridSizeI * (cpd * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(Pi, i, j, k) - currGC(Pi, i - 1, j, k))) // -cpd*T*dP/dx
-          + Kx / powf(gridSizeI, 2) * (prevGC(U, i + 1, j, k) - 2.0f * prevGC(U, i, j, k) + prevGC(U, i - 1, j, k))
-          + Ky / powf(gridSizeJ, 2) * (prevGC(U, i, j + 1, k) - 2.0f * prevGC(U, i, j, k) + prevGC(U, i, j - 1, k))
-          + Kz / powf(gridSizeK(k), 2) * ((prevGC(U, i, j, k + 1) - gridInit(U, i, j, k + 1)) - 2.0f * (prevGC(U, i, j, k) - gridInit(U, i, j, k)) + (prevGC(U, i, j, k - 1) - gridInit(U, i, j, k - 1))); // Diffusion (implicit)
+                - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * 0.5f * (currGC(W, i, j, k + 1) + currGC(W, i - 1, j, k + 1)) * 0.5f * (currGC(U, i, j, k + 1) + currGC(U, i, j, k))
+                - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i - 1, j, k)) * 0.5f * (currGC(U, i, j, k - 1) + currGC(U, i, j, k))) // -dpuw/dz
+                - 1.0f / gridSizeI * (cpd * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(Pi, i, j, k) - currGC(Pi, i - 1, j, k))) // -cpd*T*dP/dx
+                + Kx / powf(gridSizeI, 2) * (prevGC(U, i + 1, j, k) - 2.0f * prevGC(U, i, j, k) + prevGC(U, i - 1, j, k))
+                + Ky / powf(gridSizeJ, 2) * (prevGC(U, i, j + 1, k) - 2.0f * prevGC(U, i, j, k) + prevGC(U, i, j - 1, k))
+                + Kz / powf(gridSizeK(k), 2) * ((prevGC(U, i, j, k + 1) - gridInit(U, i, j, k + 1)) - 2.0f * (prevGC(U, i, j, k) - gridInit(U, i, j, k)) + (prevGC(U, i, j, k - 1) - gridInit(U, i, j, k - 1))); // Diffusion (implicit)
 
 
                 gridRslow(V, i, j, k) =
                 -1.0f / gridSizeI * (
-          0.5f * (currGC(V, i + 1, j, k) + currGC(V, i, j, k)) * 0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j - 1, k))
-          - 0.5f * (currGC(V, i, j, k) + currGC(V, i - 1, j, k)) * 0.5f * (currGC(U, i, j - 1, k) + currGC(U, i, j, k))) // -dvu/dx 
+                0.5f * (currGC(V, i + 1, j, k) + currGC(V, i, j, k)) * 0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j - 1, k))
+                - 0.5f * (currGC(V, i, j, k) + currGC(V, i - 1, j, k)) * 0.5f * (currGC(U, i, j - 1, k) + currGC(U, i, j, k))) // -dvu/dx 
 
-          - 1.0f / gridSizeJ * (powf(0.5f * (currGC(V, i, j + 1, k) + currGC(V, i, j, k)), 2) - powf(0.5f * (currGC(V, i, j, k) + currGC(V, i, j - 1, k)), 2)) // -dvv/dy
+                - 1.0f / gridSizeJ * (powf(0.5f * (currGC(V, i, j + 1, k) + currGC(V, i, j, k)), 2) - powf(0.5f * (currGC(V, i, j, k) + currGC(V, i, j - 1, k)), 2)) // -dvv/dy
 
-          - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * 0.5f * (currGC(W, i, j, k + 1) + currGC(W, i, j - 1, k + 1)) * 0.5f * (currGC(V, i, j, k + 1) + currGC(V, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i, j - 1, k)) * 0.5f * (currGC(V, i, j, k - 1) + currGC(V, i, j, k))) // -dpvw/dz
-          - 1.0f / gridSizeJ * (cpd * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(Pi, i, j, k) - currGC(Pi, i, j - 1, k))) // -cpd*T*dP/dx
-          + Kx / powf(gridSizeI, 2) * (prevGC(V, i + 1, j, k) - 2.0f * prevGC(V, i, j, k) + prevGC(V, i - 1, j, k))
-          + Ky / powf(gridSizeJ, 2) * (prevGC(V, i, j + 1, k) - 2.0f * prevGC(V, i, j, k) + prevGC(V, i, j - 1, k))
-          + Kz / powf(gridSizeK(k), 2) * ((prevGC(V, i, j, k + 1) - gridInit(V, i, j, k + 1)) - 2.0f * (prevGC(V, i, j, k) - gridInit(V, i, j, k)) + (prevGC(V, i, j, k - 1) - gridInit(V, i, j, k - 1))); // Diffusion (implicit)
+                - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * 0.5f * (currGC(W, i, j, k + 1) + currGC(W, i, j - 1, k + 1)) * 0.5f * (currGC(V, i, j, k + 1) + currGC(V, i, j, k))
+                - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i, j - 1, k)) * 0.5f * (currGC(V, i, j, k - 1) + currGC(V, i, j, k))) // -dpvw/dz
+                - 1.0f / gridSizeJ * (cpd * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(Pi, i, j, k) - currGC(Pi, i, j - 1, k))) // -cpd*T*dP/dx
+                + Kx / powf(gridSizeI, 2) * (prevGC(V, i + 1, j, k) - 2.0f * prevGC(V, i, j, k) + prevGC(V, i - 1, j, k))
+                + Ky / powf(gridSizeJ, 2) * (prevGC(V, i, j + 1, k) - 2.0f * prevGC(V, i, j, k) + prevGC(V, i, j - 1, k))
+                + Kz / powf(gridSizeK(k), 2) * ((prevGC(V, i, j, k + 1) - gridInit(V, i, j, k + 1)) - 2.0f * (prevGC(V, i, j, k) - gridInit(V, i, j, k)) + (prevGC(V, i, j, k - 1) - gridInit(V, i, j, k - 1))); // Diffusion (implicit)
 
-                gridRslow(W, i, j, k) =
-                -1.0f / gridSizeI * (
-          0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j, k - 1)) * 0.5f * (currGC(W, i + 1, j, k) + currGC(W, i, j, k))
-          - 0.5f * (currGC(U, i, j, k) + currGC(U, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i - 1, j, k))) // -duw/dx
+                //MAXED OUT INSTRUCTIONS
+                //gridRslow(W, i, j, k) =
+                //-1.0f / gridSizeI * (
+                //0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j, k - 1)) * 0.5f * (currGC(W, i + 1, j, k) + currGC(W, i, j, k))
+                //- 0.5f * (currGC(U, i, j, k) + currGC(U, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i - 1, j, k))) // -duw/dx
 
-          - 1.0f / gridSizeJ * (
-          0.5f * (currGC(V, i, j + 1, k) + currGC(V, i, j + 1, k - 1)) * 0.5f * (currGC(W, i, j + 1, k) + currGC(W, i, j, k))
-          - 0.5f * (currGC(V, i, j, k) + currGC(V, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i, j - 1, k))) // -duw/dx
+                //- 1.0f / gridSizeJ * (
+                //0.5f * (currGC(V, i, j + 1, k) + currGC(V, i, j + 1, k - 1)) * 0.5f * (currGC(W, i, j + 1, k) + currGC(W, i, j, k))
+                //- 0.5f * (currGC(V, i, j, k) + currGC(V, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i, j - 1, k))) // -duw/dx
 
-          - 1.0f / (0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (gridSizeK(k) + gridSizeK(km1))) *
-          (currGC(RO, i, j, k) * powf(0.5f * (currGC(W, i, j, k + 1) + currGC(W, i, j, k)), 2) - currGC(RO, i, j, k - 1) * powf(0.5f * (currGC(W, i, j, k) + currGC(W, i, j, k - 1)), 2)) // -dpww/dz
-          - 1.0f / (0.5f * (gridSizeK(k) + gridSizeK(km1))) *
-          (cpd * 0.5f * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k) + gridInit(THETA, i, j, k - 1) + 0.61f * gridInit(QV, i, j, k - 1))
-          * (currGC(Pi, i, j, k) - currGC(Pi, i, j, k - 1))) // -cpd* T*dP/dz
-          + g * 0.5f * (currGC(THETA, i, j, k) / gridInit(THETA, i, j, k) + currGC(THETA, i, j, k - 1) / gridInit(THETA, i, j, k - 1)
-          + 0.61f * (currGC(QV, i, j, k) + currGC(QV, i, j, k - 1)) - (currGC(QC, i, j, k) + currGC(QC, i, j, k - 1) + currGC(QR, i, j, k) + currGC(QR, i, j, k - 1))) // B=g* T'/T
-          + Kx / powf(gridSizeI, 2) * (prevGC(W, i + 1, j, k) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i - 1, j, k)) // Diffusion (implicit)
-          + Ky / powf(gridSizeJ, 2) * (prevGC(W, i, j + 1, k) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j - 1, k)) // Diffusion (implicit)
-          + Kz / powf(gridSizeK(k), 2) * (prevGC(W, i, j, k + 1) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j, k - 1)); // d2w/dx2+d2w/dz2
+                //- 1.0f / (0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (gridSizeK(k) + gridSizeK(km1))) *
+                //(currGC(RO, i, j, k) * powf(0.5f * (currGC(W, i, j, k + 1) + currGC(W, i, j, k)), 2) - currGC(RO, i, j, k - 1) * powf(0.5f * (currGC(W, i, j, k) + currGC(W, i, j, k - 1)), 2)) // -dpww/dz
+                //- 1.0f / (0.5f * (gridSizeK(k) + gridSizeK(km1))) *
+                //(cpd * 0.5f * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k) + gridInit(THETA, i, j, k - 1) + 0.61f * gridInit(QV, i, j, k - 1))
+                //* (currGC(Pi, i, j, k) - currGC(Pi, i, j, k - 1))) // -cpd* T*dP/dz
+                //+ g * 0.5f * (currGC(THETA, i, j, k) / gridInit(THETA, i, j, k) + currGC(THETA, i, j, k - 1) / gridInit(THETA, i, j, k - 1)
+                //+ 0.61f * (currGC(QV, i, j, k) + currGC(QV, i, j, k - 1)) - (currGC(QC, i, j, k) + currGC(QC, i, j, k - 1) + currGC(QR, i, j, k) + currGC(QR, i, j, k - 1))) // B=g* T'/T
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(W, i + 1, j, k) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeJ, 2) * (prevGC(W, i, j + 1, k) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(W, i, j, k + 1) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j, k - 1)); // d2w/dx2+d2w/dz2
 
-                gridRslow(THETA, i, j, k) =
-                -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(THETA, i + 1, j, k) + currGC(THETA, i, j, k))
-          - currGC(U, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i - 1, j, k))) // -duT/dx
+                //MAXED OUT INSTRUCTIONS
+                //gridRslow(THETA, i, j, k) =
+                //-1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(THETA, i + 1, j, k) + currGC(THETA, i, j, k))
+                //- currGC(U, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i - 1, j, k))) // -duT/dx
 
-          - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(THETA, i, j + 1, k) + currGC(THETA, i, j, k))
-          - currGC(V, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i, j - 1, k))) // -dvT/dx NN
+                //- 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(THETA, i, j + 1, k) + currGC(THETA, i, j, k))
+                //- currGC(V, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i, j - 1, k))) // -dvT/dx NN
 
-          - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(THETA, i, j, k + 1) + currGC(THETA, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i, j, k - 1))) // -dpwT/dz
-          - 1.0f / (currGC(RO, i, j, k)) * 0.5f * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * (gridInit(THETA, i, j, k + 1) - gridInit(THETA, i, j, k)) / gridSizeK(k + 1)
-          + 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * (gridInit(THETA, i, j, k) - gridInit(THETA, i, j, k - 1)) / gridSizeK(k)) // -w/p*dpT/dz (mean state)
-                + Kx / powf(gridSizeI, 2) * (prevGC(THETA, i + 1, j, k) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i - 1, j, k)) // Diffusion (implicit)
-          + Ky / powf(gridSizeJ, 2) * (prevGC(THETA, i, j + 1, k) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j - 1, k)) // Diffusion (implicit)
-          + Kz / powf(gridSizeK(k), 2) * (prevGC(THETA, i, j, k + 1) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j, k - 1)); // d2T/dx2+d2T/dz2
+                //- 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(THETA, i, j, k + 1) + currGC(THETA, i, j, k))
+                //- 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i, j, k - 1))) // -dpwT/dz
+                //- 1.0f / (currGC(RO, i, j, k)) * 0.5f * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * (gridInit(THETA, i, j, k + 1) - gridInit(THETA, i, j, k)) / gridSizeK(k + 1)
+                //+ 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * (gridInit(THETA, i, j, k) - gridInit(THETA, i, j, k - 1)) / gridSizeK(k)) // -w/p*dpT/dz (mean state)
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(THETA, i + 1, j, k) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeJ, 2) * (prevGC(THETA, i, j + 1, k) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(THETA, i, j, k + 1) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j, k - 1)); // d2T/dx2+d2T/dz2
 
                 gridRslow(Pi, i, j, k) =
                 -1.0f * (powf(cmax, 2) / (currGC(RO, i, j, k) * cpd * powf(gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k), 2))) * ( // multiplier -cs^2/(cpd* p*T^2)
-          +(currGC(RO, i, j, k) * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(U, i + 1, j, k) - currGC(U, i, j, k))) / gridSizeI // pTdu/dx
+                +(currGC(RO, i, j, k) * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(U, i + 1, j, k) - currGC(U, i, j, k))) / gridSizeI // pTdu/dx
 
-          + (currGC(RO, i, j, k) * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(V, i, j + 1, k) - currGC(V, i, j, k))) / gridSizeJ // pTdv/dx
+                + (currGC(RO, i, j, k) * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k)) * (currGC(V, i, j + 1, k) - currGC(V, i, j, k))) / gridSizeJ // pTdv/dx
 
-          + (0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (gridInit(THETA, i, j, k + 1) + gridInit(THETA, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (gridInit(THETA, i, j, k) + gridInit(THETA, i, j, k - 1))) / gridSizeK(k) // pTdw/dz
-          )
+                + (0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (gridInit(THETA, i, j, k + 1) + gridInit(THETA, i, j, k))
+                - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (gridInit(THETA, i, j, k) + gridInit(THETA, i, j, k - 1))) / gridSizeK(k) // pTdw/dz
+                )
                 + Kx / powf(gridSizeI, 2) * (prevGC(Pi, i + 1, j, k) - 2.0f * prevGC(Pi, i, j, k) + prevGC(Pi, i - 1, j, k)) // Diffusion (implicit)
-          + Ky / powf(gridSizeI, 2) * (prevGC(Pi, i, j + 1, k) - 2.0f * prevGC(Pi, i, j, k) + prevGC(Pi, i, j - 1, k)) // Diffusion (implicit)
-          + Kz / powf(gridSizeK(k), 2) * (prevGC(Pi, i, j, k + 1) - 2.0f * prevGC(Pi, i, j, k) + prevGC(Pi, i, j, k - 1)); // d2P/dx2+d2P/dz2
+                + Ky / powf(gridSizeI, 2) * (prevGC(Pi, i, j + 1, k) - 2.0f * prevGC(Pi, i, j, k) + prevGC(Pi, i, j - 1, k)) // Diffusion (implicit)
+                + Kz / powf(gridSizeK(k), 2) * (prevGC(Pi, i, j, k + 1) - 2.0f * prevGC(Pi, i, j, k) + prevGC(Pi, i, j, k - 1)); // d2P/dx2+d2P/dz2
 
-        // Moisture terms
-                gridRslow(QV, i, j, k) =
-                -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QV, i + 1, j, k) + currGC(QV, i, j, k))
-          - currGC(U, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i - 1, j, k))) // -duqv/dx
+                //MAXED OUT INSTRUCTIONS
+                //// Moisture terms
+                //gridRslow(QV, i, j, k) =
+                //-1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QV, i + 1, j, k) + currGC(QV, i, j, k))
+                //- currGC(U, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i - 1, j, k))) // -duqv/dx
 
-          - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QV, i, j + 1, k) + currGC(QV, i, j, k))
-          - currGC(V, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i, j - 1, k))) // -dvqv/dy
+                //- 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QV, i, j + 1, k) + currGC(QV, i, j, k))
+                //- currGC(V, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i, j - 1, k))) // -dvqv/dy
 
-          - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QV, i, j, k + 1) + currGC(QV, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i, j, k - 1))) // -dpwqv/dz
-          - 1.0f / (currGC(RO, i, j, k)) * 0.5f * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * (gridInit(QV, i, j, k + 1) - gridInit(QV, i, j, k)) / gridSizeK(k + 1)
-          + 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * (gridInit(QV, i, j, k) - gridInit(QV, i, j, k - 1)) / gridSizeK(k)) // -w/p*dpqv/dz (mean state)
-                + Kx / powf(gridSizeI, 2) * (prevGC(QV, i + 1, j, k) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i - 1, j, k)) // Diffusion (implicit)
-          + Ky / powf(gridSizeI, 2) * (prevGC(QV, i, j + 1, k) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j - 1, k)) // Diffusion (implicit)
-          + Kz / powf(gridSizeK(k), 2) * (prevGC(QV, i, j, k + 1) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j, k - 1)); // d2q/dx2+d2q/dz2
+                //- 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QV, i, j, k + 1) + currGC(QV, i, j, k))
+                //- 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i, j, k - 1))) // -dpwqv/dz
+                //- 1.0f / (currGC(RO, i, j, k)) * 0.5f * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * (gridInit(QV, i, j, k + 1) - gridInit(QV, i, j, k)) / gridSizeK(k + 1)
+                //+ 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * (gridInit(QV, i, j, k) - gridInit(QV, i, j, k - 1)) / gridSizeK(k)) // -w/p*dpqv/dz (mean state)
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(QV, i + 1, j, k) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeI, 2) * (prevGC(QV, i, j + 1, k) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(QV, i, j, k + 1) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j, k - 1)); // d2q/dx2+d2q/dz2
 
+                
                 gridRslow(QC, i, j, k) =
                 -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QC, i + 1, j, k) + currGC(QC, i, j, k))
-          - currGC(U, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i - 1, j, k))) // -duqv/dx
+                - currGC(U, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i - 1, j, k))) // -duqv/dx
 
-          - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QC, i, j + 1, k) + currGC(QC, i, j, k))
-          - currGC(V, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i, j - 1, k))) // -duqv/dx
+                - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QC, i, j + 1, k) + currGC(QC, i, j, k))
+                - currGC(V, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i, j - 1, k))) // -duqv/dx
 
-          - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QC, i, j, k + 1) + currGC(QC, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i, j, k - 1))) // -dpwqv/dz
-          + Kx / powf(gridSizeI, 2) * (prevGC(QC, i + 1, j, k) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i - 1, j, k)) // Diffusion (implicit)
-          + Ky / powf(gridSizeI, 2) * (prevGC(QC, i, j + 1, k) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i, j - 1, k)) // Diffusion (implicit)
-          + Kz / powf(gridSizeK(k), 2) * (prevGC(QC, i, j, k + 1) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i, j, k - 1)); // d2q/dx2+d2q/dz2
+                - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QC, i, j, k + 1) + currGC(QC, i, j, k))
+                - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QC, i, j, k) + currGC(QC, i, j, k - 1))) // -dpwqv/dz
+                + Kx / powf(gridSizeI, 2) * (prevGC(QC, i + 1, j, k) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i - 1, j, k)) // Diffusion (implicit)
+                + Ky / powf(gridSizeI, 2) * (prevGC(QC, i, j + 1, k) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i, j - 1, k)) // Diffusion (implicit)
+                + Kz / powf(gridSizeK(k), 2) * (prevGC(QC, i, j, k + 1) - 2.0f * prevGC(QC, i, j, k) + prevGC(QC, i, j, k - 1)); // d2q/dx2+d2q/dz2
 
-                gridRslow(QR, i, j, k) =
+                //MAXED OUT INSTRUCTIONS
+                //gridRslow(QR, i, j, k) =
+                //-1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QR, i + 1, j, k) + currGC(QR, i, j, k))
+                //- currGC(U, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i - 1, j, k))) // -duqv/dx
+
+                //- 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QR, i, j + 1, k) + currGC(QR, i, j, k))
+                //- currGC(V, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i, j - 1, k))) // -dvqv/dy
+
+                //- 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QR, i, j, k + 1) + currGC(QR, i, j, k))
+                //- 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i, j, k - 1))) // -dpwqv/dz
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(QR, i + 1, j, k) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeI, 2) * (prevGC(QR, i, j + 1, k) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(QR, i, j, k + 1) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i, j, k - 1)); // d2q/dx2+d2q/dz2
+
+                //gridRslow(RO, i, j, k) = 0.0f;
+                gridRslow(RO, i, j, k) = 1.2f / gridSizeI / gridSizeJ;
+            }
+        }
+    }
+}
+
+/* STEP 1 Fundamental Equations */
+void simulateSTEP1a()
+{
+
+    [loop]
+    for (int k = 0; k < gridZ - 1; k++)
+    {
+        int km1 = k - 1;
+        if (km1 < 0)
+        {
+            km1 = 0;
+        }
+        [loop]
+        for (int j = 0; j < gridY; j++)
+        {
+            [loop]
+            for (int i = 0; i < gridX; i++)
+            {
+                //gridRslow(W, i, j, k) =
+                //-1.0f / gridSizeI * (
+                //0.5f * (currGC(U, i + 1, j, k) + currGC(U, i + 1, j, k - 1)) * 0.5f * (currGC(W, i + 1, j, k) + currGC(W, i, j, k))
+                //- 0.5f * (currGC(U, i, j, k) + currGC(U, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i - 1, j, k))) // -duw/dx
+
+                //- 1.0f / gridSizeJ * (
+                //0.5f * (currGC(V, i, j + 1, k) + currGC(V, i, j + 1, k - 1)) * 0.5f * (currGC(W, i, j + 1, k) + currGC(W, i, j, k))
+                //- 0.5f * (currGC(V, i, j, k) + currGC(V, i, j, k - 1)) * 0.5f * (currGC(W, i, j, k) + currGC(W, i, j - 1, k))) // -duw/dx
+
+                //- 1.0f / (0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * 0.5f * (gridSizeK(k) + gridSizeK(km1))) *
+                //(currGC(RO, i, j, k) * powf(0.5f * (currGC(W, i, j, k + 1) + currGC(W, i, j, k)), 2) - currGC(RO, i, j, k - 1) * powf(0.5f * (currGC(W, i, j, k) + currGC(W, i, j, k - 1)), 2)) // -dpww/dz
+                //- 1.0f / (0.5f * (gridSizeK(k) + gridSizeK(km1))) *
+                //(cpd * 0.5f * (gridInit(THETA, i, j, k) + 0.61f * gridInit(QV, i, j, k) + gridInit(THETA, i, j, k - 1) + 0.61f * gridInit(QV, i, j, k - 1))
+                //* (currGC(Pi, i, j, k) - currGC(Pi, i, j, k - 1))) // -cpd* T*dP/dz
+                //+ g * 0.5f * (currGC(THETA, i, j, k) / gridInit(THETA, i, j, k) + currGC(THETA, i, j, k - 1) / gridInit(THETA, i, j, k - 1)
+                //+ 0.61f * (currGC(QV, i, j, k) + currGC(QV, i, j, k - 1)) - (currGC(QC, i, j, k) + currGC(QC, i, j, k - 1) + currGC(QR, i, j, k) + currGC(QR, i, j, k - 1))) // B=g* T'/T
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(W, i + 1, j, k) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeJ, 2) * (prevGC(W, i, j + 1, k) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(W, i, j, k + 1) - 2.0f * prevGC(W, i, j, k) + prevGC(W, i, j, k - 1)); // d2w/dx2+d2w/dz2
+
+
+
+
+
+                 gridRslow(QR, i, j, k) =
                 -1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QR, i + 1, j, k) + currGC(QR, i, j, k))
-          - currGC(U, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i - 1, j, k))) // -duqv/dx
+                - currGC(U, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i - 1, j, k))) // -duqv/dx
 
-          - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QR, i, j + 1, k) + currGC(QR, i, j, k))
-          - currGC(V, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i, j - 1, k))) // -dvqv/dy
+                - 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QR, i, j + 1, k) + currGC(QR, i, j, k))
+                - currGC(V, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i, j - 1, k))) // -dvqv/dy
 
-          - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
-          0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QR, i, j, k + 1) + currGC(QR, i, j, k))
-          - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i, j, k - 1))) // -dpwqv/dz
-          + Kx / powf(gridSizeI, 2) * (prevGC(QR, i + 1, j, k) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i - 1, j, k)) // Diffusion (implicit)
-          + Ky / powf(gridSizeI, 2) * (prevGC(QR, i, j + 1, k) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i, j - 1, k)) // Diffusion (implicit)
-          + Kz / powf(gridSizeK(k), 2) * (prevGC(QR, i, j, k + 1) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i, j, k - 1)); // d2q/dx2+d2q/dz2
+                - 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QR, i, j, k + 1) + currGC(QR, i, j, k))
+                - 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QR, i, j, k) + currGC(QR, i, j, k - 1))) // -dpwqv/dz
+                + Kx / powf(gridSizeI, 2) * (prevGC(QR, i + 1, j, k) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i - 1, j, k)) // Diffusion (implicit)
+                + Ky / powf(gridSizeI, 2) * (prevGC(QR, i, j + 1, k) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i, j - 1, k)) // Diffusion (implicit)
+                + Kz / powf(gridSizeK(k), 2) * (prevGC(QR, i, j, k + 1) - 2.0f * prevGC(QR, i, j, k) + prevGC(QR, i, j, k - 1)); // d2q/dx2+d2q/dz2
 
-                gridRslow(RO, i, j, k) = 0.0f;
+            }
+        }
+    }
+}
+
+
+/* STEP 1 Fundamental Equations */
+void simulateSTEP1b()
+{
+
+    [loop]
+    for (int k = 0; k < gridZ - 1; k++)
+    {
+        int km1 = k - 1;
+        if (km1 < 0)
+        {
+            km1 = 0;
+        }
+        [loop]
+        for (int j = 0; j < gridY; j++)
+        {
+            [loop]
+            for (int i = 0; i < gridX; i++)
+            {
+                // gridRslow(THETA, i, j, k) =
+                //-1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(THETA, i + 1, j, k) + currGC(THETA, i, j, k))
+                //- currGC(U, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i - 1, j, k))) // -duT/dx
+
+                //- 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(THETA, i, j + 1, k) + currGC(THETA, i, j, k))
+                //- currGC(V, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i, j - 1, k))) // -dvT/dx NN
+
+                //- 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(THETA, i, j, k + 1) + currGC(THETA, i, j, k))
+                //- 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(THETA, i, j, k) + currGC(THETA, i, j, k - 1))) // -dpwT/dz
+                //- 1.0f / (currGC(RO, i, j, k)) * 0.5f * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * (gridInit(THETA, i, j, k + 1) - gridInit(THETA, i, j, k)) / gridSizeK(k + 1)
+                //+ 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * (gridInit(THETA, i, j, k) - gridInit(THETA, i, j, k - 1)) / gridSizeK(k)) // -w/p*dpT/dz (mean state)
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(THETA, i + 1, j, k) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeJ, 2) * (prevGC(THETA, i, j + 1, k) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(THETA, i, j, k + 1) - 2.0f * prevGC(THETA, i, j, k) + prevGC(THETA, i, j, k - 1)); // d2T/dx2+d2T/dz2
+
+
+                //MAXED OUT INSTRUCTIONS
+                // Moisture terms
+                //gridRslow(QV, i, j, k) =
+                //-1.0f / gridSizeI * (currGC(U, i + 1, j, k) * 0.5f * (currGC(QV, i + 1, j, k) + currGC(QV, i, j, k))
+                //- currGC(U, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i - 1, j, k))) // -duqv/dx
+
+                //- 1.0f / gridSizeJ * (currGC(V, i, j + 1, k) * 0.5f * (currGC(QV, i, j + 1, k) + currGC(QV, i, j, k))
+                //- currGC(V, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i, j - 1, k))) // -dvqv/dy
+
+                //- 1.0f / (currGC(RO, i, j, k) * gridSizeK(k)) * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * 0.5f * (currGC(QV, i, j, k + 1) + currGC(QV, i, j, k))
+                //- 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * 0.5f * (currGC(QV, i, j, k) + currGC(QV, i, j, k - 1))) // -dpwqv/dz
+                //- 1.0f / (currGC(RO, i, j, k)) * 0.5f * (
+                //0.5f * (currGC(RO, i, j, k + 1) + currGC(RO, i, j, k)) * currGC(W, i, j, k + 1) * (gridInit(QV, i, j, k + 1) - gridInit(QV, i, j, k)) / gridSizeK(k + 1)
+                //+ 0.5f * (currGC(RO, i, j, k) + currGC(RO, i, j, k - 1)) * currGC(W, i, j, k) * (gridInit(QV, i, j, k) - gridInit(QV, i, j, k - 1)) / gridSizeK(k)) // -w/p*dpqv/dz (mean state)
+                //+ Kx / powf(gridSizeI, 2) * (prevGC(QV, i + 1, j, k) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i - 1, j, k)) // Diffusion (implicit)
+                //+ Ky / powf(gridSizeI, 2) * (prevGC(QV, i, j + 1, k) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j - 1, k)) // Diffusion (implicit)
+                //+ Kz / powf(gridSizeK(k), 2) * (prevGC(QV, i, j, k + 1) - 2.0f * prevGC(QV, i, j, k) + prevGC(QV, i, j, k - 1)); // d2q/dx2+d2q/dz2
             }
         }
     }
@@ -376,9 +531,7 @@ void simulateSTEP4()
         for (int i = 0; i < gridX; i++)
         {
 
-            const float T_M = 29.0f + 273.15f; // Invariable slab temperature //INIT 10.0f 32.0f
-            const float dur = 3600.0f * 24.0f; // * 5.0f;//24h
-            const float S_const = -1.127f; //Solar constant km/s
+
 
       ////////////////////////////////////////
       // INIT VALUES
@@ -436,22 +589,27 @@ void simulateSTEP4()
             }
 
 
-      ////////////////////////////////////////
       // UTC
             float t_UTC = initTimeUTC_hours + (simulationTime / 3600.0f); //day overflow
             int advancedDays = int(t_UTC / (24.0f)); //full days
             float dayInYearUTC = initDayInYearUTC + advancedDays;
+
             while (dayInYearUTC > 365)
                 dayInYearUTC -= 365;
             t_UTC -= advancedDays * 24.0f;
 
-      ////////////////////////////////////////
-      // LOCAL
+    //  // LOCAL
             float t_Local = t_UTC + timeZone;
+
             if (t_Local < 0.0f)
+            {
                 t_Local += 24.0f;
+            }
+
             if (t_Local > 24.0f)
+            {
                 t_Local -= 24.0f;
+            }
 
 
             float lat = latitudeRad;
@@ -462,15 +620,15 @@ void simulateSTEP4()
 
             float gamma = 0.0000010717f * powf(t_Local, 5.0f) + 0.0000818369f * powf(t_Local, 4.0f) - 0.0060500842f * powf(t_Local, 3.0f) + 0.0772306397f * powf(t_Local, 2.0f) + 0.1444444444f * t_Local - 1.8441558442f;
 
-      ////////////////////////////////////////
-      // RADITATION
+
+    //  // RADITATION
 
             float alb = ground(GR_ALBEDO, i, j);
             float c_g_a = ground(GR_CGA, i, j);
 
             float sig_l = ground(GR_CLOUD_COVER, i, j);
             float sig_m = ground(GR_CLOUD_COVER, i, j);
-            const float sig_h = 0.1f;
+
 
             float I = 0.08f * (1.0f - 0.1f * sig_h - 0.3f * sig_m - 0.6f * sig_l);
 
@@ -497,26 +655,16 @@ void simulateSTEP4()
             ground(GR_TG, i, j) += (dT * T_G_t) + ground(GR_TG_CORR, i, j); // NEW TG
             ground(GR_TA, i, j) += (dT * Q_h * 1.0e-3f) + ground(GR_TA_CORR, i, j); // Introduced this new time parameterization //NEW TA
 
-      ///////////////////////////////////
       // STEP 0: Save ref value after 2 hours of simulation
             if ((ground(GR_TG_RESET, i, j) == FLT_MAX) && (simulationTime >= 3600.0f * 2.0f))
             { // put first FLT_MAX to avoid to comparisons
                 ground(GR_TG_RESET, i, j) = ground(GR_TG, i, j);
                 ground(GR_TA_RESET, i, j) = ground(GR_TA, i, j);
-                if (i == 0 && j == 0)
-                {
-                    printf("** Save Ref: %f (%.2f)\n", simulationTime, simulationTime / 3600.0f);
-                }
             }
 
-      ///////////////////////////////////
       // STEP1: Update Correction after Each 24hours (+2h)
             if ((simulationTime >= 3600.0f * (2.0f + 24.0f)) && ((int(simulationTime) - 2 * 3600)) % (24 * 3600) == 0)
             { // RESET
-                if (i == 0)
-                {
-                    printf("** Reset: %f (%f)\n", simulationTime, simulationTime / 3600.0f);
-                }
                 float TG_diff = ground(GR_TG_RESET, i, j) - ground(GR_TG, i, j);
                 float TA_diff = ground(GR_TA_RESET, i, j) - ground(GR_TA, i, j);
                 ground(GR_TG_CORR, i, j) = (TG_diff / (24.0f * 3600.0f)) * dT * 1.2f; //1.2f correction factor
@@ -535,37 +683,19 @@ void simulateSTEP4()
 [numthreads(1, 1, 1)]
 void simulateStep(int3 DTid : SV_DispatchThreadID)
 {
-
-		// Run sumulation.
-	//This bool is never used?
-	//can't have const here anyways
-	//const bool check = true;
-
-    //Here we rotate the past current and future values in our simulation
-    for (int nS = 0; nS < numSteps; nS++)
-    {
-        nextGC = (currGC + 1) % 3; //3 number of time array
-        prevGC = (currGC - 1);
-        if (prevGC < 0)
-            prevGC = 2; // Set the last step.
-
     // Fundamental equations.
-        simulateSTEP1();
+    simulateSTEP1();
+    simulateSTEP1a();
+   // simulateSTEP1b();
 
     // Microphysics.
-        simulateSTEP2();
+    simulateSTEP2();
 
     // Move in time.
-        simulateSTEP3();
+    simulateSTEP3();
 
     // Radiation.
-        simulateSTEP4();
+    simulateSTEP4();
 
-        currGC = (currGC + 1) % 3; // 3 number of time array
-
-        simulationTime += dT;
-    }
-
-
-
-} 
+    simulationTime += dT;
+}

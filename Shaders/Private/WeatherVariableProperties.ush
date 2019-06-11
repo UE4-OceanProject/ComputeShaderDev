@@ -4,15 +4,14 @@ extern int gridZ = 56;
 extern int gridSizeI = 1000;
 extern int gridSizeJ = 1000;
 
-extern int numSteps = 1;
 
 extern float dT = 0;
 extern float simulationTime = 0;
 
 //Here we rotate the past current and future values in our simulation
-int currGC = 0;
-int nextGC = 0;
-int prevGC = 0;
+extern int currGC = 0;
+extern int nextGC = 0;
+extern int prevGC = 0;
 
 struct FStruct_Cell_GPU
 {

@@ -18,14 +18,14 @@ void AWeatherManager::OnConstruction(const FTransform& Transform)
 void AWeatherManager::BeginPlay()
 {
 	//Init our instance of compute ComputeShaderInstance controller
-	TArray_FStruct_AirGridContainer_CPU_gridInit.Empty();
-	TArray_FStruct_AirGridContainer_CPU_gridInit.Reserve(256);
+	//TArray_FStruct_AirGridContainer_CPU_gridInit.Empty();
+	//TArray_FStruct_AirGridContainer_CPU_gridInit.Reserve(256);
 
 	//Add our default data struct to the array
-	for (int i = 0; i<256; i++)
-	{
-		TArray_FStruct_AirGridContainer_CPU_gridInit.Add(FStruct_AirGridContainer_CPU());
-	}
+	//for (int i = 0; i<256; i++)
+	//{
+	//	TArray_FStruct_AirGridContainer_CPU_gridInit.Add(FStruct_AirGridContainer_CPU());
+	//}
 
 
 //	Shader_Constant_Params.ArrayNum = TArray_FStruct_AirGridContainer_CPU_gridInit.Num();
@@ -43,7 +43,7 @@ void AWeatherManager::Tick(float DeltaTime)
 void AWeatherManager::Compute(float DeltaTime)
 {
 
-		ExecuteComputeShader(TArray_FStruct_AirGridContainer_CPU_gridInit, DeltaTime);
+		ExecuteComputeShader(grid0Var, DeltaTime);
 		//Fencing forces the game thread to wait for the render thread to finish
 		ReleaseResourcesFence.BeginFence();
 		ReleaseResourcesFence.Wait();
@@ -55,20 +55,20 @@ void AWeatherManager::ExecuteComputeShader(TArray<FStruct_AirGridContainer_CPU> 
 	//This is ran in the Game Thread!
 //	Shader_Variable_Params.DeltaTime = DeltaTime;
 
-	//Everything sent here is passed by value, changes are lost
-	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
-		FComputeShaderRunner,		//TypeName - Arbitrary name of the render command
-		AWeatherManager*,	//ParamType1 - The type of the parameter
-		FrontEnd,					//ParamName1 - Name of the parameter inside the render command
-		this,						//ParamValue1 - the value of the parameter passed from the outside
-		TArray<FStruct_AirGridContainer_CPU>&, states, currentStates,		//ParamType/Name/Value 2
-		{
-			//This code block is ran inside of the Render Thread!
-			//Which is why we need the reference to our FrontEnd class
-			FrontEnd->ExecuteInRenderThread(states);
-		}
-		//This is now back in the Game Thread!
-	);
+	//Everything sent here is passed by value, changes are lost (4.22, is this still true?)
+	AWeatherManager* FrontEnd = this;
+	TArray<FStruct_AirGridContainer_CPU>* states = &currentStates;
+	ENQUEUE_RENDER_COMMAND(FComputeShaderRunner)//TypeName - Arbitrary name of the render command
+		(
+			[FrontEnd, states](FRHICommandListImmediate& RHICmdList) //Passed in variables
+
+			{
+				//This code block is ran inside of the Render Thread!
+				//Which is why we need the reference to our FrontEnd class
+				FrontEnd->ExecuteInRenderThread(*states);
+			}
+			//This is now back in the Game Thread!
+		);
 }
 
 //This can only run after begin play!
@@ -88,10 +88,11 @@ void AWeatherManager::ExecuteInRenderThread(TArray<FStruct_AirGridContainer_CPU>
 	RHICmdList.SetComputeShader(ComputeShaderInstance->GetComputeShader());
 
 	// Call our function to set up parameters	
-	ComputeShaderInstance->SetShaderParameters(RHICmdList, numSteps, dT,
+	FStructuredBufferRHIRef Interface_FStruct_Shader_CPU_Buffer = ComputeShaderInstance->SetShaderParameters(RHICmdList,
+		dT,
 		gridX, gridY, gridZ, gridXSize, gridYSize,
 		simulationTime,
-		currInd,
+		prevGC, currGC, nextGC,
 		gridSizeK,
 		ground,
 		gridRslow,
@@ -106,21 +107,42 @@ void AWeatherManager::ExecuteInRenderThread(TArray<FStruct_AirGridContainer_CPU>
 	//ComputeShaderInstance->BindDataInterfaceToUniformBuffersParamName(RHICmdList, Shader_Constant_Params, Shader_Variable_Params);
 
 	// Dispatch compute ComputeShaderInstance
-	DispatchComputeShader(RHICmdList, *ComputeShaderInstance, 1, 1, 1);
-	currInd = (currInd + 1) % 3;
+
+
+
+	
+//	Here we rotate the past current and future values in our simulation
+	for (int nS = 0; nS < numSteps; nS++)
+	{
+		nextGC = (currGC + 1) % 3; //3 number of time array
+		prevGC = (currGC - 1);
+
+		if (prevGC < 0)
+			prevGC = 2; // Set the last step.
+
+		// Run simulation.
+		DispatchComputeShader(RHICmdList, *ComputeShaderInstance, 1, 1, 1);
+
+
 
 	//Release buffers so another shader instance can use them (buffers are global thats why)
-//	ComputeShaderInstance->UnbindBuffers(RHICmdList);
+	ComputeShaderInstance->UnbindBuffers(RHICmdList);
 
 	//Lock Interface_FStruct_Shader_CPU_Buffer to enable CPU read
-	//char* shaderData = (char*)RHICmdList.LockStructuredBuffer(Interface_FStruct_Shader_CPU_Buffer, 0, sizeof(FStruct_AirGridContainer_CPU) * 10, EResourceLockMode::RLM_ReadOnly);
-
+	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(Interface_FStruct_Shader_CPU_Buffer, 0/*5600 * 40 * currGC*/, 5600*40, EResourceLockMode::RLM_ReadOnly);
+	
 	//Copy the CPU data back to CPU side (&currentStates)
-	//FStruct_AirGridContainer_CPU* p = (FStruct_AirGridContainer_CPU*)shaderData;
-	//for (int32 Row = 0; Row < 10; ++Row) {
-	//	currentStates[Row] = *p;
+	FStruct_AirGridContainer_CPU* p = (FStruct_AirGridContainer_CPU*)shaderData;
+	currentStates[0] = *p;
+	//for (int32 Row = 0; Row < 3; ++Row) {
+	//	currentStates[0] = *p;
 	//	p++;
 	//}
+
+
+
+		currGC = (currGC + 1) % 3;
+	}
 
 	//Unlock Interface_FStruct_Shader_CPU_Buffer when finished
 	//RHICmdList.UnlockStructuredBuffer(Interface_FStruct_Shader_CPU_Buffer);

@@ -10,13 +10,13 @@
 //Declare the variables inside of our struct
 //This FStruct_Shader_GPU_Buffer should contain variables that never, or rarely change
 BEGIN_UNIFORM_BUFFER_STRUCT(FShaderConstants_Class, )
-DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(int, ArrayNum)
+UNIFORM_MEMBER(int, ArrayNum)
 END_UNIFORM_BUFFER_STRUCT(FShaderConstants_Class)
 
 //Declare the variables inside of our struct
 //This FStruct_Shader_GPU_Buffer is for variables that change very often (each frame for example)
 BEGIN_UNIFORM_BUFFER_STRUCT(FVariables_Class, )
-DECLARE_UNIFORM_BUFFER_STRUCT_MEMBER(float, DeltaTime)
+UNIFORM_MEMBER(float, DeltaTime)
 END_UNIFORM_BUFFER_STRUCT(FVariables_Class)
 
 typedef TUniformBufferRef<FShaderConstants_Class> FShaderConstants_ClassInstance;

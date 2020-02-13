@@ -6,7 +6,7 @@ struct FStruct_Shader_GPU
 	int runCount;
 };
 
-//Bound and declared in ComputeShaderDeclarations.cpp @FGlobalComputeShader (Initializer)
+//Bound and declared in ComputeShaderDeclarations.cpp @FGlobalComputeShader_Interface (Initializer)
 //Then is filled in before use in ComputeShaderFrontEnd.cpp @ExecuteInRenderThread
 RWStructuredBuffer<FStruct_Shader_GPU> TArray_FStruct_Parameter_GPU;
 Texture2D<float> InputSurfaceCS;

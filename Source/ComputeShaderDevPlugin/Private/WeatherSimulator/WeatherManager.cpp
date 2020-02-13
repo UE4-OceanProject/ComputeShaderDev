@@ -324,7 +324,8 @@ void AWeatherManager::SetUniformBuffersInShader_RenderThread(
 //Try using  //BUF_KeepCPUAccessible in UAV setting
 bool AWeatherManager::Calculate(
 	/*  input */const float x,
-	/* output */TArray<FStruct_AirGridContainer_CPU>& grid3D_,
+	/* input */TArray<FVector>& input,
+	/* input */TArray<FStruct_AirGridContainer_CPU>& grid3D_,
 	/* output */TArray<FVector>& output
 ) {
 
@@ -338,8 +339,9 @@ bool AWeatherManager::Calculate(
 
 
 	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
-//output_RA_.SetNum(num_input_);
-//output_resource_.ResourceArray = &output_RA_;
+	output_RA_.SetNum(num_input_);
+	FMemory::Memcpy(output_RA_.GetData(), input.GetData(), sizeof(FVector) * 2);
+	output_resource_.ResourceArray = &output_RA_;
 	output_buffer_ = RHICreateStructuredBuffer(sizeof(FVector), sizeof(FVector) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, output_resource_);
 	output_UAV_ = RHICreateUnorderedAccessView(output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
@@ -450,7 +452,7 @@ void AWeatherManager::Calculate_RenderThread(
 	//for (int32 index = 0; index < grid3D_num_input_; ++index) {
 	//  (*output)[index] = *(shader_data + index);
 	//}
-	float test = grid3D_[0][0].CellColumns[0].U = 1;
+	//float test = grid3D_[0][0].CellColumns[0].U = 1;
 	RHICmdList.UnlockStructuredBuffer(output_buffer_);
 	RHICmdList.UnlockStructuredBuffer(FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_);
 }

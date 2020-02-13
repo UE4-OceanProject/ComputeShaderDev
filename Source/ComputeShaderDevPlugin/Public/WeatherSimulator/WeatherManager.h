@@ -53,7 +53,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
 		bool Calculate(
 			/*  input */const float x,
-			/* output */UPARAM(ref) TArray<FStruct_AirGridContainer_CPU>& grid3D_,
+			/* input */UPARAM(ref) TArray<FVector>& input,
+			/* input */UPARAM(ref) TArray<FStruct_AirGridContainer_CPU>& grid3D_,
 			/* output */TArray<FVector>& output);
 
 protected:

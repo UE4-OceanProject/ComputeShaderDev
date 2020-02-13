@@ -8,9 +8,6 @@
 #include "WeatherManager.generated.h"
 
 
-//My Struct used to be here
-
-
 //An actor based weather system for simulating weather
 UCLASS(Blueprintable, BlueprintType)
 class AWeatherManager : public AWeatherManager_Properties
@@ -18,11 +15,6 @@ class AWeatherManager : public AWeatherManager_Properties
 	GENERATED_UCLASS_BODY()
 
 public:
-
-	// Don't need this is using GENERATED_UCLASS_BODY() instead of GENERATED_BODY()... I think
-	// Sets default values for this actor's properties
-	//AWeatherManager();
-	
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
@@ -54,7 +46,6 @@ public:
 		bool Calculate(
 			/*  input */const float x,
 			/* input */UPARAM(ref) TArray<FVector>& input,
-			/* input */UPARAM(ref) TArray<FStruct_AirGridContainer_CPU>& grid3D_,
 			/* output */TArray<FVector>& output);
 
 protected:
@@ -79,28 +70,6 @@ private:
 	FRenderCommandFence render_command_fence_; // Necessary for waiting until a render command function finishes.
 
 	const TShaderMap<FGlobalShaderType>* shader_map = GetGlobalShaderMap(GMaxRHIFeatureLevel);
-	//Note:
-	// GetWorld() function cannot be called from constructor, can be called after BeginPlay() instead.
-	// So I used GMaxRHIFeatureLevel, instead of GetWorld()->Scene->GetFeatureLevel().
-	//const TShaderMap<FTestComputeShader::ShaderMetaType>* shader_map = GetGlobalShaderMap(GetWorld()->Scene->GetFeatureLevel());
-
-	//// Get the actual shader instance off the ShaderMap
-	//TShaderMapRef<FTestComputeShader> test_compute_shader_{ shader_map }; // Note: test_compute_shader_(shader_map) causes error.
-
-	//TResourceArray<FVector> input_positions_RA_;
-	//FRHIResourceCreateInfo input_positions_resource_;
-	//FStructuredBufferRHIRef input_positions_buffer_;
-	//FShaderResourceViewRHIRef input_positions_SRV_;
-
-	//TResourceArray<float> input_scalars_RA_;
-	//FRHIResourceCreateInfo input_scalars_resource_;
-	//FStructuredBufferRHIRef input_scalars_buffer_;
-	//FShaderResourceViewRHIRef input_scalars_SRV_;
-
-	//TResourceArray<FVector> output_RA_; // Not necessary.
-	//FRHIResourceCreateInfo output_resource_;
-	//FStructuredBufferRHIRef output_buffer_;
-	//FUnorderedAccessViewRHIRef output_UAV_;
 
 	TResourceArray<FStruct_Cell_CPU> FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_;
 	FRHIResourceCreateInfo FStruct_Cell_gridSizeK_CPU_ResourceParameter_resource_;
@@ -127,18 +96,11 @@ private:
 	FStructuredBufferRHIRef output_buffer_;
 	FUnorderedAccessViewRHIRef output_UAV_;
 
-
-	TResourceArray<FStruct_AirGridContainer_CPU> FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_; // Not necessary.
-	FRHIResourceCreateInfo FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_resource_;
-	FStructuredBufferRHIRef FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_;
-	FUnorderedAccessViewRHIRef FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_UAV_;
-
 	void SetUniformBuffersInShader_RenderThread(
 		/*  input */const float y, const float z);
 
 	void Calculate_RenderThread(
 		/*  input */const FVector xyz, const bool yz_updated,
-		/* output */TArray<FStruct_AirGridContainer_CPU>* grid3D_,
 		/* output */TArray<FVector>* output);
 
 	void PrintResult(const TArray<FVector>& output);

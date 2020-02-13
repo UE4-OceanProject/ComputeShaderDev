@@ -59,9 +59,6 @@ void AWeatherManager::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	output_buffer_.SafeRelease();
 	output_UAV_.SafeRelease();
 
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_.SafeRelease();
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_UAV_.SafeRelease();
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -325,12 +322,11 @@ void AWeatherManager::SetUniformBuffersInShader_RenderThread(
 bool AWeatherManager::Calculate(
 	/*  input */const float x,
 	/* input */TArray<FVector>& input,
-	/* input */TArray<FStruct_AirGridContainer_CPU>& grid3D_,
 	/* output */TArray<FVector>& output
 ) {
 
 
-	if (gridSizeK_num_input_ == 0 || ground_num_input_ == 0 || gridRslow_num_input_ == 0 || gridInit_num_input_ == 0)// || grid3D_num_input_ == 0)
+	if (gridSizeK_num_input_ == 0 || ground_num_input_ == 0 || gridRslow_num_input_ == 0 || gridInit_num_input_ == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Error: input grids have not been set correctly at AWeatherManager::Calculate."));
 		return false;
@@ -353,28 +349,8 @@ bool AWeatherManager::Calculate(
 	FVector offset = offset_;
 	bool yz_updated = false;
 
-	//TArray<FStruct_AirGridContainer_CPU>* output_ = output;
-
-
-
-
-	//// If your output buffer doesn't need input, you would comment the next three lines
-	//FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_.SetNum(grid3D_num_input_); //we should change this when we don't copy the data
-	//	// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
-	//FMemory::Memcpy(FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_.GetData(), grid3D_.GetData(), sizeof(FStruct_AirGridContainer_CPU) * 3);
-	//FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_;
-
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_.SetNum(3);
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_;
-	//FMemory::Memcpy(FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_RA_.GetData(), output.GetData(), sizeof(FStruct_AirGridContainer_CPU) * 3);
-
-	//the pointer to output buffer (needed for reading from)               
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU), sizeof(FStruct_AirGridContainer_CPU) * 3, BUF_ShaderResource | BUF_UnorderedAccess, FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_resource_);
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_UAV_ = RHICreateUnorderedAccessView(FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
-
 
 	AWeatherManager* FrontEnd = this;
-	TArray<FStruct_AirGridContainer_CPU>* grid3D__ = &grid3D_;
 
 	TArray<FVector>* output__ = &output;
 
@@ -382,11 +358,11 @@ bool AWeatherManager::Calculate(
 	output.SetNum(num_input_);
 	ENQUEUE_RENDER_COMMAND(CalculateCommand)//TypeName - Arbitrary name of the render command
 	(
-		[FrontEnd, offset, yz_updated, grid3D__, output__](FRHICommandListImmediate& RHICmdList) //Passed in variables
+		[FrontEnd, offset, yz_updated, output__](FRHICommandListImmediate& RHICmdList) //Passed in variables
 		{
 			//This code block is ran inside of the Render Thread!
 			//Which is why we need the reference to our FrontEnd class
-			FrontEnd->Calculate_RenderThread(offset, yz_updated, grid3D__, output__);
+			FrontEnd->Calculate_RenderThread(offset, yz_updated, output__);
 		}
 		//This is now back in the Game Thread!
 	);
@@ -404,7 +380,6 @@ bool AWeatherManager::Calculate(
 
 void AWeatherManager::Calculate_RenderThread(
 	/*  input */const FVector xyz, const bool yz_updated,
-	/* output */TArray<FStruct_AirGridContainer_CPU>* grid3D_,
 	/* output */TArray<FVector>* output) {
 	check(IsInRenderingThread());
 
@@ -432,7 +407,6 @@ void AWeatherManager::Calculate_RenderThread(
 
 	weather_compute_shader_->SetOutput(RHICmdList, output_UAV_);
 
-	weather_compute_shader_->SetShaderResourceParameterAsUAV(RHICmdList, FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_UAV_);
 
 	DispatchComputeShader(RHICmdList, *weather_compute_shader_, 1, 1, 1);
 
@@ -444,17 +418,7 @@ void AWeatherManager::Calculate_RenderThread(
 
 
 
-	const FStruct_AirGridContainer_CPUx3* shader_data = (const FStruct_AirGridContainer_CPUx3*)RHICmdList.LockStructuredBuffer(
-		FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_, 0, sizeof(FStruct_AirGridContainer_CPUx3), EResourceLockMode::RLM_ReadOnly);
-	FMemory::Memcpy(grid3D_->GetData(), shader_data, sizeof(FStruct_AirGridContainer_CPU) * 3);
-	// If you would like to get the partial data, (*output)[index] = *(shader_data + index) is more efficient??
-
-	//for (int32 index = 0; index < grid3D_num_input_; ++index) {
-	//  (*output)[index] = *(shader_data + index);
-	//}
-	//float test = grid3D_[0][0].CellColumns[0].U = 1;
 	RHICmdList.UnlockStructuredBuffer(output_buffer_);
-	RHICmdList.UnlockStructuredBuffer(FStruct_AirGridContainer_grid3D_CPU_ResourceParameter_buffer_);
 }
 
 // TResourceArray's values are still alive...

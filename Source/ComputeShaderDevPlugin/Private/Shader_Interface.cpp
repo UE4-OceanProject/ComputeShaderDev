@@ -31,8 +31,7 @@ bool FGlobalComputeShader_Interface::Serialize(FArchive& Ar) {
 		<< FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter //x5600
 		<< FStruct_AirGridContainer_gridInit_CPU_ResourceParameter //x5600
 
-		<< output_
-		<< FStruct_AirGridContainer_grid3D_CPU_ResourceParameter //x5600x3
+		<< output_ //x5600x3
 		;
 	return bShaderHasOutdatedParameters;
 }
@@ -41,9 +40,6 @@ bool FGlobalComputeShader_Interface::Serialize(FArchive& Ar) {
 FGlobalComputeShader_Interface::FGlobalComputeShader_Interface(const ShaderMetaType::CompiledShaderInitializerType& Initializer) : FGlobalShader(Initializer) {
 	//Here is where we take the "Serialized" map above, and "bind" each part to their respective variable name inside of the shader
 
-	//offset_x_.Bind(Initializer.ParameterMap, TEXT("test_offset_x"), SPF_Mandatory);
-	//input_position_.Bind(Initializer.ParameterMap, TEXT("test_input_position"), SPF_Mandatory);
-	//input_scalar_.Bind(Initializer.ParameterMap, TEXT("test_input_scalar"), SPF_Mandatory);
 	dTParameter.Bind(Initializer.ParameterMap, TEXT("dT"), SPF_Mandatory);
 	gridXParameter.Bind(Initializer.ParameterMap, TEXT("gridX"), SPF_Mandatory);
 	gridYParameter.Bind(Initializer.ParameterMap, TEXT("gridY"), SPF_Mandatory);
@@ -61,8 +57,7 @@ FGlobalComputeShader_Interface::FGlobalComputeShader_Interface(const ShaderMetaT
 	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.Bind(Initializer.ParameterMap, TEXT("gridRslow"), SPF_Mandatory); //x5600
 	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.Bind(Initializer.ParameterMap, TEXT("gridInit"), SPF_Mandatory); //x5600
 
-	output_.Bind(Initializer.ParameterMap, TEXT("test_output"), SPF_Mandatory);
-	FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.Bind(Initializer.ParameterMap, TEXT("grid3D"), SPF_Mandatory); //x5600x3
+	output_.Bind(Initializer.ParameterMap, TEXT("test_output"), SPF_Mandatory);//x5600x3
 }
 
 
@@ -109,9 +104,6 @@ void FGlobalComputeShader_Interface::SetShaderResourceParameters(FRHICommandList
 	FShaderResourceViewRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV,
 	FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV
 ) {
-	//if (input_position_.IsBound()) {
-	//	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), input_position_.GetBaseIndex(), input_position);
-	//}
 	if (FStruct_Cell_gridSizeK_CPU_ResourceParameter.IsBound()) {
 		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV);
 	}
@@ -133,14 +125,6 @@ void FGlobalComputeShader_Interface::SetOutput(FRHICommandList& RHICmdList, FRHI
 	}
 }
 
-void FGlobalComputeShader_Interface::SetShaderResourceParameterAsUAV(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output) {
-	//if (output_.IsBound()) {
-	//	RHICmdList.SetUAVParameter(GetComputeShader(), output_.GetBaseIndex(), output);
-	//}
-	if (FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.GetBaseIndex(), output);
-	}
-}
 
 // for StructuredBuffer.
 void FGlobalComputeShader_Interface::ClearParameters(FRHICommandList& RHICmdList) {
@@ -159,8 +143,7 @@ void FGlobalComputeShader_Interface::ClearOutput(FRHICommandList& RHICmdList) {
 	if (output_.IsBound()) {
 		RHICmdList.SetUAVParameter(GetComputeShader(), output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
 	}
-	if (FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_grid3D_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+
 }
 
 

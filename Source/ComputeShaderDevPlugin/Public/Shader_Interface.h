@@ -82,7 +82,7 @@ public:
 	void SetShaderResourceParameterAsUAV(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output);
 	void ClearParameters(FRHICommandList& RHICmdList); // for StructuredBuffer.
 	void ClearOutput(FRHICommandList& RHICmdList); // for RWStructuredBuffer.
-	void SetOutput(FRHICommandList& rhi_command_list, FRHIUnorderedAccessView* output);
+	void SetOutput(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output);
 
 private:
 
@@ -111,7 +111,6 @@ private:
 
 	//THIS IS OUTPUT
 	FShaderResourceParameter output_; // RWStructuredBuffer<float3> test_output;
-	FShaderResourceParameter FStruct_AirGridContainer_grid3D_CPU_ResourceParameter; //x5600x3
 
 };
 

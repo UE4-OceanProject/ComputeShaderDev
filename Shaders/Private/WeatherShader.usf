@@ -676,24 +676,22 @@
 //    }
 //} //STEP 4 
 
+struct FWarpInConfig
+{
+    float ExitSpeed;
+    float WarpInSpeed;
 
-RWStructuredBuffer<float3> test_output;
+    float Padding0;
+    float Padding1;
+};
+
+RWStructuredBuffer<FWarpInConfig> test_output;
 ///////////////////////////////////////////////////////////////////////////
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
 void simulateStep(int3 dispatch_id : SV_DispatchThreadID)
 {
-    test_output[1] = test_output[0];
-    test_output[0] = float3(999, 666, 333);
-    grid3D[0][0].CellColumns[0].U = 999.6;
-    grid3D[0][0].CellColumns[1].U = 999.6;
-    grid3D[0][1].CellColumns[0].U = 999.6;
-    grid3D[0][1].CellColumns[1].U = 999.6;
-    grid3D[0][2].CellColumns[0].U = 999.6;
-    grid3D[0][2].CellColumns[1].U = 999.6;
-    //grid3D[3].CellColumns[0].U = 999;
-    //grid3D[3].CellColumns[1].U = 999;
-    //grid3D[0][0].CellColumns[0].U = 999;
+    test_output[0].ExitSpeed = 1.0;
 
 
 

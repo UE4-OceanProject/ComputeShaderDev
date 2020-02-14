@@ -1,7 +1,14 @@
 #pragma once
 #include "WeatherStructs.generated.h"
 
+struct FWarpInConfig
+{
+	float ExitSpeed;
+	float WarpInSpeed;
 
+	float Padding0;
+	float Padding1;
+};
 
 //This needs to match the struct in the shader
 
@@ -80,28 +87,6 @@ struct FStruct_AirGridContainer_CPU {
 	}
 };
 
-USTRUCT(BlueprintType)
-struct FStruct_AirGridContainer_CPUx3 {
-	GENERATED_USTRUCT_BODY()
-		// Always make USTRUCT variables into UPROPERTY()
-		// Any non-UPROPERTY() struct vars are not replicated
-		// Always initialize your USTRUCT variables!
-
-		///////////////////////////////////////////////////////
-		// VariableData (5600)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundVariables")
-		TArray<FStruct_AirCellColumns_CPU> CellColumns0;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundVariables")
-		TArray<FStruct_AirCellColumns_CPU> CellColumns1;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundVariables")
-		TArray<FStruct_AirCellColumns_CPU> CellColumns2;
-
-	//Have to have this initializer or you will have "optimized out" issues when 
-	//creating new structs?
-	FStruct_AirGridContainer_CPUx3()
-	{
-	}
-};
 
 
 

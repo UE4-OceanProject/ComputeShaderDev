@@ -98,24 +98,24 @@ void FGlobalComputeShader_Interface::SetUniformBuffers(FRHICommandList& RHICmdLi
 	// UniformBuffer_MultiFrame: The uniform buffer is used for multiple draw calls, possibly across multiple frames
 }
 
-void FGlobalComputeShader_Interface::SetShaderResourceParameters(FRHICommandList& RHICmdList, 
-	FShaderResourceViewRHIRef FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV,
-	FShaderResourceViewRHIRef FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV,
-	FShaderResourceViewRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV,
-	FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV
+void FGlobalComputeShader_Interface::SetShaderResourceParameters(FRHICommandList& RHICmdList
+	//FShaderResourceViewRHIRef FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV,
+	//FShaderResourceViewRHIRef FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV,
+	//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV,
+	//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV
 ) {
-	if (FStruct_Cell_gridSizeK_CPU_ResourceParameter.IsBound()) {
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV);
-	}
-	if (FStruct_GroundGridContainer_ground_CPU_ResourceParameter.IsBound()) {
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV);
-	}
-	if (FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.IsBound()) {
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV);
-	}
-	if (FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.IsBound()) {
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV);
-	}
+	//if (FStruct_Cell_gridSizeK_CPU_ResourceParameter.IsBound()) {
+	//	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV);
+	//}
+	//if (FStruct_GroundGridContainer_ground_CPU_ResourceParameter.IsBound()) {
+	//	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV);
+	//}
+	//if (FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.IsBound()) {
+	//	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV);
+	//}
+	//if (FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.IsBound()) {
+	//	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV);
+	//}
 }
 
 
@@ -129,13 +129,13 @@ void FGlobalComputeShader_Interface::SetOutput(FRHICommandList& RHICmdList, FRHI
 // for StructuredBuffer.
 void FGlobalComputeShader_Interface::ClearParameters(FRHICommandList& RHICmdList) {
 	if (FStruct_Cell_gridSizeK_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
 	if (FStruct_GroundGridContainer_ground_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
 	if (FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
 	if (FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetUAVParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
 }
 
 // for RWStructuredBuffer.

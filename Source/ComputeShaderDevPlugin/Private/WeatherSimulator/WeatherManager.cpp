@@ -44,17 +44,17 @@ void AWeatherManager::BeginPlay()
 void AWeatherManager::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	// I'm not sure where is the appropriate place to call the following SafeRelease methods.
 	// Destructor? EndPlay? BeginDestroy??
-	FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_.SafeRelease();
-	FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_.SafeRelease();
+	//FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_.SafeRelease();
+	//FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_.SafeRelease();
 
-	FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_.SafeRelease();
-	FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_.SafeRelease();
+	//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_.SafeRelease();
+	//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_.SafeRelease();
 
-	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_.SafeRelease();
-	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_.SafeRelease();
+	//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_.SafeRelease();
+	//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_.SafeRelease();
 
-	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_.SafeRelease();
-	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_.SafeRelease();
+	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_.SafeRelease();
+	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_.SafeRelease();
 
 	output_buffer_.SafeRelease();
 	output_UAV_.SafeRelease();
@@ -199,72 +199,72 @@ bool AWeatherManager::UploadResourceParametersToShader(
 	const TArray<FStruct_AirGridContainer_CPU>& grid3D_
 ) {
 
-	if (gridSizeK_.Num() == 0) {
-		UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
-		return false;
-	}
-	gridSizeK_num_input_ = gridSizeK_.Num();
+	//if (gridSizeK_.Num() == 0) {
+	//	UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
+	//	return false;
+	//}
+	//gridSizeK_num_input_ = gridSizeK_.Num();
 
-	// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
-	FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_.SetNum(gridSizeK_num_input_);
-	FMemory::Memcpy(FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_.GetData(), gridSizeK_.GetData(), sizeof(FStruct_Cell_CPU) * gridSizeK_num_input_);
+	//// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
+	//FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_.SetNum(gridSizeK_num_input_);
+	//FMemory::Memcpy(FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_.GetData(), gridSizeK_.GetData(), sizeof(FStruct_Cell_CPU) * gridSizeK_num_input_);
 
-	FStruct_Cell_gridSizeK_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_;
-	// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
-	FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_Cell_CPU), sizeof(FStruct_Cell_CPU) * gridSizeK_num_input_, BUF_ShaderResource, FStruct_Cell_gridSizeK_CPU_ResourceParameter_resource_);
-	FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_);
-
-
-
-	if (ground_.Num() == 0) {
-		UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
-		return false;
-	}
-	ground_num_input_ = ground_.Num();
-
-	// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
-	FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_.SetNum(ground_num_input_);
-	FMemory::Memcpy(FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_.GetData(), ground_.GetData(), sizeof(FStruct_GroundGridContainer_CPU) * ground_num_input_);
-
-	FStruct_GroundGridContainer_ground_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_;
-	// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
-	FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_GroundGridContainer_CPU), sizeof(FStruct_GroundGridContainer_CPU) * ground_num_input_, BUF_ShaderResource, FStruct_GroundGridContainer_ground_CPU_ResourceParameter_resource_);
-	FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_);
+	//FStruct_Cell_gridSizeK_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_;
+	//// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
+	//FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_Cell_CPU), sizeof(FStruct_Cell_CPU) * gridSizeK_num_input_, BUF_ShaderResource, FStruct_Cell_gridSizeK_CPU_ResourceParameter_resource_);
+	//FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_);
 
 
 
+	//if (ground_.Num() == 0) {
+	//	UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
+	//	return false;
+	//}
+	//ground_num_input_ = ground_.Num();
 
-	if (gridRslow_.Num() == 0) {
-		UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
-		return false;
-	}
-	gridRslow_num_input_ = gridRslow_.Num();
+	//// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
+	//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_.SetNum(ground_num_input_);
+	//FMemory::Memcpy(FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_.GetData(), ground_.GetData(), sizeof(FStruct_GroundGridContainer_CPU) * ground_num_input_);
 
-	// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
-	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_.SetNum(gridRslow_num_input_);
-	FMemory::Memcpy(FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_.GetData(), gridRslow_.GetData(), sizeof(FStruct_AirGridContainer_CPU) * gridRslow_num_input_);
-
-	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_;
-	// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
-	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU), sizeof(FStruct_AirGridContainer_CPU) * gridRslow_num_input_, BUF_ShaderResource, FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_resource_);
-	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_);
-
+	//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_;
+	//// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
+	//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_GroundGridContainer_CPU), sizeof(FStruct_GroundGridContainer_CPU) * ground_num_input_, BUF_ShaderResource, FStruct_GroundGridContainer_ground_CPU_ResourceParameter_resource_);
+	//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_);
 
 
-	if (gridInit_.Num() == 0) {
-		UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
-		return false;
-	}
-	gridInit_num_input_ = gridInit_.Num();
 
-	// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
-	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_.SetNum(gridInit_num_input_);
-	FMemory::Memcpy(FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_.GetData(), gridInit_.GetData(), sizeof(FStruct_AirGridContainer_CPU) * gridInit_num_input_);
 
-	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_;
-	// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
-	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU), sizeof(FStruct_AirGridContainer_CPU) * gridInit_num_input_, BUF_ShaderResource, FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_resource_);
-	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_);
+	//if (gridRslow_.Num() == 0) {
+	//	UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
+	//	return false;
+	//}
+	//gridRslow_num_input_ = gridRslow_.Num();
+
+	//// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
+	//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_.SetNum(gridRslow_num_input_);
+	//FMemory::Memcpy(FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_.GetData(), gridRslow_.GetData(), sizeof(FStruct_AirGridContainer_CPU) * gridRslow_num_input_);
+
+	//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_;
+	//// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
+	//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU), sizeof(FStruct_AirGridContainer_CPU) * gridRslow_num_input_, BUF_ShaderResource, FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_resource_);
+	//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_);
+
+
+
+	//if (gridInit_.Num() == 0) {
+	//	UE_LOG(LogTemp, Warning, TEXT("Error: gridSizeK_ is empty at ATestComputeShaderActor::InitializeInputPosition."));
+	//	return false;
+	//}
+	//gridInit_num_input_ = gridInit_.Num();
+
+	//// We need to copy TArray to TResourceArray to set RHICreateStructuredBuffer.
+	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_.SetNum(gridInit_num_input_);
+	//FMemory::Memcpy(FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_.GetData(), gridInit_.GetData(), sizeof(FStruct_AirGridContainer_CPU) * gridInit_num_input_);
+
+	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_resource_.ResourceArray = &FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_;
+	//// Note: In D3D11StructuredBuffer.cpp, ResourceArray->Discard() function is called, but not discarded??
+	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirGridContainer_CPU), sizeof(FStruct_AirGridContainer_CPU) * gridInit_num_input_, BUF_ShaderResource, FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_resource_);
+	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_);
 
 
 	return true;
@@ -321,8 +321,8 @@ void AWeatherManager::SetUniformBuffersInShader_RenderThread(
 //Try using  //BUF_KeepCPUAccessible in UAV setting
 bool AWeatherManager::Calculate(
 	/*  input */const float x,
-	/* input */TArray<FVector>& input,
-	/* output */TArray<FVector>& output
+	/* input */TArray<FStruct_AirGridContainer_CPU>& input,
+	/* output */TArray<FStruct_AirGridContainer_CPU>& output
 ) {
 
 
@@ -332,13 +332,19 @@ bool AWeatherManager::Calculate(
 		return false;
 	}
 
+	FWarpInConfig data[3] = {
+		{ 7,7,7,7 } ,
+		{ 8,8,8,8 } ,
+		{ 9,9,9,9 }
+	};
+
 
 
 	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
 	output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(output_RA_.GetData(), input.GetData(), sizeof(FVector) * 2);
+	FMemory::Memcpy(output_RA_.GetData(), data, sizeof(FWarpInConfig) * num_input_);
 	output_resource_.ResourceArray = &output_RA_;
-	output_buffer_ = RHICreateStructuredBuffer(sizeof(FVector), sizeof(FVector) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, output_resource_);
+	output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig), sizeof(FWarpInConfig) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, output_resource_);
 	output_UAV_ = RHICreateUnorderedAccessView(output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
 
@@ -352,7 +358,7 @@ bool AWeatherManager::Calculate(
 
 	AWeatherManager* FrontEnd = this;
 
-	TArray<FVector>* output__ = &output;
+	TArray<FStruct_AirGridContainer_CPU>* output__ = &output;
 
 
 	output.SetNum(num_input_);
@@ -380,7 +386,7 @@ bool AWeatherManager::Calculate(
 
 void AWeatherManager::Calculate_RenderThread(
 	/*  input */const FVector xyz, const bool yz_updated,
-	/* output */TArray<FVector>* output) {
+	/* output */TArray<FStruct_AirGridContainer_CPU>* output) {
 	check(IsInRenderingThread());
 
 
@@ -398,11 +404,11 @@ void AWeatherManager::Calculate_RenderThread(
 	//	weather_compute_shader_->SetUniformBuffers(RHICmdList, xyz.Y, xyz.Z);
 	//}
 
-	weather_compute_shader_->SetShaderResourceParameters(RHICmdList, 
-		FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_,
-		FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_,
-		FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_,
-		FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_
+	weather_compute_shader_->SetShaderResourceParameters(RHICmdList
+		//FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_,
+		//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_,
+		//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_,
+		//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_
 		);
 
 	weather_compute_shader_->SetOutput(RHICmdList, output_UAV_);
@@ -413,19 +419,25 @@ void AWeatherManager::Calculate_RenderThread(
 	weather_compute_shader_->ClearOutput(RHICmdList);
 	weather_compute_shader_->ClearParameters(RHICmdList);
 
-	const FVector* shader_data2 = (const FVector*)RHICmdList.LockStructuredBuffer(output_buffer_, 0, sizeof(FVector) * num_input_, EResourceLockMode::RLM_ReadOnly);
-	FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FVector) * num_input_);
-
-
+	FWarpInConfig* shader_data2 = (FWarpInConfig*)RHICmdList.LockStructuredBuffer(output_buffer_, 0, sizeof(FWarpInConfig) * num_input_, EResourceLockMode::RLM_ReadOnly);
+	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig) * num_input_);
+	FWarpInConfig data[3] = {
+	{ 7,7,7,7 } ,
+	{ 8,8,8,8 } ,
+	{ 9,9,9,9 }
+	};
+	FMemory::Memcpy(data, shader_data2, sizeof(FWarpInConfig) * num_input_);
+	FMemory::Memcpy(shader_data2, data, sizeof(FWarpInConfig) * num_input_);
 
 	RHICmdList.UnlockStructuredBuffer(output_buffer_);
+
 }
 
 // TResourceArray's values are still alive...
-void AWeatherManager::PrintResult(const TArray<FVector>& output) {
-	for (int32 index = 0; index < num_input_; ++index) {
-		UE_LOG(LogTemp, Warning, TEXT("(%f, %f, %f)"),
-			output[index].X, output[index].Y, output[index].Z);
-	}
+void AWeatherManager::PrintResult(const TArray<FStruct_AirGridContainer_CPU>& output) {
+	//for (int32 index = 0; index < num_input_; ++index) {
+	//	UE_LOG(LogTemp, Warning, TEXT("(%f, %f, %f)"),
+	//		output[index].X, output[index].Y, output[index].Z);
+	//}
 }
 

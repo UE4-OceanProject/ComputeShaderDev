@@ -68,4 +68,4 @@ RWStructuredBuffer<FStruct_Cell_GPU> gridSizeK;
 RWStructuredBuffer<FStruct_GroundGridContainer_GPU> ground; //100
 RWStructuredBuffer<FStruct_AirGridContainer_GPU> gridRslow; //x5600
 RWStructuredBuffer<FStruct_AirGridContainer_GPU> gridInit; //x5600
-RWStructuredBuffer<FStruct_AirGridContainer_GPU> grid3D[3]; //x5600x3
+RWStructuredBuffer<FStruct_AirGridContainer_GPU> grid3D; //x5600x3

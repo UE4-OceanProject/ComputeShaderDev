@@ -47,8 +47,11 @@ public:
 	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& PermutationParams, FShaderCompilerEnvironment& OutEnvironment) {
 		FGlobalShader::ModifyCompilationEnvironment(PermutationParams, OutEnvironment);
 		OutEnvironment.CompilerFlags.Add(CFLAG_StandardOptimization);
-		OutEnvironment.CompilerFlags.Add(CFLAG_OnChip);
+		//OutEnvironment.CompilerFlags.Add(CFLAG_OnChip);
 		OutEnvironment.CompilerFlags.Add(CFLAG_PreferFlowControl);
+		OutEnvironment.CompilerFlags.Add(CFLAG_Debug);
+		OutEnvironment.CompilerFlags.Add(CFLAG_KeepDebugInfo);
+
 		// Add your own defines for the shader code
 		//OutEnvironment.SetDefine(TEXT("MY_DEFINE"), 1);
 		//OutEnvironment.SetDefine(TEXT("NAME"), TEXT("Test"));
@@ -72,17 +75,17 @@ public:
 	void SetUniformBuffers(FRHICommandList& RHICmdList, const float offset_y, const float offset_z);
 
 	// FShaderResourceViewRHIRef for StructuredBuffer, FUnorderedAccessViewRHIParamRef for RWStructuredBuffer.
-	void SetShaderResourceParameters(FRHICommandList& RHICmdList, 
-		FShaderResourceViewRHIRef FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV,
-		FShaderResourceViewRHIRef FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV,
-		FShaderResourceViewRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV,
-		FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV
+	void SetShaderResourceParameters(FRHICommandList& RHICmdList 
+		//FShaderResourceViewRHIRef FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV,
+		//FShaderResourceViewRHIRef FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV,
+		//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV,
+		//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV
 	);
 
-	void SetShaderResourceParameterAsUAV(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output);
+
+	void SetOutput(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output);
 	void ClearParameters(FRHICommandList& RHICmdList); // for StructuredBuffer.
 	void ClearOutput(FRHICommandList& RHICmdList); // for RWStructuredBuffer.
-	void SetOutput(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output);
 
 private:
 

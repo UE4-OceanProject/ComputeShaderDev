@@ -2,6 +2,7 @@
 #include "WeatherSimulator/WeatherManager.h"
 #include "DynamicRHIResourceArray.h"
 #include "Engine.h"
+//#include "RenderCaptureInterface.h"
 
 //#define NUM_THREADS_PER_GROUP_DIMENSION 1 
 
@@ -326,11 +327,11 @@ bool AWeatherManager::Calculate(
 ) {
 
 
-	if (gridSizeK_num_input_ == 0 || ground_num_input_ == 0 || gridRslow_num_input_ == 0 || gridInit_num_input_ == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Error: input grids have not been set correctly at AWeatherManager::Calculate."));
-		return false;
-	}
+	//if (gridSizeK_num_input_ == 0 || ground_num_input_ == 0 || gridRslow_num_input_ == 0 || gridInit_num_input_ == 0)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Error: input grids have not been set correctly at AWeatherManager::Calculate."));
+	//	return false;
+	//}
 
 	FWarpInConfig data[3] = {
 		{ 7,7,7,7 } ,
@@ -411,6 +412,7 @@ void AWeatherManager::Calculate_RenderThread(
 		//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_
 		);
 
+	//RenderCaptureInterface::FScopedCapture
 	weather_compute_shader_->SetOutput(RHICmdList, output_UAV_);
 
 

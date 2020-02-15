@@ -55,7 +55,7 @@ protected:
 	void ExecuteInRenderThread(TArray<FStruct_AirGridContainer_CPU> &currentStates);
 
 private:
-	int32 num_input_ = 3;
+	int32 num_input_ = 2;
 	//Store the number of rows in array for each array
 	int32 gridSizeK_num_input_ = 0;
 	int32 ground_num_input_ = 0;
@@ -90,7 +90,7 @@ private:
 	//FStructuredBufferRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_;
 	//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_;     //Issues with these when end play
 
-	TResourceArray<FWarpInConfig> output_RA_; // Not necessary.
+	TResourceArray<FWarpInConfig2> output_RA_; // Not necessary.
 	FRHIResourceCreateInfo output_resource_;
 	FStructuredBufferRHIRef output_buffer_;
 	FUnorderedAccessViewRHIRef output_UAV_;

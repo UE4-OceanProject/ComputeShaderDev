@@ -1,17 +1,18 @@
 #pragma once
 #include "WeatherStructs.generated.h"
+
 struct FWarpInConfig2
 {
-	float ExitSpeed;
-	float WarpInSpeed;
-
-	float Padding0;
-	float Padding1;
-};
-
-struct FWarpInConfig
-{
-	FWarpInConfig2 somename;
+		float U; // u: wind component in the X direction
+		float V; // v: wind component in the Y direction
+		float W; // w: wind component in the Z direction
+		float THETA; // Theta: Potential temperature
+		float Pi; // Pi: Exener function
+		float RO; // RO: Density (Temp)
+		float QV; // qv: Vapor mixing ratio
+		float QC; // qc: Condensation mixing ratio
+		float QR; // qr: Rain mixing ratio
+		float VORT; // Vort: Vorticity
 };
 
 

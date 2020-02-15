@@ -332,34 +332,18 @@ bool AWeatherManager::Calculate(
 	//	UE_LOG(LogTemp, Warning, TEXT("Error: input grids have not been set correctly at AWeatherManager::Calculate."));
 	//	return false;
 	//}
+	TArray<FWarpInConfig2> data = { 
+		{7,7,7,7,7,7,7,7,7,7},
+		{7,7,7,7,7,7,7,7,7,7} };
 
-	FWarpInConfig2 data1 =
-	{
-		 7,7,7,7
-	};
-
-	FWarpInConfig2 data2 =
-	{
-		 8,8,8,8
-	};
-
-	FWarpInConfig2 data3 =
-	{
-		 9,9,9,9
-	};
-
-	FWarpInConfig data[3] =
-	{
-		data1,data2,data3
-	};
 
 
 
 	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
 	output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(output_RA_.GetData(), data, sizeof(FWarpInConfig) * num_input_);
+	FMemory::Memcpy(output_RA_.GetData(), data.GetData(), sizeof(FWarpInConfig2) * num_input_);
 	output_resource_.ResourceArray = &output_RA_;
-	output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig), sizeof(FWarpInConfig) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, output_resource_);
+	output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, output_resource_);
 	output_UAV_ = RHICreateUnorderedAccessView(output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
 
@@ -435,31 +419,17 @@ void AWeatherManager::Calculate_RenderThread(
 	weather_compute_shader_->ClearOutput(RHICmdList);
 	weather_compute_shader_->ClearParameters(RHICmdList);
 
-	FWarpInConfig* shader_data2 = (FWarpInConfig*)RHICmdList.LockStructuredBuffer(output_buffer_, 0, sizeof(FWarpInConfig) * num_input_, EResourceLockMode::RLM_ReadOnly);
-	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig) * num_input_);
-	FWarpInConfig2 data1 =
-	{
-		 -1,-1,-1,-1
-	};
-
-	FWarpInConfig2 data2 =
-	{
-		 -1,-1,-1,-1
-	};
-
-	FWarpInConfig2 data3 =
-	{
-		 -1,-1,-1,-1
-	};
-
-	FWarpInConfig data[3] = 
-	{
-		data1,data2,data3
-	};
+	FWarpInConfig2* shader_data2 = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
+	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
 
 
-	FMemory::Memcpy(data, shader_data2, sizeof(FWarpInConfig) * num_input_);
-	FMemory::Memcpy(shader_data2, data, sizeof(FWarpInConfig) * num_input_);
+	TArray<FWarpInConfig2> data = {
+	{7,7,7,7,7,7,7,7,7,7},
+	{7,7,7,7,7,7,7,7,7,7} };
+
+
+	FMemory::Memcpy(data.GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
+	FMemory::Memcpy(shader_data2, data.GetData(), sizeof(FWarpInConfig2) * num_input_);
 
 	RHICmdList.UnlockStructuredBuffer(output_buffer_);
 

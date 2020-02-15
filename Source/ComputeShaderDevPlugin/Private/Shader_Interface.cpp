@@ -57,6 +57,23 @@ FGlobalComputeShader_Interface::FGlobalComputeShader_Interface(const ShaderMetaT
 	FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.Bind(Initializer.ParameterMap, TEXT("gridRslow"), SPF_Mandatory); //x5600
 	FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.Bind(Initializer.ParameterMap, TEXT("gridInit"), SPF_Mandatory); //x5600
 
+
+	////Frame loop
+	//int a = 1;
+	////First frame of simulation
+	//output[a].Bind(Initializer.ParameterMap, TEXT("Current_Buffer"), SPF_Mandatory);//x5600x10
+	//output[a+1].Bind(Initializer.ParameterMap, TEXT("Next_Buffer"), SPF_Mandatory);//x5600x10
+	//output[a+2].Bind(Initializer.ParameterMap, TEXT("Future_Buffer"), SPF_Mandatory);//x5600x10
+
+	////send to next frame
+
+	////do some fancy math on indexes
+	////just psuedo code
+	//a = a + 1 % 3
+
+	////and repeat loop
+
+
 	output_.Bind(Initializer.ParameterMap, TEXT("test_output"), SPF_Mandatory);//x5600x3
 }
 

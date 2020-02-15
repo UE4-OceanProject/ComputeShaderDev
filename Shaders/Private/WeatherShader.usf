@@ -676,7 +676,7 @@
 //    }
 //} //STEP 4 
 
-struct FWarpInConfig
+struct FWarpInConfig2
 {
     float ExitSpeed;
     float WarpInSpeed;
@@ -685,15 +685,22 @@ struct FWarpInConfig
     float Padding1;
 };
 
+struct FWarpInConfig
+{
+    FWarpInConfig2 somename;
+};
+
+
+
 RWStructuredBuffer<FWarpInConfig> test_output;
 ///////////////////////////////////////////////////////////////////////////
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
 void simulateStep(int3 dispatch_id : SV_DispatchThreadID)
 {
-    test_output[0].ExitSpeed = 1.0;
-    test_output[1].ExitSpeed = 1.0;
-    test_output[2].ExitSpeed = 1.0;
+    test_output[0].somename.ExitSpeed = 1.0;
+    test_output[1].somename.ExitSpeed = 1.0;
+    test_output[2].somename.ExitSpeed = 1.0;
 
 
 

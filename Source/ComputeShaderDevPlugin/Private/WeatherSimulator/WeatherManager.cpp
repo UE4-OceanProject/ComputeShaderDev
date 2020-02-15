@@ -333,10 +333,24 @@ bool AWeatherManager::Calculate(
 	//	return false;
 	//}
 
-	FWarpInConfig data[3] = {
-		{ 7,7,7,7 } ,
-		{ 8,8,8,8 } ,
-		{ 9,9,9,9 }
+	FWarpInConfig2 data1 =
+	{
+		 7,7,7,7
+	};
+
+	FWarpInConfig2 data2 =
+	{
+		 8,8,8,8
+	};
+
+	FWarpInConfig2 data3 =
+	{
+		 9,9,9,9
+	};
+
+	FWarpInConfig data[3] =
+	{
+		data1,data2,data3
 	};
 
 
@@ -423,11 +437,27 @@ void AWeatherManager::Calculate_RenderThread(
 
 	FWarpInConfig* shader_data2 = (FWarpInConfig*)RHICmdList.LockStructuredBuffer(output_buffer_, 0, sizeof(FWarpInConfig) * num_input_, EResourceLockMode::RLM_ReadOnly);
 	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig) * num_input_);
-	FWarpInConfig data[3] = {
-	{ 7,7,7,7 } ,
-	{ 8,8,8,8 } ,
-	{ 9,9,9,9 }
+	FWarpInConfig2 data1 =
+	{
+		 -1,-1,-1,-1
 	};
+
+	FWarpInConfig2 data2 =
+	{
+		 -1,-1,-1,-1
+	};
+
+	FWarpInConfig2 data3 =
+	{
+		 -1,-1,-1,-1
+	};
+
+	FWarpInConfig data[3] = 
+	{
+		data1,data2,data3
+	};
+
+
 	FMemory::Memcpy(data, shader_data2, sizeof(FWarpInConfig) * num_input_);
 	FMemory::Memcpy(shader_data2, data, sizeof(FWarpInConfig) * num_input_);
 

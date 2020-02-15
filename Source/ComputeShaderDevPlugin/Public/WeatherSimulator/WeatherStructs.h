@@ -1,7 +1,6 @@
 #pragma once
 #include "WeatherStructs.generated.h"
-
-struct FWarpInConfig
+struct FWarpInConfig2
 {
 	float ExitSpeed;
 	float WarpInSpeed;
@@ -9,6 +8,12 @@ struct FWarpInConfig
 	float Padding0;
 	float Padding1;
 };
+
+struct FWarpInConfig
+{
+	FWarpInConfig2 somename;
+};
+
 
 //This needs to match the struct in the shader
 

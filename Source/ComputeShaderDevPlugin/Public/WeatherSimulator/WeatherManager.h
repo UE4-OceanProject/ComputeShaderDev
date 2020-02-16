@@ -90,10 +90,22 @@ private:
 	//FStructuredBufferRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_;
 	//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_;     //Issues with these when end play
 
-	TResourceArray<FWarpInConfig2> output_RA_; // Not necessary.
-	FRHIResourceCreateInfo output_resource_;
-	FStructuredBufferRHIRef output_buffer_;
-	FUnorderedAccessViewRHIRef output_UAV_;
+	TResourceArray<FWarpInConfig2> A_output_RA_; // Not necessary.
+	FRHIResourceCreateInfo A_output_resource_;
+	FStructuredBufferRHIRef A_output_buffer_;
+	FUnorderedAccessViewRHIRef A_output_UAV_;
+
+	TResourceArray<FWarpInConfig2> B_output_RA_; // Not necessary.
+	FRHIResourceCreateInfo B_output_resource_;
+	FStructuredBufferRHIRef B_output_buffer_;
+	FUnorderedAccessViewRHIRef B_output_UAV_;
+
+	TResourceArray<FWarpInConfig2> C_output_RA_; // Not necessary.
+	FRHIResourceCreateInfo C_output_resource_;
+	FStructuredBufferRHIRef C_output_buffer_;
+	FUnorderedAccessViewRHIRef C_output_UAV_;
+
+
 
 	void SetUniformBuffersInShader_RenderThread(
 		/*  input */const float y, const float z);

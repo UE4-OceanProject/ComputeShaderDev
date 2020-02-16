@@ -31,7 +31,9 @@ bool FGlobalComputeShader_Interface::Serialize(FArchive& Ar) {
 		<< FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter //x5600
 		<< FStruct_AirGridContainer_gridInit_CPU_ResourceParameter //x5600
 
-		<< output_ //x5600x3
+		<< A_output_ //x5600x3
+		<< B_output_ //x5600x3
+		<< C_output_ //x5600x3
 		;
 	return bShaderHasOutdatedParameters;
 }
@@ -74,7 +76,9 @@ FGlobalComputeShader_Interface::FGlobalComputeShader_Interface(const ShaderMetaT
 	////and repeat loop
 
 
-	output_.Bind(Initializer.ParameterMap, TEXT("test_output"), SPF_Mandatory);//x5600x3
+	A_output_.Bind(Initializer.ParameterMap, TEXT("test_outputA"), SPF_Mandatory);//x5600x3
+	B_output_.Bind(Initializer.ParameterMap, TEXT("test_outputB"), SPF_Mandatory);//x5600x3
+	C_output_.Bind(Initializer.ParameterMap, TEXT("test_outputC"), SPF_Mandatory);//x5600x3
 }
 
 
@@ -136,9 +140,19 @@ void FGlobalComputeShader_Interface::SetShaderResourceParameters(FRHICommandList
 }
 
 
-void FGlobalComputeShader_Interface::SetOutput(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output) {
-	if (output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), output_.GetBaseIndex(), output);
+void FGlobalComputeShader_Interface::SetOutput(FRHICommandList& RHICmdList, 
+	FRHIUnorderedAccessView* A_output,
+	FRHIUnorderedAccessView* B_output,
+	FRHIUnorderedAccessView* C_output
+) {
+	if (A_output_.IsBound()) {
+		RHICmdList.SetUAVParameter(GetComputeShader(), A_output_.GetBaseIndex(), A_output);
+	}
+	if (B_output_.IsBound()) {
+		RHICmdList.SetUAVParameter(GetComputeShader(), B_output_.GetBaseIndex(), B_output);
+	}
+	if (C_output_.IsBound()) {
+		RHICmdList.SetUAVParameter(GetComputeShader(), C_output_.GetBaseIndex(), C_output);
 	}
 }
 
@@ -157,8 +171,14 @@ void FGlobalComputeShader_Interface::ClearParameters(FRHICommandList& RHICmdList
 
 // for RWStructuredBuffer.
 void FGlobalComputeShader_Interface::ClearOutput(FRHICommandList& RHICmdList) {
-	if (output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	if (A_output_.IsBound()) {
+		RHICmdList.SetUAVParameter(GetComputeShader(), A_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	}
+	if (B_output_.IsBound()) {
+		RHICmdList.SetUAVParameter(GetComputeShader(), B_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	}
+	if (C_output_.IsBound()) {
+		RHICmdList.SetUAVParameter(GetComputeShader(), C_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
 	}
 
 }

@@ -83,7 +83,11 @@ public:
 	);
 
 
-	void SetOutput(FRHICommandList& RHICmdList, FRHIUnorderedAccessView* output);
+	void SetOutput(FRHICommandList& RHICmdList, 
+		FRHIUnorderedAccessView* A_output,
+		FRHIUnorderedAccessView* B_output,
+		FRHIUnorderedAccessView* C_output 
+	);
 	void ClearParameters(FRHICommandList& RHICmdList); // for StructuredBuffer.
 	void ClearOutput(FRHICommandList& RHICmdList); // for RWStructuredBuffer.
 
@@ -113,7 +117,9 @@ private:
 
 
 	//THIS IS OUTPUT
-	FShaderResourceParameter output_; // RWStructuredBuffer<float3> test_output;
+	FShaderResourceParameter A_output_; // RWStructuredBuffer<float3> test_outputA;
+	FShaderResourceParameter B_output_; // RWStructuredBuffer<float3> test_outputB;
+	FShaderResourceParameter C_output_; // RWStructuredBuffer<float3> test_outputC;
 
 };
 

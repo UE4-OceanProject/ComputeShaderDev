@@ -93,6 +93,8 @@ public:
 
 private:
 
+	int buffer_index_rotator = 1;
+
 	//These are individual variables to be used inside of the shader
 
 	//FShaderParameter offset_x_; // float test_offset_x;
@@ -120,6 +122,79 @@ private:
 	FShaderResourceParameter A_output_; // RWStructuredBuffer<float3> test_outputA;
 	FShaderResourceParameter B_output_; // RWStructuredBuffer<float3> test_outputB;
 	FShaderResourceParameter C_output_; // RWStructuredBuffer<float3> test_outputC;
+
+
+
+
+
+
+	//class FSplatVolumeCS : public FGlobalShader
+	//{
+	//	DECLARE_GLOBAL_SHADER(FSplatVolumeCS);
+	//	SHADER_USE_PARAMETER_STRUCT(FSplatVolumeCS, FGlobalShader);
+
+	//	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
+	//	{
+	//		return true;
+	//	}
+
+	//	static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters& Parameters, FShaderCompilerEnvironment& OutEnvironment)
+	//	{
+	//		OutEnvironment.CompilerFlags.Add(CFLAG_ForceDXC);
+	//	}
+
+	//	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+	//		SHADER_PARAMETER(FIntVector, VolumeSize)
+	//		SHADER_PARAMETER(int32, BrickSize)
+	//		SHADER_PARAMETER(int32, bIsHighestMip)
+	//		SHADER_PARAMETER_UAV(RWTexture3D<uint>, VoxelizeVolume)
+	//		SHADER_PARAMETER_UAV(RWTexture3D<uint4>, IndirectionTexture)
+	//		SHADER_PARAMETER_UAV(RWBuffer<int>, BrickAllocatorParameters)
+	//		END_SHADER_PARAMETER_STRUCT()
+	//};
+
+
+
+
+
+
+
+
+
+	//FGlobalShaderMap* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
+
+	//TShaderMapRef<FSplatVolumeCS> ComputeShader(GlobalShaderMap);
+
+	//FSplatVolumeCS::FParameters Parameters;
+	//Parameters.VolumeSize = IndirectionTextureDimensions;
+	//Parameters.BrickSize = 1 << (MipLevel * BrickSizeLog2);
+	//Parameters.bIsHighestMip = MipLevel == VoxelizationVolumeMips.Num() - 1;
+	//Parameters.VoxelizeVolume = VoxelizationVolumeMips[MipLevel]->GetRenderTargetItem().UAV;
+	//Parameters.IndirectionTexture = IndirectionTexture->GetRenderTargetItem().UAV;
+	//Parameters.BrickAllocatorParameters = BrickAllocatorParameters.UAV;
+
+	//FComputeShaderUtils::Dispatch(RHICmdList, ComputeShader, Parameters, FComputeShaderUtils::GetGroupCount(IndirectionTextureDimensions, FIntVector(4)));
+
+
+	////param swapping
+	//you just assign, like, Parameters.My_Output_UAV = MyUAVs[pass % 3];
+
+
+	//data is always uploaded when you do Lock / Unlock or when you create the buffer with a ResourceArray
+	//	they are in vram after that
+
+
+	//meanwhile you can just put your shader directly inside your module instead of another module
+	//	and call ENQUEUE_RENDER_COMMAND at any point in your code to execute some stuff on render thread
+
+
+	//	search for "Remind Me EvoPulseGaming" in discord ue4 for this above
+
+
+
+
+
+
 
 };
 

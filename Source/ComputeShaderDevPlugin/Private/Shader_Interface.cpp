@@ -140,47 +140,47 @@ void FGlobalComputeShader_Interface::SetShaderResourceParameters(FRHICommandList
 }
 
 
-void FGlobalComputeShader_Interface::SetOutput(FRHICommandList& RHICmdList, 
+void FGlobalComputeShader_Interface::SetOutput(FRHICommandList& RHICmdList,
 	FRHIUnorderedAccessView* A_output,
 	FRHIUnorderedAccessView* B_output,
 	FRHIUnorderedAccessView* C_output
 ) {
-	if (A_output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), A_output_.GetBaseIndex(), A_output);
-	}
-	if (B_output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), B_output_.GetBaseIndex(), B_output);
-	}
-	if (C_output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), C_output_.GetBaseIndex(), C_output);
-	}
+	buffer_index_rotator = ((buffer_index_rotator + 1) % 3);
+	int buffer_index_rotator2 = ((buffer_index_rotator + 1) % 3);
+	int buffer_index_rotator3 = ((buffer_index_rotator2 + 1) % 3);
+
+	int a = buffer_index_rotator;
+	int b = buffer_index_rotator2;
+	int c = buffer_index_rotator3;
+
+	TArray<FShaderResourceParameter>RotateableBufers = { {A_output_,B_output_,C_output_} };
+
+	//RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[buffer_index_rotator].GetBaseIndex(), A_output);
+	//RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[buffer_index_rotator + 1 % 3].GetBaseIndex(), B_output);
+	//RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[buffer_index_rotator + 2 % 3].GetBaseIndex(), C_output);
+
+	RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[a].GetBaseIndex(), A_output);
+	RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[b].GetBaseIndex(), B_output);
+	RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[c].GetBaseIndex(), C_output);
+
 }
 
 
 // for StructuredBuffer.
 void FGlobalComputeShader_Interface::ClearParameters(FRHICommandList& RHICmdList) {
-	if (FStruct_Cell_gridSizeK_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
-	if (FStruct_GroundGridContainer_ground_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
-	if (FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
-	if (FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.IsBound())
-		RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
+
+	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_Cell_gridSizeK_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
+	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_GroundGridContainer_ground_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
+	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
+	RHICmdList.SetShaderResourceViewParameter(GetComputeShader(), FStruct_AirGridContainer_gridInit_CPU_ResourceParameter.GetBaseIndex(), FShaderResourceViewRHIRef());
 }
 
 // for RWStructuredBuffer.
 void FGlobalComputeShader_Interface::ClearOutput(FRHICommandList& RHICmdList) {
-	if (A_output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), A_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
-	}
-	if (B_output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), B_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
-	}
-	if (C_output_.IsBound()) {
-		RHICmdList.SetUAVParameter(GetComputeShader(), C_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
-	}
 
+	RHICmdList.SetUAVParameter(GetComputeShader(), A_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	RHICmdList.SetUAVParameter(GetComputeShader(), B_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
+	RHICmdList.SetUAVParameter(GetComputeShader(), C_output_.GetBaseIndex(), FUnorderedAccessViewRHIRef());
 }
 
 

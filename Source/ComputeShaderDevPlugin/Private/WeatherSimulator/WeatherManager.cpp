@@ -2,6 +2,7 @@
 #include "WeatherSimulator/WeatherManager.h"
 #include "DynamicRHIResourceArray.h"
 #include "Engine.h"
+
 //#include "RenderCaptureInterface.h"
 
 //#define NUM_THREADS_PER_GROUP_DIMENSION 1 
@@ -274,6 +275,38 @@ bool AWeatherManager::UploadResourceParametersToShader(
 	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_ = RHICreateShaderResourceView(FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_);
 
 
+	TArray<FWarpInConfig2> A_data = {
+	{7,7,7,7,7,7,7,7,7,7},
+	{7,7,7,7,7,7,7,7,7,7} };
+	TArray<FWarpInConfig2> B_data = {
+		{8,8,8,8,8,8,8,8,8,8},
+		{8,8,8,8,8,8,8,8,8,8} };
+	TArray<FWarpInConfig2> C_data = {
+		{9,9,9,9,9,9,9,9,9,9},
+		{9,9,9,9,9,9,9,9,9,9} };
+
+
+
+
+	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
+	A_output_RA_.SetNum(num_input_);
+	FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	A_output_resource_.ResourceArray = &A_output_RA_;
+	A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
+	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	B_output_RA_.SetNum(num_input_);
+	FMemory::Memcpy(B_output_RA_.GetData(), B_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	B_output_resource_.ResourceArray = &B_output_RA_;
+	B_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, B_output_resource_);
+	B_output_UAV_ = RHICreateUnorderedAccessView(B_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	C_output_RA_.SetNum(num_input_);
+	FMemory::Memcpy(C_output_RA_.GetData(), C_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	C_output_resource_.ResourceArray = &C_output_RA_;
+	C_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, C_output_resource_);
+	C_output_UAV_ = RHICreateUnorderedAccessView(C_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
 	return true;
 }
 
@@ -338,37 +371,7 @@ bool AWeatherManager::Calculate(
 	//	UE_LOG(LogTemp, Warning, TEXT("Error: input grids have not been set correctly at AWeatherManager::Calculate."));
 	//	return false;
 	//}
-	TArray<FWarpInConfig2> A_data = { 
-		{7,7,7,7,7,7,7,7,7,7},
-		{7,7,7,7,7,7,7,7,7,7} };
-	TArray<FWarpInConfig2> B_data = {
-		{8,8,8,8,8,8,8,8,8,8},
-		{8,8,8,8,8,8,8,8,8,8} };
-	TArray<FWarpInConfig2> C_data = {
-		{9,9,9,9,9,9,9,9,9,9},
-		{9,9,9,9,9,9,9,9,9,9} };
 
-
-
-
-	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
-	A_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	A_output_resource_.ResourceArray = &A_output_RA_;
-	A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
-	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
-
-	B_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(B_output_RA_.GetData(), B_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	B_output_resource_.ResourceArray = &B_output_RA_;
-	B_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, B_output_resource_);
-	B_output_UAV_ = RHICreateUnorderedAccessView(B_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
-
-	C_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(C_output_RA_.GetData(), C_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	C_output_resource_.ResourceArray = &C_output_RA_;
-	C_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, C_output_resource_);
-	C_output_UAV_ = RHICreateUnorderedAccessView(C_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
 
 
@@ -403,8 +406,11 @@ bool AWeatherManager::Calculate(
 	UE_LOG(LogTemp, Warning, TEXT("===== Calculate ====="));
 
 	PrintResult(output);
+
 	return true;
 }
+
+
 
 
 void AWeatherManager::Calculate_RenderThread(
@@ -440,8 +446,9 @@ void AWeatherManager::Calculate_RenderThread(
 
 	DispatchComputeShader(RHICmdList, *weather_compute_shader_, 1, 1, 1);
 
-	weather_compute_shader_->ClearOutput(RHICmdList);
-	weather_compute_shader_->ClearParameters(RHICmdList);
+
+	//weather_compute_shader_->ClearOutput(RHICmdList);
+	//weather_compute_shader_->ClearParameters(RHICmdList);
 
 	FWarpInConfig2* A_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(A_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
 	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
@@ -474,7 +481,6 @@ void AWeatherManager::Calculate_RenderThread(
 	RHICmdList.UnlockStructuredBuffer(A_output_buffer_);
 	RHICmdList.UnlockStructuredBuffer(B_output_buffer_);
 	RHICmdList.UnlockStructuredBuffer(C_output_buffer_);
-
 }
 
 // TResourceArray's values are still alive...

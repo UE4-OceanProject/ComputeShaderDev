@@ -1,5 +1,6 @@
 #pragma once
 #include "WeatherManager.h"
+#include "Shader_Interface.h"
 #include "Engine.h"
 
 //#include "RenderCaptureInterface.h"
@@ -364,6 +365,8 @@ bool AWeatherManager::Calculate(
 	/* output */TArray<FStruct_AirGridContainer_CPU>& output
 ) {
 
+	FGlobalComputeShader_Interface::FParameters Parameters;
+	Parameters.BrickSize = 1;
 
 	//if (gridSizeK_num_input_ == 0 || ground_num_input_ == 0 || gridRslow_num_input_ == 0 || gridInit_num_input_ == 0)
 	//{
@@ -422,9 +425,10 @@ void AWeatherManager::Calculate_RenderThread(
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
 
 	// Get the actual shader instance off the ShaderMap
-//	TShaderMapRef<FGlobalComputeShader_Interface> weather_compute_shader_(shader_map);
-//	TShaderMap<FGlobalShaderType>* ShaderMap = GetGlobalShaderMap(FeatureLevel);
-	//RHICmdList.SetComputeShader(weather_compute_shader_->GetComputeShader());
+	const TShaderMap<FGlobalShaderType>* shader_map = GetGlobalShaderMap(GMaxRHIFeatureLevel);
+	TShaderMapRef<FGlobalComputeShader_Interface> weather_compute_shader_(shader_map);
+	//TShaderMap<FGlobalShaderType>* ShaderMap = GetGlobalShaderMap(FeatureLevel);
+	RHICmdList.SetComputeShader(weather_compute_shader_->GetComputeShader());
 
 	//Not using the uniform buffer right now
 	//weather_compute_shader_->SetShaderParameters(RHICmdList, xyz.X);

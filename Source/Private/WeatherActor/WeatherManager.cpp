@@ -1,6 +1,5 @@
 #pragma once
-#include "WeatherSimulator/WeatherManager.h"
-#include "DynamicRHIResourceArray.h"
+#include "WeatherManager.h"
 #include "Engine.h"
 
 //#include "RenderCaptureInterface.h"
@@ -58,14 +57,14 @@ void AWeatherManager::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_.SafeRelease();
 	//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_.SafeRelease();
 
-	A_output_buffer_.SafeRelease();
-	A_output_UAV_.SafeRelease();
+	//A_output_buffer_.SafeRelease();
+	//A_output_UAV_.SafeRelease();
 
-	B_output_buffer_.SafeRelease();
-	B_output_UAV_.SafeRelease();
+	//B_output_buffer_.SafeRelease();
+	//B_output_UAV_.SafeRelease();
 
-	C_output_buffer_.SafeRelease();
-	C_output_UAV_.SafeRelease();
+	//C_output_buffer_.SafeRelease();
+	//C_output_UAV_.SafeRelease();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -80,10 +79,10 @@ void AWeatherManager::Tick(float DeltaTime) {
 void AWeatherManager::Compute(float DeltaTime)
 {
 
-		//ExecuteComputeShader(grid0Var, DeltaTime);
-		////Fencing forces the game thread to wait for the render thread to finish
-		//render_command_fence_.BeginFence();
-		//render_command_fence_.Wait();
+	//ExecuteComputeShader(grid0Var, DeltaTime);
+	////Fencing forces the game thread to wait for the render thread to finish
+	//render_command_fence_.BeginFence();
+	//render_command_fence_.Wait();
 
 }
 
@@ -142,7 +141,7 @@ void AWeatherManager::ExecuteInRenderThread(TArray<FStruct_AirGridContainer_CPU>
 
 
 
-	
+
 //	Here we rotate the past current and future values in our simulation
 	//for (int nS = 0; nS < numSteps; nS++)
 	//{
@@ -162,7 +161,7 @@ void AWeatherManager::ExecuteInRenderThread(TArray<FStruct_AirGridContainer_CPU>
 
 	//Lock Interface_FStruct_Shader_CPU_Buffer to enable CPU read
 	//char* shaderData = (char*)RHICmdList.LockStructuredBuffer(Interface_FStruct_Shader_CPU_Buffer, 0/*5600 * 40 * currGC*/, 5600*40, EResourceLockMode::RLM_ReadOnly);
-	
+
 	//Copy the CPU data back to CPU side (&currentStates)
 	//FStruct_AirGridContainer_CPU* p = (FStruct_AirGridContainer_CPU*)shaderData;
 	//currentStates[0] = *p;
@@ -288,24 +287,24 @@ bool AWeatherManager::UploadResourceParametersToShader(
 
 
 
-	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
-	A_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	A_output_resource_.ResourceArray = &A_output_RA_;
-	A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
-	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+	//// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
+	//A_output_RA_.SetNum(num_input_);
+	//FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	//A_output_resource_.ResourceArray = &A_output_RA_;
+	//A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
+	//A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
-	B_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(B_output_RA_.GetData(), B_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	B_output_resource_.ResourceArray = &B_output_RA_;
-	B_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, B_output_resource_);
-	B_output_UAV_ = RHICreateUnorderedAccessView(B_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+	//B_output_RA_.SetNum(num_input_);
+	//FMemory::Memcpy(B_output_RA_.GetData(), B_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	//B_output_resource_.ResourceArray = &B_output_RA_;
+	//B_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, B_output_resource_);
+	//B_output_UAV_ = RHICreateUnorderedAccessView(B_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
-	C_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(C_output_RA_.GetData(), C_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	C_output_resource_.ResourceArray = &C_output_RA_;
-	C_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, C_output_resource_);
-	C_output_UAV_ = RHICreateUnorderedAccessView(C_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+	//C_output_RA_.SetNum(num_input_);
+	//FMemory::Memcpy(C_output_RA_.GetData(), C_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	//C_output_resource_.ResourceArray = &C_output_RA_;
+	//C_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, C_output_resource_);
+	//C_output_UAV_ = RHICreateUnorderedAccessView(C_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
 	return true;
 }
@@ -323,15 +322,15 @@ void AWeatherManager::SetUniformBuffersInShader(
 
 
 	ENQUEUE_RENDER_COMMAND(SetUniformBuffersInShaderCommand)//TypeName - Arbitrary name of the render command
-	(
-		[FrontEnd, y, z](FRHICommandListImmediate& RHICmdList) //Passed in variables
+		(
+			[FrontEnd, y, z](FRHICommandListImmediate& RHICmdList) //Passed in variables
 
-		{
-			//This code block is ran inside of the Render Thread!
-			//Which is why we need the reference to our FrontEnd class
-			FrontEnd->SetUniformBuffersInShader_RenderThread(y, z);
-		}
-		//This is now back in the Game Thread!
+	{
+		//This code block is ran inside of the Render Thread!
+		//Which is why we need the reference to our FrontEnd class
+		FrontEnd->SetUniformBuffersInShader_RenderThread(y, z);
+	}
+			//This is now back in the Game Thread!
 	);
 
 	render_command_fence_.BeginFence();
@@ -349,10 +348,10 @@ void AWeatherManager::SetUniformBuffersInShader_RenderThread(
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
 
 	// Get the actual shader instance off the ShaderMap
-	TShaderMapRef<FGlobalComputeShader_Interface> weather_compute_shader_(shader_map);
-
-	RHICmdList.SetComputeShader(weather_compute_shader_->GetComputeShader());
-	weather_compute_shader_->SetUniformBuffers(RHICmdList, y, z);
+	//TShaderMapRef<FGlobalComputeShader_Interface> weather_compute_shader_(shader_map);
+	//TShaderMap<FGlobalShaderType>* ShaderMap = GetGlobalShaderMap(FeatureLevel);
+	//RHICmdList.SetComputeShader(weather_compute_shader_->GetComputeShader());
+	//weather_compute_shader_->SetUniformBuffers(RHICmdList, y, z);
 }
 
 
@@ -389,14 +388,14 @@ bool AWeatherManager::Calculate(
 
 	output.SetNum(num_input_);
 	ENQUEUE_RENDER_COMMAND(CalculateCommand)//TypeName - Arbitrary name of the render command
-	(
-		[FrontEnd, offset, yz_updated, output__](FRHICommandListImmediate& RHICmdList) //Passed in variables
-		{
-			//This code block is ran inside of the Render Thread!
-			//Which is why we need the reference to our FrontEnd class
-			FrontEnd->Calculate_RenderThread(offset, yz_updated, output__);
-		}
-		//This is now back in the Game Thread!
+		(
+			[FrontEnd, offset, yz_updated, output__](FRHICommandListImmediate& RHICmdList) //Passed in variables
+	{
+		//This code block is ran inside of the Render Thread!
+		//Which is why we need the reference to our FrontEnd class
+		FrontEnd->Calculate_RenderThread(offset, yz_updated, output__);
+	}
+			//This is now back in the Game Thread!
 	);
 
 
@@ -423,9 +422,9 @@ void AWeatherManager::Calculate_RenderThread(
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
 
 	// Get the actual shader instance off the ShaderMap
-	TShaderMapRef<FGlobalComputeShader_Interface> weather_compute_shader_(shader_map);
-
-	RHICmdList.SetComputeShader(weather_compute_shader_->GetComputeShader());
+//	TShaderMapRef<FGlobalComputeShader_Interface> weather_compute_shader_(shader_map);
+//	TShaderMap<FGlobalShaderType>* ShaderMap = GetGlobalShaderMap(FeatureLevel);
+	//RHICmdList.SetComputeShader(weather_compute_shader_->GetComputeShader());
 
 	//Not using the uniform buffer right now
 	//weather_compute_shader_->SetShaderParameters(RHICmdList, xyz.X);
@@ -433,30 +432,30 @@ void AWeatherManager::Calculate_RenderThread(
 	//	weather_compute_shader_->SetUniformBuffers(RHICmdList, xyz.Y, xyz.Z);
 	//}
 
-	weather_compute_shader_->SetShaderResourceParameters(RHICmdList
+	//weather_compute_shader_->SetShaderResourceParameters(RHICmdList
 		//FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_,
 		//FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_,
 		//FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_,
 		//FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_
-		);
+	//);
 
 	//RenderCaptureInterface::FScopedCapture
-	weather_compute_shader_->SetOutput(RHICmdList, A_output_UAV_, B_output_UAV_, C_output_UAV_);
+	//weather_compute_shader_->SetOutput(RHICmdList, A_output_UAV_, B_output_UAV_, C_output_UAV_);
 
 
-	DispatchComputeShader(RHICmdList, *weather_compute_shader_, 1, 1, 1);
+	//DispatchComputeShader(RHICmdList, *weather_compute_shader_, 1, 1, 1);
 
 
 	//weather_compute_shader_->ClearOutput(RHICmdList);
 	//weather_compute_shader_->ClearParameters(RHICmdList);
 
-	FWarpInConfig2* A_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(A_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
-	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
+	//FWarpInConfig2* A_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(A_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
+	////FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
 
-	FWarpInConfig2* B_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(B_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
-	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
+	//FWarpInConfig2* B_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(B_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
+	////FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
 
-	FWarpInConfig2* C_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(C_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
+	//FWarpInConfig2* C_shader_data = (FWarpInConfig2*)RHICmdList.LockStructuredBuffer(C_output_buffer_, 0, sizeof(FWarpInConfig2) * num_input_, EResourceLockMode::RLM_ReadOnly);
 	//FMemory::Memcpy(output->GetData(), shader_data2, sizeof(FWarpInConfig2) * num_input_);
 
 	TArray<FWarpInConfig2> A_data = {
@@ -470,17 +469,17 @@ void AWeatherManager::Calculate_RenderThread(
 		{9,9,9,9,9,9,9,9,9,9} };
 
 
-	FMemory::Memcpy(A_data.GetData(), A_shader_data, sizeof(FWarpInConfig2) * num_input_);
-	FMemory::Memcpy(B_data.GetData(), B_shader_data, sizeof(FWarpInConfig2) * num_input_);
-	FMemory::Memcpy(C_data.GetData(), C_shader_data, sizeof(FWarpInConfig2) * num_input_);
+	//FMemory::Memcpy(A_data.GetData(), A_shader_data, sizeof(FWarpInConfig2) * num_input_);
+	//FMemory::Memcpy(B_data.GetData(), B_shader_data, sizeof(FWarpInConfig2) * num_input_);
+	//FMemory::Memcpy(C_data.GetData(), C_shader_data, sizeof(FWarpInConfig2) * num_input_);
 
-	FMemory::Memcpy(A_shader_data, A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	FMemory::Memcpy(B_shader_data, B_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	FMemory::Memcpy(C_shader_data, C_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	//FMemory::Memcpy(A_shader_data, A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	//FMemory::Memcpy(B_shader_data, B_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	//FMemory::Memcpy(C_shader_data, C_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
 
-	RHICmdList.UnlockStructuredBuffer(A_output_buffer_);
-	RHICmdList.UnlockStructuredBuffer(B_output_buffer_);
-	RHICmdList.UnlockStructuredBuffer(C_output_buffer_);
+	//RHICmdList.UnlockStructuredBuffer(A_output_buffer_);
+	//RHICmdList.UnlockStructuredBuffer(B_output_buffer_);
+	//RHICmdList.UnlockStructuredBuffer(C_output_buffer_);
 }
 
 // TResourceArray's values are still alive...

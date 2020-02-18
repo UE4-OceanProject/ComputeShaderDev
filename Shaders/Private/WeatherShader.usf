@@ -691,6 +691,9 @@ struct FStruct_AirCellColumns_GPU
     float VORT; // Vort: Vorticity
 };
 
+//RWTexture1D<float4> MyRWTexture1D;
+//RWTexture2D<float4> MyRWTexture2D;
+//RWTexture3D<float4> MyRWTexture3D;
 
 RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputA; //x5600
 RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600

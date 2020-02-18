@@ -7,7 +7,7 @@ public class ComputeShaderPlugin : ModuleRules
 	public ComputeShaderPlugin(ReadOnlyTargetRules Target) : base(Target)
 	{
 		//Our PrivatePCH that we want to globally #include
-        PrivatePCHHeaderFile = "Private/PrivatePCH.h";
+		PrivatePCHHeaderFile = "Private/PrivatePCH.h";
 
         // Make sure UBT reminds us of how to keep the project IWYU compliant
         bEnforceIWYU = true;
@@ -25,6 +25,10 @@ public class ComputeShaderPlugin : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
+				"Private",
+				"Private/WeatherActor",
+				"Private/Module_ShaderTools",
+				"Private/ShaderDebugUtils"
 			}
 			);
 			

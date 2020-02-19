@@ -24,23 +24,8 @@ protected:
 public:
 	virtual void Tick(float DeltaSeconds) override;
 
-	//This is manually called in blueprints, everything else is automatically handled
 	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
-		void Compute(float DeltaTime);
-
-	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
-		bool UploadResourceParametersToShader(
-			/*  input */
-			const TArray<FStruct_Cell_CPU>& gridSizeK_,
-			const TArray<FStruct_GroundGridContainer_CPU>& ground_,
-			const TArray<FStruct_AirGridContainer_CPU>& gridRslow_,
-			const TArray<FStruct_AirGridContainer_CPU>& gridInit_,
-			const TArray<FStruct_AirGridContainer_CPU>& grid3D_
-		);
-
-	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
-		void SetUniformBuffersInShader(
-			/*  input */const float y, const float z);
+		bool Setup();
 
 	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
 		bool Calculate(
@@ -50,9 +35,7 @@ public:
 
 protected:
 	//This runs on the game thread
-	void ExecuteComputeShader(TArray<FStruct_AirGridContainer_CPU> &currentStates, float DeltaTime);
-	//This runs on the render thread
-	void ExecuteInRenderThread(TArray<FStruct_AirGridContainer_CPU> &currentStates);
+	void Calculate_RenderThread(FGlobalComputeShader_Interface::FParameters Parameters);
 
 private:
 	int32 num_input_ = 2;
@@ -105,14 +88,6 @@ private:
 	//FStructuredBufferRHIRef C_output_buffer_;
 	//FUnorderedAccessViewRHIRef C_output_UAV_;
 
-
-
-	void SetUniformBuffersInShader_RenderThread(
-		/*  input */const float y, const float z);
-
-	void Calculate_RenderThread(
-		/*  input */const FVector xyz, const bool yz_updated,
-		/* output */TArray<FStruct_AirGridContainer_CPU>* output);
-
 	void PrintResult(const TArray<FStruct_AirGridContainer_CPU>& output);
+
 };

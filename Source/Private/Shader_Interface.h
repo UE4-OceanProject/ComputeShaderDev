@@ -48,10 +48,10 @@
 //FShaderResourceParameter B_output_; // RWStructuredBuffer<float3> test_outputB;
 //FShaderResourceParameter C_output_; // RWStructuredBuffer<float3> test_outputC;
 
-class FArchive;
-class FRHICommandListImmediate;
-class FShaderParameterMap;
-class FViewInfo;
+//class FArchive;
+//class FRHICommandListImmediate;
+//class FShaderParameterMap;
+//class FViewInfo;
 
 /*****************************************************************************/
 /* This class is what encapsulates the shader in the engine.                 */
@@ -68,18 +68,17 @@ public:
 	SHADER_USE_PARAMETER_STRUCT(FGlobalComputeShader_Interface, FGlobalShader);
 
 	// ShaderPrint uniform buffer layout
-	//BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FWeatherUniformBufferParameters, )
-	//	SHADER_PARAMETER(FVector4, FontSize)
-	//	SHADER_PARAMETER(int32, MaxValueCount)
-	//	SHADER_PARAMETER(int32, MaxSymbolCount)
-	//	END_GLOBAL_SHADER_PARAMETER_STRUCT()
+	BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FWeatherUniformBufferParameters, )
+		SHADER_PARAMETER_ARRAY(float, Data, [2])
+		END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 		// ShaderPrint parameter struct declaration
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+		//SHADER_PARAMETER(TArray<FWarpInConfig2>, Data)
 		//SHADER_PARAMETER_STRUCT_REF(FWeatherUniformBufferParameters, UniformBufferParameters)
-		SHADER_PARAMETER(int32, BrickSize)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<ShaderPrintItem>, RWValuesBuffer)
+		//SHADER_PARAMETER_UAV(RWStructuredBuffer<ShaderPrintItem>, RWValuesBuffer)
 		//SHADER_PARAMETER_STRUCT_INCLUDE(ShaderPrint::FShaderParameters, ShaderPrintUniformBuffer)
+		SHADER_PARAMETER_UAV(RWTexture3D<FWarpInConfig2>, test_outputA)
 		END_SHADER_PARAMETER_STRUCT()
 
 		//explicit FGlobalComputeShader_Interface(const ShaderMetaType::CompiledShaderInitializerType& initializer);
@@ -107,7 +106,7 @@ public:
 		return IsFeatureLevelSupported(platform, ERHIFeatureLevel::SM5);
 	}
 
-	const TShaderMap<FGlobalShaderType>* shader_map = GetGlobalShaderMap(GMaxRHIFeatureLevel);
+	//const TShaderMap<FGlobalShaderType>* shader_map = GetGlobalShaderMap(GMaxRHIFeatureLevel);
 	//TShaderMapRef<FGlobalComputeShader_Interface>* ComputeShader(shader_map);
 
 			// Call this to fill the FShaderParameters

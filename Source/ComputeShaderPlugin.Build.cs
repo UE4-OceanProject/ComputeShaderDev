@@ -53,7 +53,7 @@ public class ComputeShaderPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-                "Projects", //<-Needed for IPluginManager, so we can get the shader directory in our plugin
+                "Projects", //<-Needed for IPluginManager, so we can get the shader directory in our plugin // Might not be needed anymore 4.21+?
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -696,16 +696,16 @@ struct FStruct_AirCellColumns_GPU
 //RWTexture3D<float4> MyRWTexture3D;
 
 RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputA; //x5600
-RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
-RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600
 ///////////////////////////////////////////////////////////////////////////
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
 void simulateStep(int3 dispatch_id : SV_DispatchThreadID)
 {
     test_outputA[0].U = test_outputA[0].U+1;
-    test_outputB[0].U = test_outputB[0].U+1;
-    test_outputC[0].U = test_outputC[0].U+1;
+    //test_outputB[0].U = test_outputB[0].U+1;
+    //test_outputC[0].U = test_outputC[0].U+1;
 
 
 

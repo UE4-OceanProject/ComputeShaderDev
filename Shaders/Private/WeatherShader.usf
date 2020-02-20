@@ -3,6 +3,9 @@
 //#include "/Engine/Private/Common.ush"
 #include "WeatherConstantProperties.ush"
 #include "WeatherVariableProperties.ush"
+//#include "/Engine/Public/Platform.ush"
+//#include "/Engine/Private/Common.ush"
+//#include "/Engine/Private/ShaderPrintCommon.ush" //<-Ignore the errors this works fine
 
 //Tricks so i don't have to re-write the c++ struct accessor functions
 #define gridRslow(col, i, j, k) gridRslow[GetAirIndex(col, i, j, k)].CellColumns.col

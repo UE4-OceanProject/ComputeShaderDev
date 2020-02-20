@@ -21,37 +21,15 @@
 
 #include "ShaderPrintParameters.h"
 #include "RenderGraphUtils.h"
+#include "Containers/DynamicRHIResourceArray.h" // Core module
 
 
-//FShaderParameter dTParameter;
-//FShaderParameter gridXParameter;
-//FShaderParameter gridYParameter;
-//FShaderParameter gridZParameter;
-//FShaderParameter gridSizeIParameter;
-//FShaderParameter gridSizeJParameter;
-//FShaderParameter simulationTimeParameter;
-//FShaderParameter prevGCParameter;
-//FShaderParameter currGCParameter;
-//FShaderParameter nextGCParameter;
-//
-////FShaderResourceParameter input_position_; // StructuredBuffer<float3> test_input_position;
-////FShaderResourceParameter input_scalar_; // StructuredBuffer<float> test_input_scalar;
-//FShaderResourceParameter FStruct_Cell_gridSizeK_CPU_ResourceParameter; //single stack of values
-//FShaderResourceParameter FStruct_GroundGridContainer_ground_CPU_ResourceParameter; //100
-//FShaderResourceParameter FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter; //x5600
-//FShaderResourceParameter FStruct_AirGridContainer_gridInit_CPU_ResourceParameter; //x5600
-//
-//
-//
-////THIS IS OUTPUT
-//FShaderResourceParameter A_output_; // RWStructuredBuffer<float3> test_outputA;
-//FShaderResourceParameter B_output_; // RWStructuredBuffer<float3> test_outputB;
-//FShaderResourceParameter C_output_; // RWStructuredBuffer<float3> test_outputC;
+	// ShaderPrint uniform buffer layout
+	BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FGlobalWeatherParameters, )
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA) //<--Due to bug in engine we have to wait
+		//https://github.com/EpicGames/UnrealEngine/blob/e7ca4c774a649afc6d5c06f2ca0b22b3e3cf92b1/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h#L1650 <-UBMT_UAV not available in binary
+	END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
-//class FArchive;
-//class FRHICommandListImmediate;
-//class FShaderParameterMap;
-//class FViewInfo;
 
 /*****************************************************************************/
 /* This class is what encapsulates the shader in the engine.                 */
@@ -60,31 +38,15 @@
 class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlobalShader {
 public:
 
-
-
-
-	//DECLARE_SHADER_TYPE(FGlobalComputeShader_Interface, Global, );
 	DECLARE_GLOBAL_SHADER(FGlobalComputeShader_Interface);
 	SHADER_USE_PARAMETER_STRUCT(FGlobalComputeShader_Interface, FGlobalShader);
 
-	// ShaderPrint uniform buffer layout
-	BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FWeatherUniformBufferParameters, )
-		SHADER_PARAMETER_ARRAY(float, Data, [2])
-		END_GLOBAL_SHADER_PARAMETER_STRUCT()
-
-		// ShaderPrint parameter struct declaration
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		//SHADER_PARAMETER(TArray<FWarpInConfig2>, Data)
-		//SHADER_PARAMETER_STRUCT_REF(FWeatherUniformBufferParameters, UniformBufferParameters)
-		//SHADER_PARAMETER_UAV(RWStructuredBuffer<ShaderPrintItem>, RWValuesBuffer)
-		//SHADER_PARAMETER_STRUCT_INCLUDE(ShaderPrint::FShaderParameters, ShaderPrintUniformBuffer)
-		SHADER_PARAMETER_UAV(RWTexture3D<FWarpInConfig2>, test_outputA)
-		END_SHADER_PARAMETER_STRUCT()
+		SHADER_PARAMETER_STRUCT_REF(FGlobalWeatherParameters, GlobalWeatherParameters)
+	END_SHADER_PARAMETER_STRUCT()
 
-		//explicit FGlobalComputeShader_Interface(const ShaderMetaType::CompiledShaderInitializerType& initializer);
 
-		static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& PermutationParams) {
-		// Useful when adding a permutation of a particular shader
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& PermutationParams) {
 		return true;
 	}
 
@@ -106,15 +68,16 @@ public:
 		return IsFeatureLevelSupported(platform, ERHIFeatureLevel::SM5);
 	}
 
-	//const TShaderMap<FGlobalShaderType>* shader_map = GetGlobalShaderMap(GMaxRHIFeatureLevel);
-	//TShaderMapRef<FGlobalComputeShader_Interface>* ComputeShader(shader_map);
+	void SetParameters();
 
-			// Call this to fill the FShaderParameters
-	void SetParameters(FViewInfo const& View, FParameters& OutParameters);
+	void Compute();
 
+	void Calculate_RenderThread();
 
+	void Setup_RenderThread();
 
+	FRenderCommandFence render_command_fence_; // Necessary for waiting until a render command function finishes.
 
-
+	int num_input_ = 2;
 
 };

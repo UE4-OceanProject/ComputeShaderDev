@@ -3,8 +3,7 @@
 #include "WeatherStructs.h"
 #include "Shader_Interface.h"
 
-#include "Containers/DynamicRHIResourceArray.h" // Core module
-#include "RenderCommandFence.h" // RenderCore module
+
 #include "WeatherManager.generated.h"
 
 
@@ -34,8 +33,7 @@ public:
 			/* output */TArray<FStruct_AirGridContainer_CPU>& output);
 
 protected:
-	//This runs on the game thread
-	void Calculate_RenderThread(FGlobalComputeShader_Interface::FParameters Parameters);
+
 
 private:
 	int32 num_input_ = 2;
@@ -48,46 +46,7 @@ private:
 
 	FVector offset_;
 
-	//Fencing forces the game thread to wait for the render thread to finish
-	FRenderCommandFence render_command_fence_; // Necessary for waiting until a render command function finishes.
 
-
-
-	//TResourceArray<FStruct_Cell_CPU> FStruct_Cell_gridSizeK_CPU_ResourceParameter_RA_;
-	//FRHIResourceCreateInfo FStruct_Cell_gridSizeK_CPU_ResourceParameter_resource_;
-	//FStructuredBufferRHIRef FStruct_Cell_gridSizeK_CPU_ResourceParameter_buffer_;
-	//FShaderResourceViewRHIRef FStruct_Cell_gridSizeK_CPU_ResourceParameter_SRV_;
-
-	//TResourceArray<FStruct_GroundGridContainer_CPU> FStruct_GroundGridContainer_ground_CPU_ResourceParameter_RA_;
-	//FRHIResourceCreateInfo FStruct_GroundGridContainer_ground_CPU_ResourceParameter_resource_;
-	//FStructuredBufferRHIRef FStruct_GroundGridContainer_ground_CPU_ResourceParameter_buffer_;
-	//FShaderResourceViewRHIRef FStruct_GroundGridContainer_ground_CPU_ResourceParameter_SRV_;
-
-	//TResourceArray<FStruct_AirGridContainer_CPU> FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_RA_;
-	//FRHIResourceCreateInfo FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_resource_;
-	//FStructuredBufferRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_buffer_;
-	//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridRslow_CPU_ResourceParameter_SRV_;
-
-	//TResourceArray<FStruct_AirGridContainer_CPU> FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_RA_;
-	//FRHIResourceCreateInfo FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_resource_;
-	//FStructuredBufferRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_buffer_;
-	//FShaderResourceViewRHIRef FStruct_AirGridContainer_gridInit_CPU_ResourceParameter_SRV_;     //Issues with these when end play
-
-	//TResourceArray<FWarpInConfig2> A_output_RA_; // Not necessary.
-	//FRHIResourceCreateInfo A_output_resource_;
-	//FStructuredBufferRHIRef A_output_buffer_;
-	//FUnorderedAccessViewRHIRef A_output_UAV_;
-
-	//TResourceArray<FWarpInConfig2> B_output_RA_; // Not necessary.
-	//FRHIResourceCreateInfo B_output_resource_;
-	//FStructuredBufferRHIRef B_output_buffer_;
-	//FUnorderedAccessViewRHIRef B_output_UAV_;
-
-	//TResourceArray<FWarpInConfig2> C_output_RA_; // Not necessary.
-	//FRHIResourceCreateInfo C_output_resource_;
-	//FStructuredBufferRHIRef C_output_buffer_;
-	//FUnorderedAccessViewRHIRef C_output_UAV_;
-
-	void PrintResult(const TArray<FStruct_AirGridContainer_CPU>& output);
+	void PrintResult();
 
 };

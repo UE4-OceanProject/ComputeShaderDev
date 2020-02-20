@@ -77,8 +77,6 @@ namespace ShaderPrint_Custom
 	}
 
 	// ShaderPrint uniform buffer
-	//We dont need the below line because the default engine version already does this for us. Enable for when we convert to 3D debug (will need our own USF file)
-	//For now we leave it because we can't compile without it
 	IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FShaderPrintUniformBufferParameters, "ShaderPrintUniform");
 	typedef TUniformBufferRef<FShaderPrintUniformBufferParameters> FUniformBufferRef;
 

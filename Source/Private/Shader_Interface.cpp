@@ -17,9 +17,24 @@
 #include "RenderGraphUtils.h"
 #include "RenderGraphResources.h"
 
-IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FGlobalWeatherParameters, "WeatherData");
-typedef TUniformBufferRef<FGlobalWeatherParameters> FUniformBufferRef;
+//Change this back when fix is in place
+//IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FGlobalWeatherParameters, "WeatherData");
+//typedef TUniformBufferRef<FGlobalWeatherParameters> FUniformBufferRef;
 
+
+//This wont be needed once fix is in.
+FGlobalComputeShader_Interface::FGlobalComputeShader_Interface(const ShaderMetaType::CompiledShaderInitializerType& Initializer) : FGlobalShader(Initializer) {
+	A_output_.Bind(Initializer.ParameterMap, TEXT("test_outputA"), SPF_Mandatory);//x5600x3
+}
+
+//This wont be needed once fix is in.
+bool FGlobalComputeShader_Interface::Serialize(FArchive& Ar) {
+	bool bShaderHasOutdatedParameters = FGlobalShader::Serialize(Ar);
+	Ar
+		<< A_output_ //x5600x3
+		;
+	return bShaderHasOutdatedParameters;
+}
 
 void FGlobalComputeShader_Interface::SetParameters()
 {
@@ -52,10 +67,7 @@ void FGlobalComputeShader_Interface::Setup_RenderThread()
 	{7,7,7,7,7,7,7,7,7,7} };
 
 
-	TResourceArray<FWarpInConfig2> A_output_RA_; // Not necessary.
-	FRHIResourceCreateInfo A_output_resource_;
-	FStructuredBufferRHIRef A_output_buffer_;
-	FUnorderedAccessViewRHIRef A_output_UAV_;
+
 
 
 	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
@@ -67,17 +79,21 @@ void FGlobalComputeShader_Interface::Setup_RenderThread()
 
 
 	//FGlobalComputeShader_Interface::
-	FGlobalComputeShader_Interface::FParameters MainWeatherParams;
+	//FGlobalComputeShader_Interface::FParameters MainWeatherParams; //Change this back when fix is in place
 
 
-	FGlobalWeatherParameters GlobalWeatherParams;
+	//FGlobalWeatherParameters GlobalWeatherParams; //Change this back when fix is in place
 
 
-	GlobalWeatherParams.test_outputA = GlobalWeatherParams.test_outputA = A_output_UAV_;
+	//GlobalWeatherParams.test_outputA = GlobalWeatherParams.test_outputA = A_output_UAV_; //Change this back when fix is in place
 
 	//Must be done on render thread
-	MainWeatherParams.GlobalWeatherParameters = FUniformBufferRef::CreateUniformBufferImmediate(GlobalWeatherParams, UniformBuffer_MultiFrame);
+	//MainWeatherParams.GlobalWeatherParameters = FUniformBufferRef::CreateUniformBufferImmediate(GlobalWeatherParams, UniformBuffer_MultiFrame); //Change this back when fix is in place
+	//or try this (guys said above code is bad, because reference will dissapear when scope exit
+	//MainWeatherParams.test_outputA = GlobalWeatherParams.test_outputA = A_output_UAV_;; //Change this back when fix is in place
 
+
+	//MainWeatherParams.test_outputA = A_output_UAV_; //Change this back when fix is in place //Change this back when fix is in place
 
 	TShaderMap<FGlobalShaderType>* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
 
@@ -86,8 +102,13 @@ void FGlobalComputeShader_Interface::Setup_RenderThread()
 	// Get global RHI command list
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
 
+	RHICmdList.SetComputeShader(ComputeShader->GetComputeShader());//Change this back when fix is in place??
 
-	FComputeShaderUtils::Dispatch(RHICmdList, *ComputeShader, MainWeatherParams, FIntVector(1, 1, 1));
+	TArray<FShaderResourceParameter>RotateableBufers = { {A_output_} };//Change this back when fix is in place??
+	RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[0].GetBaseIndex(), A_output_UAV_);//Change this back when fix is in place??
+
+	DispatchComputeShader(RHICmdList, *ComputeShader, 1, 1, 1); 
+	//FComputeShaderUtils::Dispatch(RHICmdList, *ComputeShader, MainWeatherParams, FIntVector(1, 1, 1));//Change this back when fix is in place
 
 }
 
@@ -114,7 +135,9 @@ void FGlobalComputeShader_Interface::Calculate_RenderThread()
 	TShaderMapRef< FGlobalComputeShader_Interface > ComputeShader(GlobalShaderMap);
 
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
-
+	RHICmdList.SetComputeShader(ComputeShader->GetComputeShader());
+	TArray<FShaderResourceParameter>RotateableBufers = { {A_output_} };//Still needed or we don't get a buffer in our shader // even though we are not setting the data. 
+	RHICmdList.SetUAVParameter(GetComputeShader(), RotateableBufers[0].GetBaseIndex(), A_output_UAV_);//Still needed or we don't get a buffer in our shader // even though we are not setting the data. 
 	DispatchComputeShader(RHICmdList, *ComputeShader, 1, 1, 1);
 }
 

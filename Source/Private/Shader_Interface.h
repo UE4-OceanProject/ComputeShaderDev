@@ -23,12 +23,11 @@
 #include "RenderGraphUtils.h"
 #include "Containers/DynamicRHIResourceArray.h" // Core module
 
-
-	// ShaderPrint uniform buffer layout
-	BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FGlobalWeatherParameters, )
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA) //<--Due to bug in engine we have to wait
-		//https://github.com/EpicGames/UnrealEngine/blob/e7ca4c774a649afc6d5c06f2ca0b22b3e3cf92b1/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h#L1650 <-UBMT_UAV not available in binary
-	END_GLOBAL_SHADER_PARAMETER_STRUCT()
+//Change this back when fix is in place
+	//	//https://github.com/EpicGames/UnrealEngine/blob/e7ca4c774a649afc6d5c06f2ca0b22b3e3cf92b1/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h#L1650 <-UBMT_UAV not available in binary
+	//BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FGlobalWeatherParameters, )
+	//	SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA) //<--Due to bug in engine we have to wait
+	//END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 
 /*****************************************************************************/
@@ -38,13 +37,22 @@
 class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlobalShader {
 public:
 
+
 	DECLARE_GLOBAL_SHADER(FGlobalComputeShader_Interface);
-	SHADER_USE_PARAMETER_STRUCT(FGlobalComputeShader_Interface, FGlobalShader);
 
-	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		SHADER_PARAMETER_STRUCT_REF(FGlobalWeatherParameters, GlobalWeatherParameters)
-	END_SHADER_PARAMETER_STRUCT()
+	FGlobalComputeShader_Interface() {}//Change this back when fix is in place
+	explicit FGlobalComputeShader_Interface(const ShaderMetaType::CompiledShaderInitializerType& initializer); //Change this back when fix is in place
 
+	//SHADER_USE_PARAMETER_STRUCT(FGlobalComputeShader_Interface, FGlobalShader);//Change this back when fix is in place
+
+	//Change this back when fix is in place
+	//BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+	//	SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA) //Change this back when fix is in place
+	//	//SHADER_PARAMETER_STRUCT_REF(FGlobalWeatherParameters, GlobalWeatherParameters) //Change this back when fix is in place
+	//END_SHADER_PARAMETER_STRUCT()
+
+
+		virtual bool Serialize(FArchive& Ar) override;//Change this back when fix is in place
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& PermutationParams) {
 		return true;
@@ -80,4 +88,10 @@ public:
 
 	int num_input_ = 2;
 
+	FShaderResourceParameter FStruct_AirGridContainer_gridInit_CPU_ResourceParameter; //x5600  //Change this back when fix is in place
+	FShaderResourceParameter A_output_; // RWStructuredBuffer<float3> test_outputA;  //Change this back when fix is in place
+	TResourceArray<FWarpInConfig2> A_output_RA_; // Not necessary.
+	FRHIResourceCreateInfo A_output_resource_;
+	FStructuredBufferRHIRef A_output_buffer_;
+	FUnorderedAccessViewRHIRef A_output_UAV_;
 };

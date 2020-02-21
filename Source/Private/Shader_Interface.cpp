@@ -62,17 +62,13 @@ void FGlobalComputeShader_Interface::Setup_RenderThread()
 {
 	check(IsInRenderingThread());
 
-	TArray<FWarpInConfig2> A_data = {
-	{7,7,7,7,7,7,7,7,7,7},
-	{7,7,7,7,7,7,7,7,7,7} };
-
-
 
 
 
 	// In this sample code, output_buffer_ has not input values, so what we need here is just the pointer to output_resource_.
 	A_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	A_output_RA_.Init({ 7,7,7,7,7,7,7,7,7,7 }, 2);
+
 	A_output_resource_.ResourceArray = &A_output_RA_;
 	A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
 	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);

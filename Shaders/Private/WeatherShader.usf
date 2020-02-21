@@ -3,9 +3,9 @@
 //#include "/Engine/Private/Common.ush"
 #include "WeatherConstantProperties.ush"
 #include "WeatherVariableProperties.ush"
-//#include "/Engine/Public/Platform.ush"
-//#include "/Engine/Private/Common.ush"
-//#include "/Engine/Private/ShaderPrintCommon.ush" //<-Ignore the errors this works fine
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/Common.ush"
+#include "/Engine/Private/ShaderPrintCommon.ush" //<-Ignore the errors this works fine
 
 //Tricks so i don't have to re-write the c++ struct accessor functions
 #define gridRslow(col, i, j, k) gridRslow[GetAirIndex(col, i, j, k)].CellColumns.col
@@ -702,13 +702,38 @@ RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputA; //x5600
 //RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
 //RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600
 ///////////////////////////////////////////////////////////////////////////
+int2 PixelCoord;
+int2 MaxResolution;
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
-void simulateStep(int3 dispatch_id : SV_DispatchThreadID)
+void simulateStep(uint GroupIndex : SV_GroupIndex, uint3 DispatchThreadId : SV_DispatchThreadID)
 {
     //WeatherData.test_outputA[0].U = test_outputA[0].U + 1; //Change this back once fix is in
-    test_outputA[0].U = test_outputA[0].U + 1;  
+    test_outputA[0].U = test_outputA[0].U + 1; 
+    //ShaderPrintSetCursorPos(float2(100, 100));
+    //ShaderPrintHelloWorld();
+
     
+    //PixelCoord = float2(0, 0);
+    //MaxResolution = float2(1024, 800);
+
+
+    //const float2 PixelPos = PixelCoord;
+    //if (PixelCoord.x < 0 || PixelCoord.y < 0 || PixelCoord.x >= MaxResolution.x || PixelCoord.y >= MaxResolution.y)
+    //    return;
+
+    //ShaderPrintFilter(false);
+
+
+    //const float2 OriginalPos = PixelPos / float2(MaxResolution);
+    //float2 Pos = OriginalPos;
+    
+    //Pos = ShaderPrintSymbol(Pos, _P_);
+    //Pos = ShaderPrintSymbol(Pos, _I_);
+    //Pos = ShaderPrintSymbol(Pos, _X_);
+    //Pos = ShaderPrintSymbol(Pos, _E_);
+    //Pos = ShaderPrintSymbol(Pos, _L_);
+    //Pos = ShaderPrintSymbol(Pos, _SPC_);
     
     
     

@@ -5,7 +5,7 @@
 // It would be ideal if that was automatic (maybe by having a fixed bind point for the buffer and binding it for the entire view).
 // But for now you need to manually add binding information to your FShader class.
 // To do this either:
-// (i) Use SHADER_PARAMETER_STRUCT_INCLUDE(ShaderPrint::FShaderParameters) in your FShader::FParameters declaration and call SetParameters().
+// (i) Use SHADER_PARAMETER_STRUCT_INCLUDE(ShaderPrint_Custom::FShaderParameters) in your FShader::FParameters declaration and call SetParameters().
 
 // Also it seems that we can only bind a RWBuffer to compute shaders right now. Fixing this would allow us to use this system from all shader stages.
 
@@ -18,7 +18,7 @@
 class FArchive;
 class FRHICommandListImmediate;
 class FShaderParameterMap;
-class FViewInfo;
+//class FViewInfo;
 
 namespace ShaderPrint_Custom
 {

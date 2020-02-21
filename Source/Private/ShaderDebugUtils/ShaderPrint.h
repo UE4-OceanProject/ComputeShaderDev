@@ -25,11 +25,11 @@ namespace ShaderPrint_Custom
 	bool IsEnabled();
 
 	// Allocate the debug print buffer associated with the view
-	void BeginView(FRHICommandListImmediate& RHICmdList, FViewInfo& View);
+	void BeginView(FRHICommandListImmediate& RHICmdList);
 	// Draw info from the debug print buffer to the given output target
-	void DrawView(FRDGBuilder& GraphBuilder, const FViewInfo& View, FRDGTextureRef OutputTexture);
+	void DrawView(FRDGBuilder& GraphBuilder, FRDGTextureRef OutputTexture);
 	// Release the debug print buffer associated with the view
-	void EndView(FViewInfo& View);
+	void EndView();
 
 	FRWBufferStructured ShaderPrintValueBuffer;
 

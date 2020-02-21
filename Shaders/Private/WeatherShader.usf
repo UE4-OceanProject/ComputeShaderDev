@@ -710,30 +710,30 @@ void simulateStep(uint GroupIndex : SV_GroupIndex, uint3 DispatchThreadId : SV_D
 {
     //WeatherData.test_outputA[0].U = test_outputA[0].U + 1; //Change this back once fix is in
     test_outputA[0].U = test_outputA[0].U + 1; 
-    //ShaderPrintSetCursorPos(float2(100, 100));
-    //ShaderPrintHelloWorld();
+    ShaderPrintSetCursorPos(float2(100, 100));
+    ShaderPrintHelloWorld();
 
     
-    //PixelCoord = float2(0, 0);
-    //MaxResolution = float2(1024, 800);
+    PixelCoord = float2(0, 0);
+    MaxResolution = float2(1024, 800);
 
 
-    //const float2 PixelPos = PixelCoord;
-    //if (PixelCoord.x < 0 || PixelCoord.y < 0 || PixelCoord.x >= MaxResolution.x || PixelCoord.y >= MaxResolution.y)
-    //    return;
+    const float2 PixelPos = PixelCoord;
+    if (PixelCoord.x < 0 || PixelCoord.y < 0 || PixelCoord.x >= MaxResolution.x || PixelCoord.y >= MaxResolution.y)
+        return;
 
-    //ShaderPrintFilter(false);
+    ShaderPrintFilter(false);
 
 
-    //const float2 OriginalPos = PixelPos / float2(MaxResolution);
-    //float2 Pos = OriginalPos;
+    const float2 OriginalPos = PixelPos / float2(MaxResolution);
+    float2 Pos = OriginalPos;
     
-    //Pos = ShaderPrintSymbol(Pos, _P_);
-    //Pos = ShaderPrintSymbol(Pos, _I_);
-    //Pos = ShaderPrintSymbol(Pos, _X_);
-    //Pos = ShaderPrintSymbol(Pos, _E_);
-    //Pos = ShaderPrintSymbol(Pos, _L_);
-    //Pos = ShaderPrintSymbol(Pos, _SPC_);
+    Pos = ShaderPrintSymbol(Pos, _P_);
+    Pos = ShaderPrintSymbol(Pos, _I_);
+    Pos = ShaderPrintSymbol(Pos, _X_);
+    Pos = ShaderPrintSymbol(Pos, _E_);
+    Pos = ShaderPrintSymbol(Pos, _L_);
+    Pos = ShaderPrintSymbol(Pos, _SPC_);
     
     
     

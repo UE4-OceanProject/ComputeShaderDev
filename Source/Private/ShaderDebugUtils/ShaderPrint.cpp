@@ -266,12 +266,12 @@ namespace ShaderPrint_Custom
 
 	IMPLEMENT_GLOBAL_SHADER(FShaderDrawSymbolsPS, "/Engine/Private/ShaderPrintDraw.usf", "DrawSymbolsPS", SF_Pixel);
 
-	void BeginView(FRHICommandListImmediate& RHICmdList, FViewInfo& View)
+	void BeginView(FRHICommandListImmediate& RHICmdList)//, FViewInfo& View)
 	{
-		if (!IsSupported(View))
-		{
-			return;
-		}
+		//if (!IsSupported(View))
+		//{
+		//	return;
+		//}
 
 		// Initialize output buffer and store in the view info
 		// Values buffer contains Count + 1 elements. The first element is only used as a counter.
@@ -301,7 +301,7 @@ namespace ShaderPrint_Custom
 		FComputeShaderUtils::Dispatch(RHICmdList, *ComputeShader, Parameters, FIntVector(1, 1, 1));
 	}
 
-	void DrawView(FRDGBuilder& GraphBuilder, const FViewInfo& View, FRDGTextureRef OutputTexture)
+	void DrawView(FRDGBuilder& GraphBuilder, /*const FViewInfo& View,*/ FRDGTextureRef OutputTexture)
 	{
 		check(OutputTexture);
 
@@ -322,7 +322,7 @@ namespace ShaderPrint_Custom
 		FTextureRHIRef FontTexture = GEngine->MiniFontTexture->Resource->TextureRHI;
 
 
-		const ERHIFeatureLevel::Type FeatureLevel = View.GetFeatureLevel();
+		const ERHIFeatureLevel::Type FeatureLevel = GMaxRHIFeatureLevel;
 		TShaderMap<FGlobalShaderType>* GlobalShaderMap = GetGlobalShaderMap(FeatureLevel);
 
 		// BuildIndirectDispatchArgs
@@ -416,7 +416,7 @@ namespace ShaderPrint_Custom
 		}
 	}
 
-	void EndView(FViewInfo& View)
+	void EndView()
 	{
 		ShaderPrintValueBuffer.Release();
 	}

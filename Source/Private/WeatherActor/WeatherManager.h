@@ -3,9 +3,22 @@
 #include "WeatherStructs.h"
 #include "Shader_Interface.h"
 
+#include "GlobalShader.h"
+
 
 #include "WeatherManager.generated.h"
 
+
+struct FGenerateMipsStruct2;
+
+/** Parameters for generating mip maps */
+struct FGenerateMipsParams2
+{
+	ESamplerFilter Filter = SF_Bilinear;
+	ESamplerAddressMode AddressU = AM_Clamp;
+	ESamplerAddressMode AddressV = AM_Clamp;
+	ESamplerAddressMode AddressW = AM_Clamp;
+};
 
 //An actor based weather system for simulating weather
 UCLASS(Blueprintable, BlueprintType)
@@ -15,12 +28,6 @@ class AWeatherManager : public AWeatherManager_Properties
 
 public:
 	virtual void OnConstruction(const FTransform& Transform) override;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
@@ -28,25 +35,28 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
 		bool Calculate(
-			/*  input */const float x,
 			/* input */UPARAM(ref) TArray<FStruct_AirGridContainer_CPU>& input,
 			/* output */TArray<FStruct_AirGridContainer_CPU>& output);
 
+//Public function for executing the generate mips compute shader 
+//Default sampler is always bilinear clamp
+	void Execute(FRHICommandListImmediate& RHICmdList, FRHITexture* InTexture, const FGenerateMipsParams2& InParams = FGenerateMipsParams2());
+
+	void Execute(class FRDGBuilder* GraphBuilder, class FRDGTexture* InGraphTexture, FRHISamplerState* InSampler);
+
+
 protected:
+
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 
 
 private:
-	int32 num_input_ = 2;
-	//Store the number of rows in array for each array
-	int32 gridSizeK_num_input_ = 0;
-	int32 ground_num_input_ = 0;
-	int32 gridRslow_num_input_ = 0;
-	int32 gridInit_num_input_ = 0;
-	int32 grid3D_num_input_ = 0;
 
-	FVector offset_;
+	void Compute(FRHICommandListImmediate& RHIImmCmdList, FRHITexture* InTexture);
 
-
-	void PrintResult();
+	FGenerateMipsStruct2* SetupTexture(FRHITexture* InTexture, const FGenerateMipsParams2& InParams = FGenerateMipsParams2());
 
 };

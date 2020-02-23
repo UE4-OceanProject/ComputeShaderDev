@@ -23,8 +23,11 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputB)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputC)
 		END_SHADER_PARAMETER_STRUCT()
 
+		//Don't compile for a platform we don't support.
 		static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 		{
 			return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
@@ -46,8 +49,14 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 
 public:
 
+	//We have 3 grids, past, current, future. The simulation rotates these around as needed to prevent copying
+	int buffer_index_rotator = 1;
+	TArray<FUnorderedAccessViewRHIRef>RotateableBufers;
+
 	//This is a reference to our data on the GPU, without it, we would need to pass the entire buffer to the GPU for our next itteration
 	FUnorderedAccessViewRHIRef A_output_UAV_;
+	FUnorderedAccessViewRHIRef B_output_UAV_;
+	FUnorderedAccessViewRHIRef C_output_UAV_;
 
 	//Send our data to the gpu, and do our first itteration
 	void SetParameters(FRHICommandListImmediate& RHICmdList);

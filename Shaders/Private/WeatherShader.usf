@@ -699,8 +699,8 @@ struct FStruct_AirCellColumns_GPU
 //RWTexture3D<float4> MyRWTexture3D;
 
 RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputA; //x5600
-//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
-//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600
 ///////////////////////////////////////////////////////////////////////////
 int2 PixelCoord;
 int2 MaxResolution;
@@ -710,6 +710,8 @@ void simulateStep(uint GroupIndex : SV_GroupIndex, uint3 DispatchThreadId : SV_D
 {
     //WeatherData.test_outputA[0].U = test_outputA[0].U + 1; //Change this back once fix is in
     test_outputA[0].U = test_outputA[0].U + 1; 
+    test_outputB[0].U = test_outputB[0].U + 2;
+    test_outputC[0].U = test_outputC[0].U + 3;
     //ShaderPrintSetCursorPos(float2(100, 100));
     //ShaderPrintHelloWorld();
 

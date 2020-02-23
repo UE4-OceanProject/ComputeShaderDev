@@ -3,6 +3,8 @@
 #include "WeatherStructs.h"
 #include "Shader_Interface.h"
 
+
+#include "RenderGraph.h" //The only thing you need for RDG
 #include "WeatherManager.generated.h"
 
 

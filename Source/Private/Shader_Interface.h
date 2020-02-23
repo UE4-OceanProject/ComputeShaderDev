@@ -2,18 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "GlobalShader.h" //ShaderCore module
-#include "UniformBuffer.h" // RenderCore module
-#include "RHICommandList.h" // RHI module
 #include "Shader_Interface.h"
 #include "WeatherStructs.h"
 
-#include "Shader.h"
-#include "ShaderParameters.h"
-#include "RenderCommandFence.h"
 
-#include "RenderGraphUtils.h"
-#include "Containers/DynamicRHIResourceArray.h" // Core module
 
+
+#include "RenderGraph.h" //The only thing you need for RDG
 #include "ShaderPrintParameters.h"
 
 
@@ -27,9 +22,7 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 	SHADER_USE_PARAMETER_STRUCT(FGlobalComputeShader_Interface, FGlobalShader)
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		//SHADER_PARAMETER_RDG_TEXTURE_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA) //<--Due to bug in engine we have to wait
-		//SHADER_PARAMETER_STRUCT_INCLUDE(ShaderPrint_Custom::FShaderParameters, ShaderPrintUniformBuffer)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA)
 		END_SHADER_PARAMETER_STRUCT()
 
 		static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
@@ -44,10 +37,6 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 		OutEnvironment.CompilerFlags.Add(CFLAG_PreferFlowControl);
 		OutEnvironment.CompilerFlags.Add(CFLAG_Debug);
 		OutEnvironment.CompilerFlags.Add(CFLAG_KeepDebugInfo);
-
-		// Add your own defines for the shader code
-		//OutEnvironment.SetDefine(TEXT("MY_DEFINE"), 1);
-		//OutEnvironment.SetDefine(TEXT("NAME"), TEXT("Test"));
 	}
 
 	static bool ShouldCache(EShaderPlatform platform) {
@@ -56,13 +45,14 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 	}
 
 public:
-	TResourceArray<FWarpInConfig2> A_output_RA_; // Not necessary.
-	FRHIResourceCreateInfo A_output_resource_;
-	FStructuredBufferRHIRef A_output_buffer_;
+
+	//This is a reference to our data on the GPU, without it, we would need to pass the entire buffer to the GPU for our next itteration
 	FUnorderedAccessViewRHIRef A_output_UAV_;
 
+	//Send our data to the gpu, and do our first itteration
 	void SetParameters(FRHICommandListImmediate& RHICmdList);
 
+	//Data is already on GPU, do a single itteration
 	void Compute(FRHICommandListImmediate& RHICmdList);
 };
 

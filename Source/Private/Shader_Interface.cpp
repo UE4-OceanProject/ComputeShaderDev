@@ -1,50 +1,135 @@
-//#include "Shader_Interface.h"
-//#include "WeatherStructs.h"
-//#include "ShaderPrint.h"
-//
-//
-//
-////Change this back when fix is in place
-////IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FGlobalWeatherParameters, "WeatherData");
-////typedef TUniformBufferRef<FGlobalWeatherParameters> FUniformBufferRef;
-//
-//
-////This wont be needed once fix is in.
-////FGlobalComputeShader_Interface::FGlobalComputeShader_Interface(const ShaderMetaType::CompiledShaderInitializerType& Initializer) : FGlobalShader(Initializer) {
-////	A_output_.Bind(Initializer.ParameterMap, TEXT("test_outputA"), SPF_Mandatory);//x5600x3
-////}
-////
-//////This wont be needed once fix is in.
-////bool FGlobalComputeShader_Interface::Serialize(FArchive& Ar) {
-////	bool bShaderHasOutdatedParameters = FGlobalShader::Serialize(Ar);
-////	Ar
-////		<< A_output_ //x5600x3
-////		;
-////	return bShaderHasOutdatedParameters;
-////}
-//
-//void FGlobalComputeShader_Interface::SetParameters()
-//{
-//
-//	ENQUEUE_RENDER_COMMAND(SetupCommand)//TypeName - Arbitrary name of the render command
-//		(
-//			[this](FRHICommandListImmediate& RHICmdList) //Passed in variables
-//	{
-//		//This code block is ran inside of the Render Thread!
-//		//Which is why we need the reference to our FrontEnd class
-//		this->Setup_RenderThread();
-//	}
-//			//This is now back in the Game Thread!
-//	);
-//
-//
-//	render_command_fence_.BeginFence();
-//	render_command_fence_.Wait(); // Waits for pending fence commands to retire.
-//
-//	UE_LOG(LogTemp, Warning, TEXT("===== Calculate ====="));
-//
-//}
-//
+#include "Shader_Interface.h"
+#include "WeatherStructs.h"
+#include "ShaderPrint.h"
+
+///Declare our shader:   ShaderClassType					ShaderFilePath										    Shader function name		Type
+IMPLEMENT_GLOBAL_SHADER(FGlobalComputeShader_Interface, "/Plugin/ComputeShaderDev/Private/WeatherShader.usf", "simulateStep", SF_Compute);
+
+/** Descriptor of a graph tracked texture. */
+using FRDGTextureDesc = FPooledRenderTargetDesc;
+
+void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHICmdList)
+{
+	check(IsInRenderingThread());
+
+
+
+	//Render Graph Buildier
+	FRDGBuilder GraphBuilder(RHICmdList);
+	//Setup your rendering graph here.
+
+
+	//Creating a texture
+	FRDGTextureDesc SceneColorDesc = FRDGTextureDesc::Create2DDesc(
+		FIntPoint(1920, 1080),
+		PF_FloatRGBA,
+		FClearValueBinding::Black,
+		/* InFlags = */ TexCreate_None,
+		/* InTargetableFlags = */ TexCreate_ShaderResource | TexCreate_RenderTargetable | TexCreate_UAV,
+		/* bInForceSeparateTargetAndShaderResource = */ false);
+	FRDGTexture* SceneColor = GraphBuilder.CreateTexture(SceneColorDesc, TEXT("SceneColor"));
+
+	//Creating an SRV for a Texture
+	FRDGTextureSRVDesc Desc = FRDGTextureSRVDesc::Create(SceneColor);
+	FRDGTextureSRVRef MipSRV = GraphBuilder.CreateSRV(Desc);
+
+	//Creating a UAV for a Texture
+	FRDGTextureUAV* SceneColorUAV = GraphBuilder.CreateUAV(SceneColor);
+
+	FParameters* PassParameters;
+
+	//Alloc parameters
+	//PassParameters = GraphBuilder.AllocateForRHILifeTime<FGlobalComputeShader_Interface::FParameters>();
+	PassParameters = GraphBuilder.AllocParameters<FGlobalComputeShader_Interface::FParameters>();
+
+
+
+
+
+
+
+
+	//Setup parameters
+	//PassParameters->ShaderPrintUniformBuffer.RWValuesBuffer = SceneColorUAV->GetRHI();
+//ClearUnusedGraphResources()
+
+
+	int num_input_ = 2;
+
+
+
+	TArray<FWarpInConfig2> A_data = {
+{7,7,7,7,7,7,7,7,7,7},
+{7,7,7,7,7,7,7,7,7,7} };
+
+	A_output_RA_.SetNum(num_input_);
+	FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
+	A_output_resource_.ResourceArray = &A_output_RA_;
+	A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
+	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	PassParameters->test_outputA = A_output_UAV_;
+
+
+
+
+
+
+
+
+
+	//Adding a pass
+	FComputeShaderUtils::AddPass(
+		GraphBuilder,
+		RDG_EVENT_NAME("MyShader %dx%d", 1920, 1080),
+		this,
+		PassParameters,
+		FIntVector(1, 1, 1));
+
+
+
+
+	GraphBuilder.Execute();
+
+}
+
+void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdList)
+{
+	check(IsInRenderingThread());
+
+
+
+	//Render Graph Buildier
+	FRDGBuilder GraphBuilder(RHICmdList);
+	//Setup your rendering graph here.
+
+
+	FParameters* PassParameters;
+
+	//Alloc parameters
+	//PassParameters = GraphBuilder.AllocateForRHILifeTime<FGlobalComputeShader_Interface::FParameters>();
+	PassParameters = GraphBuilder.AllocParameters<FGlobalComputeShader_Interface::FParameters>();
+	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	PassParameters->test_outputA = A_output_UAV_;
+
+	//Adding a pass
+	FComputeShaderUtils::AddPass(
+		GraphBuilder,
+		RDG_EVENT_NAME("MyShader %dx%d", 1920, 1080),
+		this,
+		PassParameters,
+		FIntVector(1,1,1));  
+
+
+
+
+	GraphBuilder.Execute();
+
+}
+
+
+
 //void FGlobalComputeShader_Interface::Setup_RenderThread()
 //{
 //	check(IsInRenderingThread());
@@ -98,19 +183,7 @@
 //	ShaderPrint_Custom::BeginView(RHICmdList);
 //}
 //
-//void FGlobalComputeShader_Interface::Compute() 
-//{
-//	ENQUEUE_RENDER_COMMAND(ComputeCommand)//TypeName - Arbitrary name of the render command
-//	(
-//		[this](FRHICommandListImmediate& RHICmdList) //Passed in variables
-//			{
-//			//This code block is ran inside of the Render Thread!
-//			//Which is why we need the reference to our FrontEnd class
-//			this->Calculate_RenderThread();
-//			}
-//		//This is now back in the Game Thread!
-//	);
-//}
+//
 //
 //void FGlobalComputeShader_Interface::Calculate_RenderThread()
 //{
@@ -154,9 +227,3 @@
 //	FRDGTextureRef HZBTexture = GraphBuilder.CreateTexture(HZBDesc, TEXT("HZB"));
 //	ShaderPrint_Custom::DrawView(GraphBuilder, HZBTexture);
 //}
-//
-//
-//	//Declare our shader:   ShaderClassType					ShaderFilePath										    Shader function name		Type
-//	IMPLEMENT_GLOBAL_SHADER(FGlobalComputeShader_Interface, "/Plugin/ComputeShaderDev/Private/WeatherShader.usf",      "simulateStep",       SF_Compute);
-//
-//

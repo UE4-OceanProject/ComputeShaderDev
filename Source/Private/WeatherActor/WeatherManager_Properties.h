@@ -30,9 +30,9 @@ public:
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
-		int simulationTime = 0; // Current Local Clock Time (LCT)
+		float simulationTime = 0; // Current Local Clock Time (LCT)
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
-		int dT = 1;
+		float dT = 1;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
 		int side = 10000; // world will be side x side meters
@@ -218,23 +218,23 @@ public:
 
 
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_ground;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_gridSizeK;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_ground;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_gridSizeK;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_gridInit;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_gridRslow;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_Grid3D0;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_gridInit;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_gridRslow;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_Grid3D0;
 
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_Grid3D1;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<float> C_Grid3D2;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_Grid3D1;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+	//	TArray<float> C_Grid3D2;
 
 
 

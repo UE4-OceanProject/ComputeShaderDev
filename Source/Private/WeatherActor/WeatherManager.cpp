@@ -160,10 +160,10 @@ void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& C_prevGC, UPARAM(re
 	// SIMULATION STEPS
 
 
-
-	int nextGC = (currGC + 1) % 3;  //3 number of time array
-	int prevGC = (currGC - 1);
-	if (prevGC < 0) prevGC = 2;  // Set the last step.
+//right now we are now switching buffers
+//	int nextGC = (currGC + 1) % 3;  //3 number of time array
+//	int prevGC = (currGC - 1);
+//	if (prevGC < 0) prevGC = 2;  // Set the last step.
 
 	simulateSTEP1();
 	simulateSTEP2();
@@ -223,8 +223,9 @@ void AWeatherManager::simulateSTEP1() {
 				int km1 = k - 1;
 				if (km1 < 0) km1 = 0;
 
-				const float Kx = 500.0f; // diffusion coefficients
-				const float Kz = 100.0f;
+				//These are already defined
+				//const float Kx = 500.0f; // diffusion coefficients
+				//const float Kz = 100.0f;
 
 				//Grid3D0/1/2
 				int gridSizeI = gridXSize;
@@ -367,7 +368,7 @@ void AWeatherManager::simulateSTEP1() {
 					+ gridRslow[torid(RO, i, j, k)].RO;
 
 				if (TestTotal != 0) {
-					printf("////////////////////////////\nStep1 Test Total %d\n", TestTotal);
+					printf("////////////////////////////\nStep1 Test Total"); /*%d\n", TestTotal);*/
 				}
 			}
 		}
@@ -597,7 +598,7 @@ void AWeatherManager::simulateSTEP4() {
 				ground[torid_2(i, j)].GR_TG_RESET = ground[torid_2(i, j)].GR_TG;
 				ground[torid_2(i, j)].GR_TA_RESET = ground[torid_2(i, j)].GR_TA;
 				if (i == 0 && j == 0) {
-					printf("** Save Ref: %f (%.2f)\n", simulationTime, simulationTime / 3600.0f);
+					//printf("** Save Ref: %f (%.2f)\n", simulationTime, simulationTime / 3600.0f);
 				}
 			}
 
@@ -605,7 +606,7 @@ void AWeatherManager::simulateSTEP4() {
 			// STEP1: Update Correction after Each 24hours (+2h)
 			if ((simulationTime >= 3600.0f * (2.0f + 24.0f)) && ((int(simulationTime) - 2 * 3600)) % (24 * 3600) == 0) { // RESET
 				if (i == 0) {
-					printf("** Reset: %f (%f)\n", simulationTime, simulationTime / 3600.0f);
+					//printf("** Reset: %f (%f)\n", simulationTime, simulationTime / 3600.0f);
 				}
 				float TG_diff = ground[torid_2(i, j)].GR_TG_RESET - ground[torid_2(i, j)].GR_TG;
 				float TA_diff = ground[torid_2(i, j)].GR_TA_RESET - ground[torid_2(i, j)].GR_TA;

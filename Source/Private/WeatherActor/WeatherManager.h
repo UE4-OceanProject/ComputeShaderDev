@@ -47,13 +47,13 @@ public:
 		int preCalc_CIJK(int c, int x, int y, int z);
 
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step1"), Category = "Weather")
-		void AWeatherManager::simulateSTEP1();
+		void simulateSTEP1();
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step2"), Category = "Weather")
-		void AWeatherManager::simulateSTEP2();
+		void simulateSTEP2();
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step3"), Category = "Weather")
-		void AWeatherManager::simulateSTEP3();
+		void simulateSTEP3();
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step4"), Category = "Weather")
-		void AWeatherManager::simulateSTEP4();
+		void simulateSTEP4();
 
 	int torid(int arr, int i, int j, int k);
 	int torid_2(int x, int y);

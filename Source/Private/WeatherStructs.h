@@ -18,22 +18,6 @@ struct FWarpInConfig2
 
 //This needs to match the struct in the shader
 
-USTRUCT(BlueprintType)
-struct FStruct_Cell_CPU {
-	GENERATED_USTRUCT_BODY()
-		// Always make USTRUCT variables into UPROPERTY()
-		// Any non-UPROPERTY() struct vars are not replicated
-		// Always initialize your USTRUCT variables!
-
-		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridCellVariable")
-		float Cell; 
-
-					//Have to have this initializer or you will have "optimized out" issues when 
-					//creating new structs?
-		FStruct_Cell_CPU()
-	{
-	}
-};
 
 
 USTRUCT(BlueprintType)
@@ -74,25 +58,6 @@ struct FStruct_AirCellColumns_CPU {
 };
 
 
-USTRUCT(BlueprintType)
-struct FStruct_AirGridContainer_CPU {
-	GENERATED_USTRUCT_BODY()
-		// Always make USTRUCT variables into UPROPERTY()
-		// Any non-UPROPERTY() struct vars are not replicated
-		// Always initialize your USTRUCT variables!
-
-		///////////////////////////////////////////////////////
-		// VariableData (5600)
-		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridGroundVariables")
-		TArray<FStruct_AirCellColumns_CPU> CellColumns;
-
-	//Have to have this initializer or you will have "optimized out" issues when 
-	//creating new structs?
-	FStruct_AirGridContainer_CPU()
-	{
-	}
-};
-
 
 
 
@@ -131,26 +96,6 @@ struct FStruct_GroundCellColumns_CPU {
 					//Have to have this initializer or you will have "optimized out" issues when 
 					//creating new structs?
 	FStruct_GroundCellColumns_CPU()
-	{
-	}
-};
-
-
-USTRUCT(BlueprintType)
-struct FStruct_GroundGridContainer_CPU {
-	GENERATED_USTRUCT_BODY()
-		// Always make USTRUCT variables into UPROPERTY()
-		// Any non-UPROPERTY() struct vars are not replicated
-		// Always initialize your USTRUCT variables!
-
-		///////////////////////////////////////////////////////
-		// VariableData (5600)
-		UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|GridVariables")
-		TArray<FStruct_GroundCellColumns_CPU> CellColumns;
-
-	//Have to have this initializer or you will have "optimized out" issues when 
-	//creating new structs?
-	FStruct_GroundGridContainer_CPU()
 	{
 	}
 };

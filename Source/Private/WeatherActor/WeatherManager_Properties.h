@@ -15,7 +15,18 @@ public:
 	int currGC = 0;
 	int nextGC = 0;
 
-	int numSteps = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Simulation State")
+		int numSteps = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Simulation State")
+		bool firstTime = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Simulation State")
+		int numIterPerStep = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|Simulation State")
+		int numIter = 10;
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
@@ -31,7 +42,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|PreInit")
 		float gridYSize = 1000; // size of the grid
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_Cell_CPU> gridSizeK;
+		TArray<float> gridSizeK;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
 		TArray<float> gridSizeKAcc; // It is the size(in meters) of each gridcell accumulated in Z direction(Note: this contains the accumulated values, not the heights)
 
@@ -60,27 +71,27 @@ public:
 		float rainProbability = 1.0f;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ComputeShader")
-	//	TArray<FStruct_AirGridContainer_CPU> TArray_FStruct_AirGridContainer_CPU_gridInit;
+	//	TArray<FStruct_AirCellColumns_CPU> TArray_FStruct_AirCellColumns_CPU_gridInit;
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_GroundGridContainer_CPU> ground;
+		TArray<FStruct_GroundCellColumns_CPU> ground;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirGridContainer_CPU> gridInit;
+		TArray<FStruct_AirCellColumns_CPU> gridInit;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirGridContainer_CPU> grid0Var;
+		TArray<FStruct_AirCellColumns_CPU> grid0Var;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirGridContainer_CPU> gridRslow;
+		TArray<FStruct_AirCellColumns_CPU> gridRslow;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirGridContainer_CPU> Grid3D0; //Past
-	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-	//	TArray<FStruct_AirGridContainer_CPU> Grid3D1; //Current
-	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-	//	TArray<FStruct_AirGridContainer_CPU> Grid3D2; //Future
+		TArray<FStruct_AirCellColumns_CPU> Grid3D0; //Past
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<FStruct_AirCellColumns_CPU> Grid3D1; //Current
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<FStruct_AirCellColumns_CPU> Grid3D2; //Future
 
 
 
@@ -190,6 +201,46 @@ public:
 		float DEG2RAD = M_PI / 180.0f;
 
 
+
+
+
+
+
+	//not used in code, but used in bp to allocate array sizes
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
+		int gridXYx10 = gridXY * 10;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
+		int gridXYZ = gridXY * gridZ;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|SimulationVariables")
+		int gridXYZx10 = gridXYZ * 10;
+
+
+
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_ground;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_gridSizeK;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_gridInit;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_gridRslow;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_Grid3D0;
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_Grid3D1;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
+		TArray<float> C_Grid3D2;
+
+
+
 private:
 
 };
+
+
+

@@ -166,9 +166,9 @@ void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& C_prevGC, UPARAM(re
 	if (prevGC < 0) prevGC = 2;  // Set the last step.
 
 	simulateSTEP1();
-	//simulateSTEP2();
-	//simulateSTEP3();
-	//simulateSTEP4();
+	simulateSTEP2();
+	simulateSTEP3();
+	simulateSTEP4();
 
 	currGC = (currGC + 1) % 3;  // 3 number of time array
 

@@ -7,6 +7,7 @@
 #include "RenderGraph.h" //The only thing you need for RDG
 #include "WeatherManager.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(WeatherManager, Verbose, All);
 
 //An actor based weather system for simulating weather
 UCLASS(Blueprintable, BlueprintType)
@@ -67,5 +68,10 @@ protected:
 
 
 private:
+
+	float Step1TestTotal = 0;
+	float Step2TestTotal = 0;
+	float Step3TestTotal = 0;
+	float Step4TestTotal = 0;
 
 };

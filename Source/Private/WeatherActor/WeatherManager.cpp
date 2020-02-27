@@ -8,6 +8,8 @@
 #include "RenderTargetPool.h"
 #include "ShaderPrintParameters.h"
 
+DEFINE_LOG_CATEGORY(WeatherManager);
+
 
 AWeatherManager::AWeatherManager(const class FObjectInitializer& PCIP) : Super(PCIP)
 {
@@ -235,7 +237,15 @@ int AWeatherManager::torid(int arr, int x, int y, int z)
 
 /* STEP 1 Fundamental Equations */
 void AWeatherManager::simulateSTEP1() {
-	float TestTotal = 0;
+	float u_test = 0;
+	float v_test = 0;
+	float w_test = 0;
+	float theta_test = 0;
+	float pi_test = 0;
+	float qv_test = 0;
+	float qc_test = 0;
+	float qr_test = 0;
+
 	for (int k = 1; k < gridZ - 1; k++) {
 		for (int j = 0; j < gridY; j++) {
 			for (int i = 0; i < gridX; i++) {
@@ -255,8 +265,9 @@ void AWeatherManager::simulateSTEP1() {
 
 				//int test = torid(RO, i, j, k - 1);
 				//printf("////////////////////////////\nStep1 torrid: %d\n", test);
+
+				u_test =
 				gridRslow[torid(U, i, j, k)].U =
-				//float u_test =
 					-1.0f / gridSizeI * (powf(0.5f * (Grid3D1[(torid(U, i + 1, j, k))].U + Grid3D1[torid(U, i, j, k)].U), 2) - powf(0.5f * (Grid3D1[torid(U, i, j, k)].U + Grid3D1[torid(U, i - 1, j, k)].U), 2)) // -duu/dx
 
 					- 1.0f / gridSizeJ * (
@@ -272,8 +283,8 @@ void AWeatherManager::simulateSTEP1() {
 					+ Kz / powf(gridSizeK[k], 2) * ((Grid3D0[torid(U, i, j, k + 1)].U - gridInit[torid(U, i, j, k + 1)].U) - 2.0f * (Grid3D0[torid(U, i, j, k)].U - gridInit[torid(U, i, j, k)].U) + (Grid3D0[torid(U, i, j, k - 1)].U - gridInit[torid(U, i, j, k - 1)].U)); // Diffusion (implicit)
 
 
+				v_test =
 				gridRslow[torid(V, i, j, k)].V =
-				//float v_test =
 					-1.0f / gridSizeI * (
 						0.5f * (Grid3D1[torid(V, i + 1, j, k)].V + Grid3D1[torid(V, i, j, k)].V) * 0.5f * (Grid3D1[torid(U, i + 1, j, k)].U + Grid3D1[torid(U, i + 1, j - 1, k)].U)
 						- 0.5f * (Grid3D1[torid(V, i, j, k)].V + Grid3D1[torid(V, i - 1, j, k)].V) * 0.5f * (Grid3D1[torid(U, i, j - 1, k)].U + Grid3D1[torid(U, i, j, k)].U))// -dvu/dx 
@@ -288,8 +299,8 @@ void AWeatherManager::simulateSTEP1() {
 					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(V, i, j + 1, k)].V - 2.0f * Grid3D0[torid(V, i, j, k)].V + Grid3D0[torid(V, i, j - 1, k)].V)
 					+ Kz / powf(gridSizeK[k], 2) * ((Grid3D0[torid(V, i, j, k + 1)].V - gridInit[torid(V, i, j, k + 1)].V) - 2.0f * (Grid3D0[torid(V, i, j, k)].V - gridInit[torid(V, i, j, k)].V) + (Grid3D0[torid(V, i, j, k - 1)].V - gridInit[torid(V, i, j, k - 1)].V)); // Diffusion (implicit)
 
+				w_test =
 				gridRslow[torid(W, i, j, k)].W =
-				//float w_test =
 					-1.0f / gridSizeI * (
 						0.5f * (Grid3D1[torid(U, i + 1, j, k)].U + Grid3D1[torid(U, i + 1, j, k - 1)].U) * 0.5f * (Grid3D1[torid(W, i + 1, j, k)].W + Grid3D1[torid(W, i, j, k)].W)
 						- 0.5f * (Grid3D1[torid(U, i, j, k)].U + Grid3D1[torid(U, i, j, k - 1)].U) * 0.5f * (Grid3D1[torid(W, i, j, k)].W + Grid3D1[torid(W, i - 1, j, k)].W)) // -duw/dx
@@ -309,8 +320,8 @@ void AWeatherManager::simulateSTEP1() {
 					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(W, i, j + 1, k)].W - 2.0f * Grid3D0[torid(W, i, j, k)].W + Grid3D0[torid(W, i, j - 1, k)].W) // Diffusion (implicit)
 					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(W, i, j, k + 1)].W - 2.0f * Grid3D0[torid(W, i, j, k)].W + Grid3D0[torid(W, i, j, k - 1)].W); // d2w/dx2+d2w/dz2
 
+				theta_test =
 				gridRslow[torid(THETA, i, j, k)].THETA =
-				//float theta_test =
 					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(THETA, i + 1, j, k)].THETA + Grid3D1[torid(THETA, i, j, k)].THETA)
 						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(THETA, i, j, k)].THETA + Grid3D1[torid(THETA, i - 1, j, k)].THETA)) // -duT/dx
 
@@ -327,8 +338,8 @@ void AWeatherManager::simulateSTEP1() {
 					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(THETA, i, j + 1, k)].THETA - 2.0f * Grid3D0[torid(THETA, i, j, k)].THETA + Grid3D0[torid(THETA, i, j - 1, k)].THETA) // Diffusion (implicit)
 					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(THETA, i, j, k + 1)].THETA - 2.0f * Grid3D0[torid(THETA, i, j, k)].THETA + Grid3D0[torid(THETA, i, j, k - 1)].THETA); // d2T/dx2+d2T/dz2
 
+				pi_test =
 				gridRslow[torid(Pi, i, j, k)].Pi =
-				//float pi_test =
 					-1.0f * (powf(cmax, 2) / (Grid3D1[torid(RO, i, j, k)].RO * cpd * powf(gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV, 2))) * (// multiplier -cs^2/(cpd* p*T^2)
 						+(Grid3D1[torid(RO, i, j, k)].RO * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D1[torid(U, i + 1, j, k)].U - Grid3D1[torid(U, i, j, k)].U)) / gridSizeI // pTdu/dx
 
@@ -342,8 +353,9 @@ void AWeatherManager::simulateSTEP1() {
 					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(Pi, i, j, k + 1)].Pi - 2.0f * Grid3D0[torid(Pi, i, j, k)].Pi + Grid3D0[torid(Pi, i, j, k - 1)].Pi); // d2P/dx2+d2P/dz2
 
 				  // Moisture terms
+
+				qv_test =
 				gridRslow[torid(QV, i, j, k)].QV =
-				//float qv_test =
 					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(QV, i + 1, j, k)].QV + Grid3D1[torid(QV, i, j, k)].QV)
 						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(QV, i, j, k)].QV + Grid3D1[torid(QV, i - 1, j, k)].QV)) // -duqv/dx
 
@@ -360,8 +372,8 @@ void AWeatherManager::simulateSTEP1() {
 					+ Ky / powf(gridSizeI, 2) * (Grid3D0[torid(QV, i, j + 1, k)].QV - 2.0f * Grid3D0[torid(QV, i, j, k)].QV + Grid3D0[torid(QV, i, j - 1, k)].QV) // Diffusion (implicit)
 					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(QV, i, j, k + 1)].QV - 2.0f * Grid3D0[torid(QV, i, j, k)].QV + Grid3D0[torid(QV, i, j, k - 1)].QV); // d2q/dx2+d2q/dz2
 
+				qc_test =
 				gridRslow[torid(QC, i, j, k)].QC =
-				//float qc_test =
 					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(QC, i + 1, j, k)].QC + Grid3D1[torid(QC, i, j, k)].QC)
 						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(QC, i, j, k)].QC + Grid3D1[torid(QC, i - 1, j, k)].QC)) // -duqv/dx
 
@@ -375,8 +387,8 @@ void AWeatherManager::simulateSTEP1() {
 					+ Ky / powf(gridSizeI, 2) * (Grid3D0[torid(QC, i, j + 1, k)].QC - 2.0f * Grid3D0[torid(QC, i, j, k)].QC + Grid3D0[torid(QC, i, j - 1, k)].QC) // Diffusion (implicit)
 					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(QC, i, j, k + 1)].QC - 2.0f * Grid3D0[torid(QC, i, j, k)].QC + Grid3D0[torid(QC, i, j, k - 1)].QC); // d2q/dx2+d2q/dz2
 
+				qr_test =
 				gridRslow[torid(QR, i, j, k)].QR =
-				//float qr_test =
 					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(QR, i + 1, j, k)].QR + Grid3D1[torid(QR, i, j, k)].QR)
 						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(QR, i, j, k)].QR + Grid3D1[torid(QR, i - 1, j, k)].QR)) // -duqv/dx
 
@@ -393,20 +405,26 @@ void AWeatherManager::simulateSTEP1() {
 				gridRslow[torid(RO, i, j, k)].RO = 0.0f;
 
 				//for quick verification
-				TestTotal += gridRslow[torid(U, i, j, k)].U + gridRslow[torid(V, i, j, k)].V + gridRslow[torid(W, i, j, k)].W
+				Step1TestTotal += gridRslow[torid(U, i, j, k)].U + gridRslow[torid(V, i, j, k)].V + gridRslow[torid(W, i, j, k)].W
 					+ gridRslow[torid(THETA, i, j, k)].THETA + gridRslow[torid(Pi, i, j, k)].Pi
-					+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR
-					+ gridRslow[torid(RO, i, j, k)].RO;
+					+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
 
-				if (TestTotal != 0) {
-					printf("////////////////////////////\nStep1 Test Total"); /*%d\n", TestTotal);*/
-				}
+
 			}
 		}
+	}
+	if (Step1TestTotal != 0) {
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step1 Test Total  '%f'"), Step1TestTotal);
 	}
 }
 /* STEP2: Kelsner Microphicis */
 void AWeatherManager::simulateSTEP2() {
+
+	float QV_Test = 0;
+	float QC_Test = 0;
+	float QR_Test = 0;
+	float THETA_Test = 0;
+
 	for (int k = 1; k < gridZ - 1; k++) {
 		for (int j = 0; j < gridY; j++) {
 			for (int i = 0; i < gridX; i++) {
@@ -445,22 +463,35 @@ void AWeatherManager::simulateSTEP2() {
 					*FMath::Max<float>(qvs - Grid3D0[torid(QV, i, j, k)].QV, 0.0f) / (gridInit[torid(RO, i, j, k)].RO *qvs));
 				Cond = FMath::Max<float>(Cond, -1.0f * Grid3D0[torid(QC, i, j, k)].QC);
 
+				QV_Test =
 				gridRslow[torid(QV, i, j, k)].QV = gridRslow[torid(QV, i, j, k)].QV - Cond + Evap; // Net mass conversion
 
+				QC_Test =
 				gridRslow[torid(QC, i, j, k)].QC = gridRslow[torid(QC, i, j, k)].QC + Cond - A_conv - B_acc; // Net mass conversion
 
 				float vterm0 = 36.34f*sqrtf(gridInit[torid(RO, i, j, 0)].RO / gridInit[torid(RO, i, j, k)].RO) * powf(FMath::Max<float>(gridInit[torid(RO, i, j, k)].RO * Grid3D0[torid(QR, i, j, k)].QR, 0.0f), 0.1364f);
 				float vterm1 = 36.34f*sqrtf(gridInit[torid(RO, i, j, 0)].RO / gridInit[torid(RO, i, j, k + 1)].RO) * powf(FMath::Max<float>(gridInit[torid(RO, i, j, k + 1)].RO * Grid3D0[torid(QR, i, j, k + 1)].QR, 0.0f), 0.1364f); // vT terminal velocity
 				// note, it's possible that vT > CFL.
 
+				QR_Test =
 				gridRslow[torid(QR, i, j, k)].QR = gridRslow[torid(QR, i, j, k)].QR + A_conv + B_acc - Evap // Net mass change
 					+ 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
 						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) *vterm1* 0.5f * (Grid3D0[torid(QR, i, j, k + 1)].QR + Grid3D0[torid(QR, i, j, k)].QR)
 						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) *vterm0* 0.5f * (Grid3D0[torid(QR, i, j, k)].QR + Grid3D0[torid(QR, i, j, k - 1)].QR)); // Falling rain
 
+				THETA_Test =
 				gridRslow[torid(THETA, i, j, k)].THETA = gridRslow[torid(THETA, i, j, k)].THETA + Llv / (cpd * gridInit[torid(Pi, i, j, k)].Pi) * (Cond - Evap); // latent heating Lv/(cpd * P) * (C-E);
+
+								//for quick verification
+				Step2TestTotal += gridRslow[torid(THETA, i, j, k)].THETA
+					+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
+
+
 			}
 		}
+	}
+	if (Step2TestTotal != 0) {
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step2 Test Total  '%f'"), Step2TestTotal);
 	}
 }
 /* STEP3: Move forward in time */

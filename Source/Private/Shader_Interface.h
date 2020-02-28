@@ -22,10 +22,25 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 	SHADER_USE_PARAMETER_STRUCT(FGlobalComputeShader_Interface, FGlobalShader)
 
 		BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputA)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputB)
-		SHADER_PARAMETER_UAV(RWStructuredBuffer<FWarpInConfig2>, test_outputC)
+		SHADER_PARAMETER(int, gridX)
+		SHADER_PARAMETER(int, gridY)
+		SHADER_PARAMETER(int, gridZ)
+
+		SHADER_PARAMETER(float, gridSizeI)
+		SHADER_PARAMETER(float, gridSizeJ)
+		SHADER_PARAMETER(float, dT)
+		SHADER_PARAMETER(float, simulationTime)
+		
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<float>, gridSizeK)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_GroundCellColumns_GPU>, ground)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_GPU>, gridRslow)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_GPU>, gridInit)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_CPU>, Grid3D_curr)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_CPU>, Grid3D_next)
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_CPU>, Grid3D_prev)
 		END_SHADER_PARAMETER_STRUCT()
+
+
 
 		//Don't compile for a platform we don't support.
 		static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
@@ -54,12 +69,33 @@ public:
 	TArray<FUnorderedAccessViewRHIRef>RotateableBufers;
 
 	//This is a reference to our data on the GPU, without it, we would need to pass the entire buffer to the GPU for our next itteration
-	FUnorderedAccessViewRHIRef A_output_UAV_;
-	FUnorderedAccessViewRHIRef B_output_UAV_;
-	FUnorderedAccessViewRHIRef C_output_UAV_;
+
+
+	FUnorderedAccessViewRHIRef gridSizeK_UAV_;
+	FUnorderedAccessViewRHIRef ground_UAV_;
+	FUnorderedAccessViewRHIRef gridRslow_UAV_;
+	FUnorderedAccessViewRHIRef gridInit_UAV_;
+
+	FUnorderedAccessViewRHIRef Grid3D_curr_UAV_;
+	FUnorderedAccessViewRHIRef Grid3D_next_UAV_;
+	FUnorderedAccessViewRHIRef Grid3D_prev_UAV_;
 
 	//Send our data to the gpu, and do our first itteration
-	void SetParameters(FRHICommandListImmediate& RHICmdList);
+	void SetParameters(FRHICommandListImmediate& RHICmdList,
+		int gridX,
+		int gridY,
+		int gridZ,
+		float gridSizeI,
+		float gridSizeJ,
+		float dT,
+		float simulationTime,
+		TArray<float> gridSizeK,
+		TArray<FStruct_GroundCellColumns_CPU> ground,
+		TArray<FStruct_AirCellColumns_CPU> gridRslow,
+		TArray<FStruct_AirCellColumns_CPU> gridInit,
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_curr,
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_next,
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_prev);
 
 	//Data is already on GPU, do a single itteration
 	void Compute(FRHICommandListImmediate& RHICmdList);

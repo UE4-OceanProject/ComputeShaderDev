@@ -9,7 +9,22 @@
 IMPLEMENT_GLOBAL_SHADER(FGlobalComputeShader_Interface, "/Plugin/ComputeShaderDev/Private/WeatherShader.usf", "simulateStep", SF_Compute);
 
 
-void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHICmdList)
+void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHICmdList,
+	int gridX,
+	int gridY,
+	int gridZ,
+	float gridSizeI,
+	float gridSizeJ,
+	float dT,
+	float simulationTime,
+	TArray<float> gridSizeK,
+	TArray<FStruct_GroundCellColumns_CPU> ground,
+	TArray<FStruct_AirCellColumns_CPU> gridRslow,
+	TArray<FStruct_AirCellColumns_CPU> gridInit,
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_curr,
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_next,
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_prev
+)
 {
 	check(IsInRenderingThread());
 
@@ -18,61 +33,117 @@ void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHI
 
 	//Setup your rendering graph here.
 
-	//FParameters needs to be recreated every itteration. Which is why we keep a reference to A_output_ so we don't have to send the buffer data to the GPU every time.
+	//FParameters needs to be recreated every itteration. Which is why we keep a reference to Grid3D_curr_ so we don't have to send the buffer data to the GPU every time.
 	FParameters* PassParameters;
 
 	//Alloc parameters, this "zeros" out the parameters
 	PassParameters = GraphBuilder.AllocParameters<FGlobalComputeShader_Interface::FParameters>();
 
 	//Hardcode our data for now
-	int num_input_ = 2; //Number of rows in our array
-	TArray<FWarpInConfig2> A_data = {
-	{7,7,7,7,7,7,7,7,7,7},
-	{7,7,7,7,7,7,7,7,7,7} };
+	int num_input_ = gridZ; //Number of rows in our array
 
 
-	TResourceArray<FWarpInConfig2> A_output_RA_;
-	FRHIResourceCreateInfo A_output_resource_;
-	FStructuredBufferRHIRef A_output_buffer_;
-
-	TResourceArray<FWarpInConfig2> B_output_RB_;
-	FRHIResourceCreateInfo B_output_resource_;
-	FStructuredBufferRHIRef B_output_buffer_;
-
-	TResourceArray<FWarpInConfig2> C_output_RC_;
-	FRHIResourceCreateInfo C_output_resource_;
-	FStructuredBufferRHIRef C_output_buffer_;
+		TResourceArray<FStruct_AirCellColumns_CPU> gridSizeK_RA_;
+	FRHIResourceCreateInfo gridSizeK_resource_;
+	FStructuredBufferRHIRef gridSizeK_buffer_;
 
 
+		TResourceArray<FStruct_AirCellColumns_CPU> ground_RA_;
+	FRHIResourceCreateInfo ground_resource_;
+	FStructuredBufferRHIRef ground_buffer_;
 
-	A_output_RA_.SetNum(num_input_);
-	FMemory::Memcpy(A_output_RA_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	A_output_resource_.ResourceArray = &A_output_RA_;
-	A_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, A_output_resource_);
-	A_output_UAV_ = RHICreateUnorderedAccessView(A_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+		TResourceArray<FStruct_AirCellColumns_CPU> gridRslow_RA_;
+	FRHIResourceCreateInfo gridRslow_resource_;
+	FStructuredBufferRHIRef gridRslow_buffer_;
 
-	B_output_RB_.SetNum(num_input_);
-	FMemory::Memcpy(B_output_RB_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	B_output_resource_.ResourceArray = &B_output_RB_;
-	B_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, B_output_resource_);
-	B_output_UAV_ = RHICreateUnorderedAccessView(B_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+		TResourceArray<FStruct_AirCellColumns_CPU> gridInit_RA_;
+	FRHIResourceCreateInfo gridInit_resource_;
+	FStructuredBufferRHIRef gridInit_buffer_;
 
-	C_output_RC_.SetNum(num_input_);
-	FMemory::Memcpy(C_output_RC_.GetData(), A_data.GetData(), sizeof(FWarpInConfig2) * num_input_);
-	C_output_resource_.ResourceArray = &C_output_RC_;
-	C_output_buffer_ = RHICreateStructuredBuffer(sizeof(FWarpInConfig2), sizeof(FWarpInConfig2) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, C_output_resource_);
-	C_output_UAV_ = RHICreateUnorderedAccessView(C_output_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	TResourceArray<FStruct_AirCellColumns_CPU> Grid3D_curr_RA_;
+	FRHIResourceCreateInfo Grid3D_curr_resource_;
+	FStructuredBufferRHIRef Grid3D_curr_buffer_;
+
+	TResourceArray<FStruct_AirCellColumns_CPU> Grid3D_next_RB_;
+	FRHIResourceCreateInfo Grid3D_next_resource_;
+	FStructuredBufferRHIRef Grid3D_next_buffer_;
+
+	TResourceArray<FStruct_AirCellColumns_CPU> Grid3D_prev_RC_;
+	FRHIResourceCreateInfo Grid3D_prev_resource_;
+	FStructuredBufferRHIRef Grid3D_prev_buffer_;
 
 
 
+	gridSizeK_RA_.SetNum(num_input_);
+	FMemory::Memcpy(gridSizeK_RA_.GetData(), gridSizeK.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	gridSizeK_resource_.ResourceArray = &gridSizeK_RA_;
+	gridSizeK_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, gridSizeK_resource_);
+	gridSizeK_UAV_ = RHICreateUnorderedAccessView(gridSizeK_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+
+	ground_RA_.SetNum(num_input_);
+	FMemory::Memcpy(ground_RA_.GetData(), ground.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	ground_resource_.ResourceArray = &ground_RA_;
+	ground_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, ground_resource_);
+	ground_UAV_ = RHICreateUnorderedAccessView(ground_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+
+	gridRslow_RA_.SetNum(num_input_);
+	FMemory::Memcpy(gridRslow_RA_.GetData(), gridRslow.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	gridRslow_resource_.ResourceArray = &gridRslow_RA_;
+	gridRslow_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, gridRslow_resource_);
+	gridRslow_UAV_ = RHICreateUnorderedAccessView(gridRslow_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	gridInit_RA_.SetNum(num_input_);
+	FMemory::Memcpy(gridInit_RA_.GetData(), gridInit.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	gridInit_resource_.ResourceArray = &gridInit_RA_;
+	gridInit_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, gridInit_resource_);
+	gridInit_UAV_ = RHICreateUnorderedAccessView(gridInit_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+
+
+
+	Grid3D_curr_RA_.SetNum(num_input_);
+	FMemory::Memcpy(Grid3D_curr_RA_.GetData(), Grid3D_curr.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	Grid3D_curr_resource_.ResourceArray = &Grid3D_curr_RA_;
+	Grid3D_curr_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, Grid3D_curr_resource_);
+	Grid3D_curr_UAV_ = RHICreateUnorderedAccessView(Grid3D_curr_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	Grid3D_next_RB_.SetNum(num_input_);
+	FMemory::Memcpy(Grid3D_next_RB_.GetData(), Grid3D_next.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	Grid3D_next_resource_.ResourceArray = &Grid3D_next_RB_;
+	Grid3D_next_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, Grid3D_next_resource_);
+	Grid3D_next_UAV_ = RHICreateUnorderedAccessView(Grid3D_next_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+
+	Grid3D_prev_RC_.SetNum(num_input_);
+	FMemory::Memcpy(Grid3D_prev_RC_.GetData(), Grid3D_prev.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
+	Grid3D_prev_resource_.ResourceArray = &Grid3D_prev_RC_;
+	Grid3D_prev_buffer_ = RHICreateStructuredBuffer(sizeof(FStruct_AirCellColumns_CPU), sizeof(FStruct_AirCellColumns_CPU) * num_input_, BUF_ShaderResource | BUF_UnorderedAccess, Grid3D_prev_resource_);
+	Grid3D_prev_UAV_ = RHICreateUnorderedAccessView(Grid3D_prev_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
+	
+	
+	PassParameters->gridX = gridX;
+	PassParameters->gridY = gridY;
+	PassParameters->gridZ = gridZ;
+
+	PassParameters->gridSizeI = gridSizeI;
+	PassParameters->gridSizeJ = gridSizeJ;
+	PassParameters->dT = dT;
+	PassParameters->simulationTime = simulationTime;
+
+	PassParameters->gridSizeK = gridSizeK_UAV_;
+	PassParameters->ground = ground_UAV_;
+	PassParameters->gridRslow = gridRslow_UAV_;
+	PassParameters->gridInit = gridInit_UAV_;
 
 	//Set these into an array we will use to rotate these buffers every itteration (past, current, future)
-	RotateableBufers = { {A_output_UAV_,B_output_UAV_,C_output_UAV_} };
+	RotateableBufers = { {Grid3D_curr_UAV_,Grid3D_next_UAV_,Grid3D_prev_UAV_} };
 
 	//First itteration, don't need to rotate buffers
-	PassParameters->test_outputA = A_output_UAV_;
-	PassParameters->test_outputB = B_output_UAV_;
-	PassParameters->test_outputC = C_output_UAV_;
+	PassParameters->Grid3D_curr = Grid3D_curr_UAV_;
+	PassParameters->Grid3D_next = Grid3D_next_UAV_;
+	PassParameters->Grid3D_prev = Grid3D_prev_UAV_;
 
 	//This send everything to the GPU
 	FComputeShaderUtils::AddPass(
@@ -111,9 +182,9 @@ void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdLis
 
 
 	//Set our rotated references for the simulation
-	PassParameters->test_outputA = RotateableBufers[a];
-	PassParameters->test_outputB = RotateableBufers[b];
-	PassParameters->test_outputC = RotateableBufers[c];
+	PassParameters->Grid3D_curr = RotateableBufers[a];
+	PassParameters->Grid3D_next = RotateableBufers[b];
+	PassParameters->Grid3D_prev = RotateableBufers[c];
 
 	//Adding a pass
 	FComputeShaderUtils::AddPass(

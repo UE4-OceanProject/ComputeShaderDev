@@ -47,6 +47,6 @@ RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_curr; //x5600
 RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_next; //x5600
 RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_prev; //x5600
 
-//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputA; //x5600
-//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
-//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_curr; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_next; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_prev; //x5600

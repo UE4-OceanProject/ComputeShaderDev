@@ -43,81 +43,66 @@ bool AWeatherManager::Setup()
 {
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
 
-	//SCOPED_DRAW_EVENT(RHICmdList, WeatherCalculate)
-
-
 	TShaderMap<FGlobalShaderType>* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
 	TShaderMapRef< FGlobalComputeShader_Interface > ComputeShader(GlobalShaderMap);
 
-
-
-
-
 	ENQUEUE_RENDER_COMMAND(WeatherCompute)(
 		[ComputeShader](FRHICommandListImmediate& RHICmdList)
-	{
-		ComputeShader->SetParameters(RHICmdList);
-	});
+		{
+			ComputeShader->SetParameters(RHICmdList);
+		});
 	return true;
 }
 
-bool AWeatherManager::Calculate(
-	/* input */ TArray<FStruct_AirCellColumns_CPU>& input,
-	/* output */TArray<FStruct_AirCellColumns_CPU>& output)
+bool AWeatherManager::Calculate()
+	//* input */ TArray<FStruct_AirCellColumns_CPU>& input,
+	//* output */TArray<FStruct_AirCellColumns_CPU>& output)
 {
-
-
-
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
 
-	//SCOPED_DRAW_EVENT(RHICmdList, WeatherCalculate)
-
-
 	TShaderMap<FGlobalShaderType>* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
 	TShaderMapRef< FGlobalComputeShader_Interface > ComputeShader(GlobalShaderMap);
 
-
-
-
-
 	ENQUEUE_RENDER_COMMAND(WeatherCompute)(
 		[ComputeShader](FRHICommandListImmediate& RHICmdList)
-	{
-		ComputeShader->Compute(RHICmdList);
-	});
+		{
+			ComputeShader->Compute(RHICmdList);
+		});
 
 
 	return true;
 }
 
+//not used anymore
+//void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& C_prevGC, UPARAM(ref) TArray<float>& C_currGC, UPARAM(ref) TArray<float>& C_nextGC)
+//{
+//	int gridSizeI = gridXSize;
+//	int gridSizeJ = gridYSize;
+//
+//
+//	///////////////////////////////////////
+//	// SIMULATION STEPS
+//
+//
+////right now we are now switching buffers
+////	int nextGC = (currGC + 1) % 3;  //3 number of time array
+////	int prevGC = (currGC - 1);
+////	if (prevGC < 0) prevGC = 2;  // Set the last step.
+//
+//	simulateSTEP1();
+//	simulateSTEP2();
+//	simulateSTEP3();
+//	simulateSTEP4();
+//
+//	currGC = (currGC + 1) % 3;  // 3 number of time array
+//
+//	simulationTime += dT;
+//
+//
+//}
 
-void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& C_prevGC, UPARAM(ref) TArray<float>& C_currGC, UPARAM(ref) TArray<float>& C_nextGC)
-{
-	int gridSizeI = gridXSize;
-	int gridSizeJ = gridYSize;
 
-
-	///////////////////////////////////////
-	// SIMULATION STEPS
-
-
-//right now we are now switching buffers
-//	int nextGC = (currGC + 1) % 3;  //3 number of time array
-//	int prevGC = (currGC - 1);
-//	if (prevGC < 0) prevGC = 2;  // Set the last step.
-
-	simulateSTEP1();
-	simulateSTEP2();
-	simulateSTEP3();
-	simulateSTEP4();
-
-	currGC = (currGC + 1) % 3;  // 3 number of time array
-
-	simulationTime += dT;
-
-
-}
-
+//Everything below, is the c++ version used to verify against the hlsl version
 int AWeatherManager::torid_ground(int x, int y) {
 	int aY = y;  // toroidal behavior
 	if (y < 0)aY = gridY + y;
@@ -129,7 +114,6 @@ int AWeatherManager::torid_ground(int x, int y) {
 
 	return (aX + aY * gridY);//return that value
 }
-
 
 int AWeatherManager::torid(int arr, int x, int y, int z)
 {
@@ -153,7 +137,6 @@ int AWeatherManager::torid(int arr, int x, int y, int z)
 
 }
 
-
 // These are the regex find/replace formulas used on original paper to mostly convert to ue4 c++ version using the above torid and torid_groud functions
 //  This is for 3 variables
 //  find : \(([a - zA - z]{ 1,14 }), ([A - z0 - 9\s + -]{ 1,7 }), ([A - z0 - 9\s + -]{ 1,10 })\)
@@ -170,9 +153,6 @@ int AWeatherManager::torid(int arr, int x, int y, int z)
 //
 //	std::min
 //	FMath::Min
-
-
-
 
 /* STEP 1 Fundamental Equations */
 void AWeatherManager::simulateSTEP1() {

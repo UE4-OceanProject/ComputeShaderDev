@@ -23,29 +23,7 @@ public:
 		bool Setup();
 
 	UFUNCTION(BlueprintCallable, Category = "WeatherShader")
-		bool Calculate(
-			/* input */UPARAM(ref) TArray<FStruct_AirCellColumns_CPU>& input,
-			/* output */TArray<FStruct_AirCellColumns_CPU>& output);
-
-
-	///////////////////////////////////////
-// WEATHER Constants
-
-// Current Local Clock Time (LCT)
-
-
-
-
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "weather step"), Category = "Weather")
-		void WeatherStep(UPARAM(ref) TArray<float>& prevGC, UPARAM(ref) TArray<float>& currGC, UPARAM(ref) TArray<float>& nextGC);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xy"), Category = "Weather")
-		int preCalcIJ(int x, int y);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc xyz"), Category = "Weather")
-		int preCalcIJK(int x, int y, int z);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
-		int preCalc_WIJK(int x, int y, int z);
-	UFUNCTION(BlueprintCallable, meta = (Keywords = "precalc wxyz"), Category = "Weather")
-		int preCalc_CIJK(int c, int x, int y, int z);
+		bool Calculate();
 
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step1"), Category = "Weather")
 		void simulateSTEP1();

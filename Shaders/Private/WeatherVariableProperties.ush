@@ -1,71 +1,52 @@
-extern int gridX = 10;
-extern int gridY = 10;
-extern int gridZ = 56;
-extern int gridSizeI = 1000;
-extern int gridSizeJ = 1000;
+extern int1 gridX = 10;
+extern int1 gridY = 10;
+extern int1 gridZ = 56;
+extern int1 gridSizeI = 1000;
+extern int1 gridSizeJ = 1000;
 
 
-extern float dT = 0;
-extern float simulationTime = 0;
+extern float1 dT = 0;
+extern float1 simulationTime = 0;
 
-//Here we rotate the past current and future values in our simulation
-extern int currGC = 0;
-extern int nextGC = 0;
-extern int prevGC = 0;
-
-struct FStruct_Cell_GPU
+struct FStruct_AirCellColumns_GPU
 {
-    float Cell;
+    float1 U; // u: wind component in the X direction
+    float1 V; // v: wind component in the Y direction
+    float1 W; // w: wind component in the Z direction
+    float1 THETA; // Theta: Potential temperature
+    float1 Pi; // Pi: Exener function
+    float1 RO; // RO: Density (Temp)
+    float1 QV; // qv: Vapor mixing ratio
+    float1 QC; // qc: Condensation mixing ratio
+    float1 QR; // qr: Rain mixing ratio
+    float1 VORT; // Vort: Vorticity
 };
-
-//struct FStruct_AirCellColumns_GPU
-//{
-//    float U; // u: wind component in the X direction
-//    float V; // v: wind component in the Y direction
-//    float W; // w: wind component in the Z direction
-//    float THETA; // Theta: Potential temperature
-//    float Pi; // Pi: Exener function
-//    float RO; // RO: Density (Temp)
-//    float QV; // qv: Vapor mixing ratio
-//    float QC; // qc: Condensation mixing ratio
-//    float QR; // qr: Rain mixing ratio
-//    float VORT; // Vort: Vorticity
-//};
-
-
-//struct FStruct_AirGridContainer_GPU
-//{ //x5600
-
-//    FStruct_AirCellColumns_GPU CellColumns[10];
-//};
-
-
 
 struct FStruct_GroundCellColumns_GPU
 {
-    float GR_TG; // Tg: Temperature of ground of first ds centimeters
-    float GR_TA; // Ta: Temperature of air above ground z>0
-    float GR_ALBEDO; // a: Albedo of the gridcell (heat absorbtion)
-    float GR_CGA; // Soild-heat capacity per area of the gridcell
+    float1 GR_TG; // Tg: Temperature of ground of first ds centimeters
+    float1 GR_TA; // Ta: Temperature of air above ground z>0
+    float1 GR_ALBEDO; // a: Albedo of the gridcell (heat absorbtion)
+    float1 GR_CGA; // Soild-heat capacity per area of the gridcell
 
-    float GR_TG_RESET; // Variables to reset after 24h
-    float GR_TA_RESET;
-    float GR_TG_CORR;
-    float GR_TA_CORR;
+    float1 GR_TG_RESET; // Variables to reset after 24h
+    float1 GR_TA_RESET;
+    float1 GR_TG_CORR;
+    float1 GR_TA_CORR;
 
-    float GR_BETA_INV; // Inverse of the Bowen ratio
-    float GR_CLOUD_COVER; // Cloud coverage: Used in simulation and shadows
+    float1 GR_BETA_INV; // Inverse of the Bowen ratio
+    float1 GR_CLOUD_COVER; // Cloud coverage: Used in simulation and shadows
 };
 
-struct FStruct_GroundGridContainer_GPU
-{
 
-    FStruct_GroundCellColumns_GPU CellColumns;
-};
-  
+RWStructuredBuffer<float1> gridSizeK;
+RWStructuredBuffer<FStruct_GroundCellColumns_GPU> ground; //100
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> gridRslow; //x5600
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> gridInit; //x5600
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_curr; //x5600
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_next; //x5600
+RWStructuredBuffer<FStruct_AirCellColumns_GPU> Grid3D_prev; //x5600
 
-RWStructuredBuffer<FStruct_Cell_GPU> gridSizeK;
-RWStructuredBuffer<FStruct_GroundGridContainer_GPU> ground; //100
-//RWStructuredBuffer<FStruct_AirGridContainer_GPU> gridRslow; //x5600
-//RWStructuredBuffer<FStruct_AirGridContainer_GPU> gridInit; //x5600
-//RWStructuredBuffer<FStruct_AirGridContainer_GPU> grid3D; //x5600x3
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputA; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputB; //x5600
+//RWStructuredBuffer<FStruct_AirCellColumns_GPU> test_outputC; //x5600

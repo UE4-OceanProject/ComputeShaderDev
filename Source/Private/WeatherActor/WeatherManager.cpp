@@ -91,67 +91,6 @@ bool AWeatherManager::Calculate(
 }
 
 
-/* Operators to acces the data in a toroidal manner */
-int AWeatherManager::preCalcIJK(int x, int y, int z)
-{
-	//Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
-	if (x < 0) x = gridX + x;
-	else if (x >= gridX)x = (x%gridX);
-
-	if (y < 0)y = gridY + y;
-	else if (y >= gridY)y = (y%gridY);
-
-	z = FMath::Max(0, z);//not under
-	z = FMath::Min(z, gridZ - 2);//not over top
-
-	return (x + y * gridX + z * (gridXY) * 10);
-}
-
-int AWeatherManager::preCalc_CIJK(int c, int x, int y, int z)
-{
-	//Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
-	if (x < 0) x = gridX + x;
-	else if (x >= gridX)x = (x%gridX);
-
-	if (y < 0)y = gridY + y;
-	else if (y >= gridY)y = (y%gridY);
-
-	z = FMath::Max(0, z);//not under
-	z = FMath::Min(z, gridZ - 2);//not over top
-
-	return (x + y * gridX + z * (gridXY) * 10) + c;
-}
-
-/* Operators to acces the data in a toroidal manner */
-int AWeatherManager::preCalc_WIJK(int x, int y, int z)
-{
-	//Toroidal behavior: (x<0)-->(x=gridX-1-x) and (x>gridX-1)-->(x=x-gridX-1)
-
-	if (x < 0) x = gridX + x;
-	else if (x >= gridX)x = (x%gridX);
-
-	if (y < 0)y = gridY + y;
-	else if (y >= gridY)y = (y%gridY);
-
-	z = FMath::Max(0, z);//not under
-	z = FMath::Min(z, gridZ - 1);//not over top
-
-	return (x + y * gridX + z * (gridXY));
-}//
-
- /* Operators to acces the data in a toroidal manner */
-int AWeatherManager::preCalcIJ(int x, int y)
-{
-	int aY = y;  // toroidal behavior
-	if (y < 0)aY = gridY + y;
-	if (y >= gridY)aY = (y % gridY);
-
-	int aX = x;  // toroidal behavior
-	if (x < 0)aX = gridX + x;
-	if (x >= gridX)aX = (x % gridX);
-	return (aX + aY * gridY) * 10;
-}
-
 void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& C_prevGC, UPARAM(ref) TArray<float>& C_currGC, UPARAM(ref) TArray<float>& C_nextGC)
 {
 	int gridSizeI = gridXSize;
@@ -179,7 +118,7 @@ void AWeatherManager::WeatherStep(UPARAM(ref) TArray<float>& C_prevGC, UPARAM(re
 
 }
 
-int AWeatherManager::torid_2(int x, int y) {
+int AWeatherManager::torid_ground(int x, int y) {
 	int aY = y;  // toroidal behavior
 	if (y < 0)aY = gridY + y;
 	if (y >= gridY)aY = (y % gridY);
@@ -215,11 +154,11 @@ int AWeatherManager::torid(int arr, int x, int y, int z)
 }
 
 
-
+// These are the regex find/replace formulas used on original paper to mostly convert to ue4 c++ version using the above torid and torid_groud functions
 //  This is for 3 variables
 //  find : \(([a - zA - z]{ 1,14 }), ([A - z0 - 9\s + -]{ 1,7 }), ([A - z0 - 9\s + -]{ 1,10 })\)
 //
-//	replace : [torid_2\(\2, \3\)].\1
+//	replace : [torid_ground\(\2, \3\)].\1
 //
 //	This is for 4 variables
 //	find : \(([a - zA - z]{ 1,5 }), ([A - z0 - 9\s + -]{ 1,7 }), ([A - z0 - 9\s + -]{ 1,10 }), ([A - z0 - 9\s + -]{ 1,10 })\)
@@ -639,15 +578,15 @@ void AWeatherManager::simulateSTEP4() {
 			if (simulationTime == 0.0f) { // 1st step: forward in time 
 				Grid3D_curr[torid(THETA, i, j, 0)].THETA = 0;
 
-				ground[torid_2(i, j)].GR_TG = 23.5f + 273.15f;
-				ground[torid_2(i, j)].GR_TA = gridInit[torid(THETA, i, j, 0)].THETA;
+				ground[torid_ground(i, j)].GR_TG = 23.5f + 273.15f;
+				ground[torid_ground(i, j)].GR_TA = gridInit[torid(THETA, i, j, 0)].THETA;
 
-				ground[torid_2(i, j)].GR_TG_RESET = FLT_MAX;// INF
+				ground[torid_ground(i, j)].GR_TG_RESET = FLT_MAX;// INF
 
-				ground[torid_2(i, j)].GR_TG_CORR = 0.0f;
-				ground[torid_2(i, j)].GR_TA_CORR = 0.0f;
+				ground[torid_ground(i, j)].GR_TG_CORR = 0.0f;
+				ground[torid_ground(i, j)].GR_TA_CORR = 0.0f;
 
-				ground[torid_2(i, j)].GR_CLOUD_COVER = 0.0f;
+				ground[torid_ground(i, j)].GR_CLOUD_COVER = 0.0f;
 			}
 
 
@@ -677,7 +616,7 @@ void AWeatherManager::simulateSTEP4() {
 					}
 				}
 				gr_cloud_cover =
-					ground[torid_2(i, j)].GR_CLOUD_COVER = fmin(cloudTotal, 1.0f);
+					ground[torid_ground(i, j)].GR_CLOUD_COVER = fmin(cloudTotal, 1.0f);
 			}
 
 
@@ -709,11 +648,11 @@ void AWeatherManager::simulateSTEP4() {
 			////////////////////////////////////////
 			// RADITATION
 
-			float alb = ground[torid_2(i, j)].GR_ALBEDO;
-			float c_g_a = ground[torid_2(i, j)].GR_CGA;
+			float alb = ground[torid_ground(i, j)].GR_ALBEDO;
+			float c_g_a = ground[torid_ground(i, j)].GR_CGA;
 
-			float sig_l = ground[torid_2(i, j)].GR_CLOUD_COVER;
-			float sig_m = ground[torid_2(i, j)].GR_CLOUD_COVER;
+			float sig_l = ground[torid_ground(i, j)].GR_CLOUD_COVER;
+			float sig_m = ground[torid_ground(i, j)].GR_CLOUD_COVER;
 			const float sig_h = 0.1f;
 
 			float I = 0.08f* (1.0f - 0.1f *sig_h - 0.3f *sig_m - 0.6f *sig_l);
@@ -723,7 +662,7 @@ void AWeatherManager::simulateSTEP4() {
 			if (sinPSI < 0)
 				Q_net = I;
 			float a_fr;
-			if (ground[torid_2(i, j)].GR_TG > ground[torid_2(i, j)].GR_TA) {
+			if (ground[torid_ground(i, j)].GR_TG > ground[torid_ground(i, j)].GR_TA) {
 				//DAY
 				a_fr = 3e-4f;
 			}
@@ -733,23 +672,23 @@ void AWeatherManager::simulateSTEP4() {
 			}
 
 
-			float T_G_t = ((-Q_net / c_g_a) + (2.0f * M_PI / dur * (T_M - ground[torid_2(i, j)].GR_TG)) - (a_fr* (ground[torid_2(i, j)].GR_TG - ground[torid_2(i, j)].GR_TA)));
-			float Q_g = -1.0f * ((c_g_a * T_G_t) + (2.0f * M_PI*c_g_a / dur * (ground[torid_2(i, j)].GR_TG - T_M)));  //Units are fomd
-			float  Q_h = (-Q_net + Q_g) / ground[torid_2(i, j)].GR_BETA_INV;
+			float T_G_t = ((-Q_net / c_g_a) + (2.0f * M_PI / dur * (T_M - ground[torid_ground(i, j)].GR_TG)) - (a_fr* (ground[torid_ground(i, j)].GR_TG - ground[torid_ground(i, j)].GR_TA)));
+			float Q_g = -1.0f * ((c_g_a * T_G_t) + (2.0f * M_PI*c_g_a / dur * (ground[torid_ground(i, j)].GR_TG - T_M)));  //Units are fomd
+			float  Q_h = (-Q_net + Q_g) / ground[torid_ground(i, j)].GR_BETA_INV;
 
 			gr_tg_test = 
-				ground[torid_2(i, j)].GR_TG += (dT *T_G_t) + ground[torid_2(i, j)].GR_TG_CORR;// NEW TG
+				ground[torid_ground(i, j)].GR_TG += (dT *T_G_t) + ground[torid_ground(i, j)].GR_TG_CORR;// NEW TG
 			gr_ta_test =
-				ground[torid_2(i, j)].GR_TA += (dT * Q_h * 1.0e-3f) + ground[torid_2(i, j)].GR_TA_CORR; // Introduced this new time parameterization //NEW TA
+				ground[torid_ground(i, j)].GR_TA += (dT * Q_h * 1.0e-3f) + ground[torid_ground(i, j)].GR_TA_CORR; // Introduced this new time parameterization //NEW TA
 
 
 			///////////////////////////////////
 			// STEP 0: Save ref value after 2 hours of simulation
-			if ((ground[torid_2(i, j)].GR_TG_RESET == FLT_MAX) && (simulationTime >= 3600.0f * 2.0f)) {  // put first FLT_MAX to avoid to comparisons
+			if ((ground[torid_ground(i, j)].GR_TG_RESET == FLT_MAX) && (simulationTime >= 3600.0f * 2.0f)) {  // put first FLT_MAX to avoid to comparisons
 				gr_tg_reset =
-					ground[torid_2(i, j)].GR_TG_RESET = ground[torid_2(i, j)].GR_TG;
+					ground[torid_ground(i, j)].GR_TG_RESET = ground[torid_ground(i, j)].GR_TG;
 				gr_ta_reset =
-					ground[torid_2(i, j)].GR_TA_RESET = ground[torid_2(i, j)].GR_TA;
+					ground[torid_ground(i, j)].GR_TA_RESET = ground[torid_ground(i, j)].GR_TA;
 				if (i == 0 && j == 0) {
 					//printf("** Save Ref: %f (%.2f)\n", simulationTime, simulationTime / 3600.0f);
 				}
@@ -762,15 +701,15 @@ void AWeatherManager::simulateSTEP4() {
 				if (i == 0) {
 					//printf("** Reset: %f (%f)\n", simulationTime, simulationTime / 3600.0f);
 				}
-				float TG_diff = ground[torid_2(i, j)].GR_TG_RESET - ground[torid_2(i, j)].GR_TG;
-				float TA_diff = ground[torid_2(i, j)].GR_TA_RESET - ground[torid_2(i, j)].GR_TA;
-				ground[torid_2(i, j)].GR_TG_CORR = (TG_diff / (24.0f * 3600.0f)) * dT * 1.2f; //1.2f correction factor
+				float TG_diff = ground[torid_ground(i, j)].GR_TG_RESET - ground[torid_ground(i, j)].GR_TG;
+				float TA_diff = ground[torid_ground(i, j)].GR_TA_RESET - ground[torid_ground(i, j)].GR_TA;
+				ground[torid_ground(i, j)].GR_TG_CORR = (TG_diff / (24.0f * 3600.0f)) * dT * 1.2f; //1.2f correction factor
 				gr_ta_corr = 
-					ground[torid_2(i, j)].GR_TA_CORR = (TA_diff / (24.0f * 3600.0f)) * dT * 1.2f;
+					ground[torid_ground(i, j)].GR_TA_CORR = (TA_diff / (24.0f * 3600.0f)) * dT * 1.2f;
 			}
 
 			theta_next_test = 
-				Grid3D_next[torid(THETA, i, j, 0)].THETA = ground[torid_2(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA;//transfer of Ta to THETA
+				Grid3D_next[torid(THETA, i, j, 0)].THETA = ground[torid_ground(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA;//transfer of Ta to THETA
 
 			Step4TestTotal +=
 				+gr_cloud_cover

@@ -57,7 +57,7 @@ public:
 		void simulateSTEP4();
 
 	int torid(int arr, int i, int j, int k);
-	int torid_2(int x, int y);
+	int torid_ground(int x, int y);
 
 protected:
 

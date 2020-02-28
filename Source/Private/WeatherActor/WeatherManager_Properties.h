@@ -87,11 +87,11 @@ public:
 		TArray<FStruct_AirCellColumns_CPU> gridRslow;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirCellColumns_CPU> Grid3D0; //Past
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_prev; //Past
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirCellColumns_CPU> Grid3D1; //Current
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_curr; //Current
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-		TArray<FStruct_AirCellColumns_CPU> Grid3D2; //Future
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_next; //Future
 
 
 
@@ -228,13 +228,13 @@ public:
 	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
 	//	TArray<float> C_gridRslow;
 	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-	//	TArray<float> C_Grid3D0;
+	//	TArray<float> C_Grid3D_prev;
 
 
 	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-	//	TArray<float> C_Grid3D1;
+	//	TArray<float> C_Grid3D_curr;
 	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Weather|DataArrays")
-	//	TArray<float> C_Grid3D2;
+	//	TArray<float> C_Grid3D_next;
 
 
 

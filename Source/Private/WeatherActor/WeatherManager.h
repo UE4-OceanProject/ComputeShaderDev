@@ -71,7 +71,8 @@ private:
 
 	float Step1TestTotal = 0;
 	float Step2TestTotal = 0;
-	float Step3TestTotal = 0;
+	float Step3CurrTestTotal = 0;
+	float Step3NextTestTotal = 0;
 	float Step4TestTotal = 0;
 
 };

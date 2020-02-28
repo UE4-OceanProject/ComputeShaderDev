@@ -257,7 +257,7 @@ void AWeatherManager::simulateSTEP1() {
 				//const float Kx = 500.0f; // diffusion coefficients
 				//const float Kz = 100.0f;
 
-				//Grid3D0/1/2
+				//Grid3D_prev/1/2
 				int gridSizeI = gridXSize;
 				int gridSizeJ = gridYSize;
 
@@ -268,139 +268,141 @@ void AWeatherManager::simulateSTEP1() {
 
 				u_test =
 				gridRslow[torid(U, i, j, k)].U =
-					-1.0f / gridSizeI * (powf(0.5f * (Grid3D1[(torid(U, i + 1, j, k))].U + Grid3D1[torid(U, i, j, k)].U), 2) - powf(0.5f * (Grid3D1[torid(U, i, j, k)].U + Grid3D1[torid(U, i - 1, j, k)].U), 2)) // -duu/dx
+					-1.0f / gridSizeI * (powf(0.5f * (Grid3D_curr[(torid(U, i + 1, j, k))].U + Grid3D_curr[torid(U, i, j, k)].U), 2) - powf(0.5f * (Grid3D_curr[torid(U, i, j, k)].U + Grid3D_curr[torid(U, i - 1, j, k)].U), 2)) // -duu/dx
 
 					- 1.0f / gridSizeJ * (
-						0.5f * (Grid3D1[torid(U, i, j + 1, k)].U + Grid3D1[torid(U, i, j, k)].U) * 0.5f * (Grid3D1[torid(V, i, j + 1, k)].V + Grid3D1[torid(V, i - 1, j + 1, k)].V)
-						- 0.5f * (Grid3D1[torid(U, i, j, k)].U + Grid3D1[torid(U, i, j - 1, k)].U) * 0.5f * (Grid3D1[torid(V, i, j, k)].V + Grid3D1[torid(V, i - 1, j, k)].V))// -duv/dy
+						0.5f * (Grid3D_curr[torid(U, i, j + 1, k)].U + Grid3D_curr[torid(U, i, j, k)].U) * 0.5f * (Grid3D_curr[torid(V, i, j + 1, k)].V + Grid3D_curr[torid(V, i - 1, j + 1, k)].V)
+						- 0.5f * (Grid3D_curr[torid(U, i, j, k)].U + Grid3D_curr[torid(U, i, j - 1, k)].U) * 0.5f * (Grid3D_curr[torid(V, i, j, k)].V + Grid3D_curr[torid(V, i - 1, j, k)].V))// -duv/dy
 
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * 0.5f * (Grid3D1[torid(W, i, j, k + 1)].W + Grid3D1[torid(W, i - 1, j, k + 1)].W) * 0.5f * (Grid3D1[torid(U, i, j, k + 1)].U + Grid3D1[torid(U, i, j, k)].U)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * 0.5f * (Grid3D1[torid(W, i, j, k)].W + Grid3D1[torid(W, i - 1, j, k)].W) * 0.5f * (Grid3D1[torid(U, i, j, k - 1)].U + Grid3D1[torid(U, i, j, k)].U)) // -dpuw/dz
-					- 1.0f / gridSizeI * (cpd * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D1[torid(Pi, i, j, k)].Pi - Grid3D1[torid(Pi, i - 1, j, k)].Pi)) // -cpd*T*dP/dx
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(U, i + 1, j, k)].U - 2.0f * Grid3D0[torid(U, i, j, k)].U + Grid3D0[torid(U, i - 1, j, k)].U)
-					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(U, i, j + 1, k)].U - 2.0f * Grid3D0[torid(U, i, j, k)].U + Grid3D0[torid(U, i, j - 1, k)].U)
-					+ Kz / powf(gridSizeK[k], 2) * ((Grid3D0[torid(U, i, j, k + 1)].U - gridInit[torid(U, i, j, k + 1)].U) - 2.0f * (Grid3D0[torid(U, i, j, k)].U - gridInit[torid(U, i, j, k)].U) + (Grid3D0[torid(U, i, j, k - 1)].U - gridInit[torid(U, i, j, k - 1)].U)); // Diffusion (implicit)
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * 0.5f * (Grid3D_curr[torid(W, i, j, k + 1)].W + Grid3D_curr[torid(W, i - 1, j, k + 1)].W) * 0.5f * (Grid3D_curr[torid(U, i, j, k + 1)].U + Grid3D_curr[torid(U, i, j, k)].U)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * 0.5f * (Grid3D_curr[torid(W, i, j, k)].W + Grid3D_curr[torid(W, i - 1, j, k)].W) * 0.5f * (Grid3D_curr[torid(U, i, j, k - 1)].U + Grid3D_curr[torid(U, i, j, k)].U)) // -dpuw/dz
+					- 1.0f / gridSizeI * (cpd * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D_curr[torid(Pi, i, j, k)].Pi - Grid3D_curr[torid(Pi, i - 1, j, k)].Pi)) // -cpd*T*dP/dx
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(U, i + 1, j, k)].U - 2.0f * Grid3D_prev[torid(U, i, j, k)].U + Grid3D_prev[torid(U, i - 1, j, k)].U)
+					+ Ky / powf(gridSizeJ, 2) * (Grid3D_prev[torid(U, i, j + 1, k)].U - 2.0f * Grid3D_prev[torid(U, i, j, k)].U + Grid3D_prev[torid(U, i, j - 1, k)].U)
+					+ Kz / powf(gridSizeK[k], 2) * ((Grid3D_prev[torid(U, i, j, k + 1)].U - gridInit[torid(U, i, j, k + 1)].U) - 2.0f * (Grid3D_prev[torid(U, i, j, k)].U - gridInit[torid(U, i, j, k)].U) + (Grid3D_prev[torid(U, i, j, k - 1)].U - gridInit[torid(U, i, j, k - 1)].U)); // Diffusion (implicit)
 
 
 				v_test =
 				gridRslow[torid(V, i, j, k)].V =
 					-1.0f / gridSizeI * (
-						0.5f * (Grid3D1[torid(V, i + 1, j, k)].V + Grid3D1[torid(V, i, j, k)].V) * 0.5f * (Grid3D1[torid(U, i + 1, j, k)].U + Grid3D1[torid(U, i + 1, j - 1, k)].U)
-						- 0.5f * (Grid3D1[torid(V, i, j, k)].V + Grid3D1[torid(V, i - 1, j, k)].V) * 0.5f * (Grid3D1[torid(U, i, j - 1, k)].U + Grid3D1[torid(U, i, j, k)].U))// -dvu/dx 
+						0.5f * (Grid3D_curr[torid(V, i + 1, j, k)].V + Grid3D_curr[torid(V, i, j, k)].V) * 0.5f * (Grid3D_curr[torid(U, i + 1, j, k)].U + Grid3D_curr[torid(U, i + 1, j - 1, k)].U)
+						- 0.5f * (Grid3D_curr[torid(V, i, j, k)].V + Grid3D_curr[torid(V, i - 1, j, k)].V) * 0.5f * (Grid3D_curr[torid(U, i, j - 1, k)].U + Grid3D_curr[torid(U, i, j, k)].U))// -dvu/dx 
 
-					- 1.0f / gridSizeJ * (powf(0.5f * (Grid3D1[torid(V, i, j + 1, k)].V + Grid3D1[torid(V, i, j, k)].V), 2) - powf(0.5f * (Grid3D1[torid(V, i, j, k)].V + Grid3D1[torid(V, i, j - 1, k)].V), 2)) // -dvv/dy
+					- 1.0f / gridSizeJ * (powf(0.5f * (Grid3D_curr[torid(V, i, j + 1, k)].V + Grid3D_curr[torid(V, i, j, k)].V), 2) - powf(0.5f * (Grid3D_curr[torid(V, i, j, k)].V + Grid3D_curr[torid(V, i, j - 1, k)].V), 2)) // -dvv/dy
 
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * 0.5f * (Grid3D1[torid(W, i, j, k + 1)].W + Grid3D1[torid(W, i, j - 1, k + 1)].W) * 0.5f * (Grid3D1[torid(V, i, j, k + 1)].V + Grid3D1[torid(V, i, j, k)].V)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * 0.5f * (Grid3D1[torid(W, i, j, k)].W + Grid3D1[torid(W, i, j - 1, k)].W) * 0.5f * (Grid3D1[torid(V, i, j, k - 1)].V + Grid3D1[torid(V, i, j, k)].V)) // -dpvw/dz
-					- 1.0f / gridSizeJ * (cpd * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D1[torid(Pi, i, j, k)].Pi - Grid3D1[torid(Pi, i, j - 1, k)].Pi)) // -cpd*T*dP/dx
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(V, i + 1, j, k)].V - 2.0f * Grid3D0[torid(V, i, j, k)].V + Grid3D0[torid(V, i - 1, j, k)].V)
-					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(V, i, j + 1, k)].V - 2.0f * Grid3D0[torid(V, i, j, k)].V + Grid3D0[torid(V, i, j - 1, k)].V)
-					+ Kz / powf(gridSizeK[k], 2) * ((Grid3D0[torid(V, i, j, k + 1)].V - gridInit[torid(V, i, j, k + 1)].V) - 2.0f * (Grid3D0[torid(V, i, j, k)].V - gridInit[torid(V, i, j, k)].V) + (Grid3D0[torid(V, i, j, k - 1)].V - gridInit[torid(V, i, j, k - 1)].V)); // Diffusion (implicit)
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * 0.5f * (Grid3D_curr[torid(W, i, j, k + 1)].W + Grid3D_curr[torid(W, i, j - 1, k + 1)].W) * 0.5f * (Grid3D_curr[torid(V, i, j, k + 1)].V + Grid3D_curr[torid(V, i, j, k)].V)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * 0.5f * (Grid3D_curr[torid(W, i, j, k)].W + Grid3D_curr[torid(W, i, j - 1, k)].W) * 0.5f * (Grid3D_curr[torid(V, i, j, k - 1)].V + Grid3D_curr[torid(V, i, j, k)].V)) // -dpvw/dz
+					- 1.0f / gridSizeJ * (cpd * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D_curr[torid(Pi, i, j, k)].Pi - Grid3D_curr[torid(Pi, i, j - 1, k)].Pi)) // -cpd*T*dP/dx
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(V, i + 1, j, k)].V - 2.0f * Grid3D_prev[torid(V, i, j, k)].V + Grid3D_prev[torid(V, i - 1, j, k)].V)
+					+ Ky / powf(gridSizeJ, 2) * (Grid3D_prev[torid(V, i, j + 1, k)].V - 2.0f * Grid3D_prev[torid(V, i, j, k)].V + Grid3D_prev[torid(V, i, j - 1, k)].V)
+					+ Kz / powf(gridSizeK[k], 2) * ((Grid3D_prev[torid(V, i, j, k + 1)].V - gridInit[torid(V, i, j, k + 1)].V) - 2.0f * (Grid3D_prev[torid(V, i, j, k)].V - gridInit[torid(V, i, j, k)].V) + (Grid3D_prev[torid(V, i, j, k - 1)].V - gridInit[torid(V, i, j, k - 1)].V)); // Diffusion (implicit)
 
 				w_test =
 				gridRslow[torid(W, i, j, k)].W =
 					-1.0f / gridSizeI * (
-						0.5f * (Grid3D1[torid(U, i + 1, j, k)].U + Grid3D1[torid(U, i + 1, j, k - 1)].U) * 0.5f * (Grid3D1[torid(W, i + 1, j, k)].W + Grid3D1[torid(W, i, j, k)].W)
-						- 0.5f * (Grid3D1[torid(U, i, j, k)].U + Grid3D1[torid(U, i, j, k - 1)].U) * 0.5f * (Grid3D1[torid(W, i, j, k)].W + Grid3D1[torid(W, i - 1, j, k)].W)) // -duw/dx
+						0.5f * (Grid3D_curr[torid(U, i + 1, j, k)].U + Grid3D_curr[torid(U, i + 1, j, k - 1)].U) * 0.5f * (Grid3D_curr[torid(W, i + 1, j, k)].W + Grid3D_curr[torid(W, i, j, k)].W)
+						- 0.5f * (Grid3D_curr[torid(U, i, j, k)].U + Grid3D_curr[torid(U, i, j, k - 1)].U) * 0.5f * (Grid3D_curr[torid(W, i, j, k)].W + Grid3D_curr[torid(W, i - 1, j, k)].W)) // -duw/dx
 
 					- 1.0f / gridSizeJ * (
-						0.5f * (Grid3D1[torid(V, i, j + 1, k)].V + Grid3D1[torid(V, i, j + 1, k - 1)].V) * 0.5f * (Grid3D1[torid(W, i, j + 1, k)].W + Grid3D1[torid(W, i, j, k)].W)
-						- 0.5f * (Grid3D1[torid(V, i, j, k)].V + Grid3D1[torid(V, i, j, k - 1)].V) * 0.5f * (Grid3D1[torid(W, i, j, k)].W + Grid3D1[torid(W, i, j - 1, k)].W)) // -duw/dx
+						0.5f * (Grid3D_curr[torid(V, i, j + 1, k)].V + Grid3D_curr[torid(V, i, j + 1, k - 1)].V) * 0.5f * (Grid3D_curr[torid(W, i, j + 1, k)].W + Grid3D_curr[torid(W, i, j, k)].W)
+						- 0.5f * (Grid3D_curr[torid(V, i, j, k)].V + Grid3D_curr[torid(V, i, j, k - 1)].V) * 0.5f * (Grid3D_curr[torid(W, i, j, k)].W + Grid3D_curr[torid(W, i, j - 1, k)].W)) // -duw/dx
 
-					- 1.0f / (0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * 0.5f * (gridSizeK[k] + gridSizeK[km1])) *
-					(Grid3D1[torid(RO, i, j, k)].RO * powf(0.5f * (Grid3D1[torid(W, i, j, k + 1)].W + Grid3D1[torid(W, i, j, k)].W), 2) - Grid3D1[torid(RO, i, j, k - 1)].RO * powf(0.5f * (Grid3D1[torid(W, i, j, k)].W + Grid3D1[torid(W, i, j, k - 1)].W), 2)) // -dpww/dz
+					- 1.0f / (0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * 0.5f * (gridSizeK[k] + gridSizeK[km1])) *
+					(Grid3D_curr[torid(RO, i, j, k)].RO * powf(0.5f * (Grid3D_curr[torid(W, i, j, k + 1)].W + Grid3D_curr[torid(W, i, j, k)].W), 2) - Grid3D_curr[torid(RO, i, j, k - 1)].RO * powf(0.5f * (Grid3D_curr[torid(W, i, j, k)].W + Grid3D_curr[torid(W, i, j, k - 1)].W), 2)) // -dpww/dz
 					- 1.0f / (0.5f * (gridSizeK[k] + gridSizeK[km1])) *
 					(cpd * 0.5f * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV + gridInit[torid(THETA, i, j, k - 1)].THETA + 0.61f * gridInit[torid(QV, i, j, k - 1)].QV)
-						* (Grid3D1[torid(Pi, i, j, k)].Pi - Grid3D1[torid(Pi, i, j, k - 1)].Pi)) // -cpd* T*dP/dz
-					+ g * 0.5f * (Grid3D1[torid(THETA, i, j, k)].THETA / gridInit[torid(THETA, i, j, k)].THETA + Grid3D1[torid(THETA, i, j, k - 1)].THETA / gridInit[torid(THETA, i, j, k - 1)].THETA
-						+ 0.61f* (Grid3D1[torid(QV, i, j, k)].QV + Grid3D1[torid(QV, i, j, k - 1)].QV) - (Grid3D1[torid(QC, i, j, k)].QC + Grid3D1[torid(QC, i, j, k - 1)].QC + Grid3D1[torid(QR, i, j, k)].QR + Grid3D1[torid(QR, i, j, k - 1)].QR)) // B=g* T'/T
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(W, i + 1, j, k)].W - 2.0f * Grid3D0[torid(W, i, j, k)].W + Grid3D0[torid(W, i - 1, j, k)].W) // Diffusion (implicit)
-					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(W, i, j + 1, k)].W - 2.0f * Grid3D0[torid(W, i, j, k)].W + Grid3D0[torid(W, i, j - 1, k)].W) // Diffusion (implicit)
-					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(W, i, j, k + 1)].W - 2.0f * Grid3D0[torid(W, i, j, k)].W + Grid3D0[torid(W, i, j, k - 1)].W); // d2w/dx2+d2w/dz2
+						* (Grid3D_curr[torid(Pi, i, j, k)].Pi - Grid3D_curr[torid(Pi, i, j, k - 1)].Pi)) // -cpd* T*dP/dz
+					+ g * 0.5f * (Grid3D_curr[torid(THETA, i, j, k)].THETA / gridInit[torid(THETA, i, j, k)].THETA + Grid3D_curr[torid(THETA, i, j, k - 1)].THETA / gridInit[torid(THETA, i, j, k - 1)].THETA
+						+ 0.61f* (Grid3D_curr[torid(QV, i, j, k)].QV + Grid3D_curr[torid(QV, i, j, k - 1)].QV) - (Grid3D_curr[torid(QC, i, j, k)].QC + Grid3D_curr[torid(QC, i, j, k - 1)].QC + Grid3D_curr[torid(QR, i, j, k)].QR + Grid3D_curr[torid(QR, i, j, k - 1)].QR)) // B=g* T'/T
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(W, i + 1, j, k)].W - 2.0f * Grid3D_prev[torid(W, i, j, k)].W + Grid3D_prev[torid(W, i - 1, j, k)].W) // Diffusion (implicit)
+					+ Ky / powf(gridSizeJ, 2) * (Grid3D_prev[torid(W, i, j + 1, k)].W - 2.0f * Grid3D_prev[torid(W, i, j, k)].W + Grid3D_prev[torid(W, i, j - 1, k)].W) // Diffusion (implicit)
+					+ Kz / powf(gridSizeK[k], 2) * (Grid3D_prev[torid(W, i, j, k + 1)].W - 2.0f * Grid3D_prev[torid(W, i, j, k)].W + Grid3D_prev[torid(W, i, j, k - 1)].W); // d2w/dx2+d2w/dz2
 
 				theta_test =
 				gridRslow[torid(THETA, i, j, k)].THETA =
-					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(THETA, i + 1, j, k)].THETA + Grid3D1[torid(THETA, i, j, k)].THETA)
-						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(THETA, i, j, k)].THETA + Grid3D1[torid(THETA, i - 1, j, k)].THETA)) // -duT/dx
+					-1.0f / gridSizeI * (Grid3D_curr[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D_curr[torid(THETA, i + 1, j, k)].THETA + Grid3D_curr[torid(THETA, i, j, k)].THETA)
+						- Grid3D_curr[torid(U, i, j, k)].U * 0.5f * (Grid3D_curr[torid(THETA, i, j, k)].THETA + Grid3D_curr[torid(THETA, i - 1, j, k)].THETA)) // -duT/dx
 
-					- 1.0f / gridSizeJ * (Grid3D1[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D1[torid(THETA, i, j + 1, k)].THETA + Grid3D1[torid(THETA, i, j, k)].THETA)
-						- Grid3D1[torid(V, i, j, k)].V * 0.5f * (Grid3D1[torid(THETA, i, j, k)].THETA + Grid3D1[torid(THETA, i, j - 1, k)].THETA)) // -dvT/dx NN
+					- 1.0f / gridSizeJ * (Grid3D_curr[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D_curr[torid(THETA, i, j + 1, k)].THETA + Grid3D_curr[torid(THETA, i, j, k)].THETA)
+						- Grid3D_curr[torid(V, i, j, k)].V * 0.5f * (Grid3D_curr[torid(THETA, i, j, k)].THETA + Grid3D_curr[torid(THETA, i, j - 1, k)].THETA)) // -dvT/dx NN
 
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D1[torid(THETA, i, j, k + 1)].THETA + Grid3D1[torid(THETA, i, j, k)].THETA)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * 0.5f * (Grid3D1[torid(THETA, i, j, k)].THETA + Grid3D1[torid(THETA, i, j, k - 1)].THETA)) // -dpwT/dz
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO) * 0.5f * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * (gridInit[torid(THETA, i, j, k + 1)].THETA - gridInit[torid(THETA, i, j, k)].THETA) / gridSizeK[k + 1]
-						+ 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * (gridInit[torid(THETA, i, j, k)].THETA - gridInit[torid(THETA, i, j, k - 1)].THETA) / gridSizeK[k]) // -w/p*dpT/dz (mean state)
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(THETA, i + 1, j, k)].THETA - 2.0f * Grid3D0[torid(THETA, i, j, k)].THETA + Grid3D0[torid(THETA, i - 1, j, k)].THETA) // Diffusion (implicit)
-					+ Ky / powf(gridSizeJ, 2) * (Grid3D0[torid(THETA, i, j + 1, k)].THETA - 2.0f * Grid3D0[torid(THETA, i, j, k)].THETA + Grid3D0[torid(THETA, i, j - 1, k)].THETA) // Diffusion (implicit)
-					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(THETA, i, j, k + 1)].THETA - 2.0f * Grid3D0[torid(THETA, i, j, k)].THETA + Grid3D0[torid(THETA, i, j, k - 1)].THETA); // d2T/dx2+d2T/dz2
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D_curr[torid(THETA, i, j, k + 1)].THETA + Grid3D_curr[torid(THETA, i, j, k)].THETA)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * 0.5f * (Grid3D_curr[torid(THETA, i, j, k)].THETA + Grid3D_curr[torid(THETA, i, j, k - 1)].THETA)) // -dpwT/dz
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO) * 0.5f * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * (gridInit[torid(THETA, i, j, k + 1)].THETA - gridInit[torid(THETA, i, j, k)].THETA) / gridSizeK[k + 1]
+						+ 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * (gridInit[torid(THETA, i, j, k)].THETA - gridInit[torid(THETA, i, j, k - 1)].THETA) / gridSizeK[k]) // -w/p*dpT/dz (mean state)
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(THETA, i + 1, j, k)].THETA - 2.0f * Grid3D_prev[torid(THETA, i, j, k)].THETA + Grid3D_prev[torid(THETA, i - 1, j, k)].THETA) // Diffusion (implicit)
+					+ Ky / powf(gridSizeJ, 2) * (Grid3D_prev[torid(THETA, i, j + 1, k)].THETA - 2.0f * Grid3D_prev[torid(THETA, i, j, k)].THETA + Grid3D_prev[torid(THETA, i, j - 1, k)].THETA) // Diffusion (implicit)
+					+ Kz / powf(gridSizeK[k], 2) * (Grid3D_prev[torid(THETA, i, j, k + 1)].THETA - 2.0f * Grid3D_prev[torid(THETA, i, j, k)].THETA + Grid3D_prev[torid(THETA, i, j, k - 1)].THETA); // d2T/dx2+d2T/dz2
 
 				pi_test =
 				gridRslow[torid(Pi, i, j, k)].Pi =
-					-1.0f * (powf(cmax, 2) / (Grid3D1[torid(RO, i, j, k)].RO * cpd * powf(gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV, 2))) * (// multiplier -cs^2/(cpd* p*T^2)
-						+(Grid3D1[torid(RO, i, j, k)].RO * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D1[torid(U, i + 1, j, k)].U - Grid3D1[torid(U, i, j, k)].U)) / gridSizeI // pTdu/dx
+					-1.0f * (powf(cmax, 2) / (Grid3D_curr[torid(RO, i, j, k)].RO * cpd * powf(gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV, 2))) * (// multiplier -cs^2/(cpd* p*T^2)
+						+(Grid3D_curr[torid(RO, i, j, k)].RO * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D_curr[torid(U, i + 1, j, k)].U - Grid3D_curr[torid(U, i, j, k)].U)) / gridSizeI // pTdu/dx
 
-						+ (Grid3D1[torid(RO, i, j, k)].RO * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D1[torid(V, i, j + 1, k)].V - Grid3D1[torid(V, i, j, k)].V)) / gridSizeJ // pTdv/dx
+						+ (Grid3D_curr[torid(RO, i, j, k)].RO * (gridInit[torid(THETA, i, j, k)].THETA + 0.61f * gridInit[torid(QV, i, j, k)].QV) * (Grid3D_curr[torid(V, i, j + 1, k)].V - Grid3D_curr[torid(V, i, j, k)].V)) / gridSizeJ // pTdv/dx
 
-						+ (0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * 0.5f * (gridInit[torid(THETA, i, j, k + 1)].THETA + gridInit[torid(THETA, i, j, k)].THETA)
-							- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * 0.5f * (gridInit[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k - 1)].THETA)) / gridSizeK[k] // pTdw/dz
+						+ (0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * 0.5f * (gridInit[torid(THETA, i, j, k + 1)].THETA + gridInit[torid(THETA, i, j, k)].THETA)
+							- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * 0.5f * (gridInit[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k - 1)].THETA)) / gridSizeK[k] // pTdw/dz
 						)
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(Pi, i + 1, j, k)].Pi - 2.0f * Grid3D0[torid(Pi, i, j, k)].Pi + Grid3D0[torid(Pi, i - 1, j, k)].Pi) // Diffusion (implicit)
-					+ Ky / powf(gridSizeI, 2) * (Grid3D0[torid(Pi, i, j + 1, k)].Pi - 2.0f * Grid3D0[torid(Pi, i, j, k)].Pi + Grid3D0[torid(Pi, i, j - 1, k)].Pi) // Diffusion (implicit)
-					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(Pi, i, j, k + 1)].Pi - 2.0f * Grid3D0[torid(Pi, i, j, k)].Pi + Grid3D0[torid(Pi, i, j, k - 1)].Pi); // d2P/dx2+d2P/dz2
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(Pi, i + 1, j, k)].Pi - 2.0f * Grid3D_prev[torid(Pi, i, j, k)].Pi + Grid3D_prev[torid(Pi, i - 1, j, k)].Pi) // Diffusion (implicit)
+					+ Ky / powf(gridSizeI, 2) * (Grid3D_prev[torid(Pi, i, j + 1, k)].Pi - 2.0f * Grid3D_prev[torid(Pi, i, j, k)].Pi + Grid3D_prev[torid(Pi, i, j - 1, k)].Pi) // Diffusion (implicit)
+					+ Kz / powf(gridSizeK[k], 2) * (Grid3D_prev[torid(Pi, i, j, k + 1)].Pi - 2.0f * Grid3D_prev[torid(Pi, i, j, k)].Pi + Grid3D_prev[torid(Pi, i, j, k - 1)].Pi); // d2P/dx2+d2P/dz2
 
 				  // Moisture terms
 
 				qv_test =
 				gridRslow[torid(QV, i, j, k)].QV =
-					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(QV, i + 1, j, k)].QV + Grid3D1[torid(QV, i, j, k)].QV)
-						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(QV, i, j, k)].QV + Grid3D1[torid(QV, i - 1, j, k)].QV)) // -duqv/dx
+					-1.0f / gridSizeI * (Grid3D_curr[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D_curr[torid(QV, i + 1, j, k)].QV + Grid3D_curr[torid(QV, i, j, k)].QV)
+						- Grid3D_curr[torid(U, i, j, k)].U * 0.5f * (Grid3D_curr[torid(QV, i, j, k)].QV + Grid3D_curr[torid(QV, i - 1, j, k)].QV)) // -duqv/dx
 
-					- 1.0f / gridSizeJ * (Grid3D1[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D1[torid(QV, i, j + 1, k)].QV + Grid3D1[torid(QV, i, j, k)].QV)
-						- Grid3D1[torid(V, i, j, k)].V * 0.5f * (Grid3D1[torid(QV, i, j, k)].QV + Grid3D1[torid(QV, i, j - 1, k)].QV)) // -dvqv/dy
+					- 1.0f / gridSizeJ * (Grid3D_curr[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D_curr[torid(QV, i, j + 1, k)].QV + Grid3D_curr[torid(QV, i, j, k)].QV)
+						- Grid3D_curr[torid(V, i, j, k)].V * 0.5f * (Grid3D_curr[torid(QV, i, j, k)].QV + Grid3D_curr[torid(QV, i, j - 1, k)].QV)) // -dvqv/dy
 
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D1[torid(QV, i, j, k + 1)].QV + Grid3D1[torid(QV, i, j, k)].QV)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * 0.5f * (Grid3D1[torid(QV, i, j, k)].QV + Grid3D1[torid(QV, i, j, k - 1)].QV)) // -dpwqv/dz
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO) * 0.5f * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * (gridInit[torid(QV, i, j, k + 1)].QV - gridInit[torid(QV, i, j, k)].QV) / gridSizeK[k + 1]
-						+ 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * (gridInit[torid(QV, i, j, k)].QV - gridInit[torid(QV, i, j, k - 1)].QV) / gridSizeK[k]) // -w/p*dpqv/dz (mean state)
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(QV, i + 1, j, k)].QV - 2.0f * Grid3D0[torid(QV, i, j, k)].QV + Grid3D0[torid(QV, i - 1, j, k)].QV) // Diffusion (implicit)
-					+ Ky / powf(gridSizeI, 2) * (Grid3D0[torid(QV, i, j + 1, k)].QV - 2.0f * Grid3D0[torid(QV, i, j, k)].QV + Grid3D0[torid(QV, i, j - 1, k)].QV) // Diffusion (implicit)
-					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(QV, i, j, k + 1)].QV - 2.0f * Grid3D0[torid(QV, i, j, k)].QV + Grid3D0[torid(QV, i, j, k - 1)].QV); // d2q/dx2+d2q/dz2
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D_curr[torid(QV, i, j, k + 1)].QV + Grid3D_curr[torid(QV, i, j, k)].QV)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * 0.5f * (Grid3D_curr[torid(QV, i, j, k)].QV + Grid3D_curr[torid(QV, i, j, k - 1)].QV)) // -dpwqv/dz
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO) * 0.5f * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * (gridInit[torid(QV, i, j, k + 1)].QV - gridInit[torid(QV, i, j, k)].QV) / gridSizeK[k + 1]
+						+ 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * (gridInit[torid(QV, i, j, k)].QV - gridInit[torid(QV, i, j, k - 1)].QV) / gridSizeK[k]) // -w/p*dpqv/dz (mean state)
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(QV, i + 1, j, k)].QV - 2.0f * Grid3D_prev[torid(QV, i, j, k)].QV + Grid3D_prev[torid(QV, i - 1, j, k)].QV) // Diffusion (implicit)
+					+ Ky / powf(gridSizeI, 2) * (Grid3D_prev[torid(QV, i, j + 1, k)].QV - 2.0f * Grid3D_prev[torid(QV, i, j, k)].QV + Grid3D_prev[torid(QV, i, j - 1, k)].QV) // Diffusion (implicit)
+					+ Kz / powf(gridSizeK[k], 2) * (Grid3D_prev[torid(QV, i, j, k + 1)].QV - 2.0f * Grid3D_prev[torid(QV, i, j, k)].QV + Grid3D_prev[torid(QV, i, j, k - 1)].QV); // d2q/dx2+d2q/dz2
+
+				float nowqv = gridRslow[torid(QV, i, j, k)].QV;
 
 				qc_test =
 				gridRslow[torid(QC, i, j, k)].QC =
-					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(QC, i + 1, j, k)].QC + Grid3D1[torid(QC, i, j, k)].QC)
-						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(QC, i, j, k)].QC + Grid3D1[torid(QC, i - 1, j, k)].QC)) // -duqv/dx
+					-1.0f / gridSizeI * (Grid3D_curr[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D_curr[torid(QC, i + 1, j, k)].QC + Grid3D_curr[torid(QC, i, j, k)].QC)
+						- Grid3D_curr[torid(U, i, j, k)].U * 0.5f * (Grid3D_curr[torid(QC, i, j, k)].QC + Grid3D_curr[torid(QC, i - 1, j, k)].QC)) // -duqv/dx
 
-					- 1.0f / gridSizeJ * (Grid3D1[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D1[torid(QC, i, j + 1, k)].QC + Grid3D1[torid(QC, i, j, k)].QC)
-						- Grid3D1[torid(V, i, j, k)].V * 0.5f * (Grid3D1[torid(QC, i, j, k)].QC + Grid3D1[torid(QC, i, j - 1, k)].QC)) // -duqv/dx
+					- 1.0f / gridSizeJ * (Grid3D_curr[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D_curr[torid(QC, i, j + 1, k)].QC + Grid3D_curr[torid(QC, i, j, k)].QC)
+						- Grid3D_curr[torid(V, i, j, k)].V * 0.5f * (Grid3D_curr[torid(QC, i, j, k)].QC + Grid3D_curr[torid(QC, i, j - 1, k)].QC)) // -duqv/dx
 
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D1[torid(QC, i, j, k + 1)].QC + Grid3D1[torid(QC, i, j, k)].QC)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * 0.5f * (Grid3D1[torid(QC, i, j, k)].QC + Grid3D1[torid(QC, i, j, k - 1)].QC)) // -dpwqv/dz
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(QC, i + 1, j, k)].QC - 2.0f * Grid3D0[torid(QC, i, j, k)].QC + Grid3D0[torid(QC, i - 1, j, k)].QC) // Diffusion (implicit)
-					+ Ky / powf(gridSizeI, 2) * (Grid3D0[torid(QC, i, j + 1, k)].QC - 2.0f * Grid3D0[torid(QC, i, j, k)].QC + Grid3D0[torid(QC, i, j - 1, k)].QC) // Diffusion (implicit)
-					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(QC, i, j, k + 1)].QC - 2.0f * Grid3D0[torid(QC, i, j, k)].QC + Grid3D0[torid(QC, i, j, k - 1)].QC); // d2q/dx2+d2q/dz2
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D_curr[torid(QC, i, j, k + 1)].QC + Grid3D_curr[torid(QC, i, j, k)].QC)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * 0.5f * (Grid3D_curr[torid(QC, i, j, k)].QC + Grid3D_curr[torid(QC, i, j, k - 1)].QC)) // -dpwqv/dz
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(QC, i + 1, j, k)].QC - 2.0f * Grid3D_prev[torid(QC, i, j, k)].QC + Grid3D_prev[torid(QC, i - 1, j, k)].QC) // Diffusion (implicit)
+					+ Ky / powf(gridSizeI, 2) * (Grid3D_prev[torid(QC, i, j + 1, k)].QC - 2.0f * Grid3D_prev[torid(QC, i, j, k)].QC + Grid3D_prev[torid(QC, i, j - 1, k)].QC) // Diffusion (implicit)
+					+ Kz / powf(gridSizeK[k], 2) * (Grid3D_prev[torid(QC, i, j, k + 1)].QC - 2.0f * Grid3D_prev[torid(QC, i, j, k)].QC + Grid3D_prev[torid(QC, i, j, k - 1)].QC); // d2q/dx2+d2q/dz2
 
 				qr_test =
 				gridRslow[torid(QR, i, j, k)].QR =
-					-1.0f / gridSizeI * (Grid3D1[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D1[torid(QR, i + 1, j, k)].QR + Grid3D1[torid(QR, i, j, k)].QR)
-						- Grid3D1[torid(U, i, j, k)].U * 0.5f * (Grid3D1[torid(QR, i, j, k)].QR + Grid3D1[torid(QR, i - 1, j, k)].QR)) // -duqv/dx
+					-1.0f / gridSizeI * (Grid3D_curr[torid(U, i + 1, j, k)].U * 0.5f * (Grid3D_curr[torid(QR, i + 1, j, k)].QR + Grid3D_curr[torid(QR, i, j, k)].QR)
+						- Grid3D_curr[torid(U, i, j, k)].U * 0.5f * (Grid3D_curr[torid(QR, i, j, k)].QR + Grid3D_curr[torid(QR, i - 1, j, k)].QR)) // -duqv/dx
 
-					- 1.0f / gridSizeJ * (Grid3D1[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D1[torid(QR, i, j + 1, k)].QR + Grid3D1[torid(QR, i, j, k)].QR)
-						- Grid3D1[torid(V, i, j, k)].V * 0.5f * (Grid3D1[torid(QR, i, j, k)].QR + Grid3D1[torid(QR, i, j - 1, k)].QR)) // -dvqv/dy
+					- 1.0f / gridSizeJ * (Grid3D_curr[torid(V, i, j + 1, k)].V * 0.5f * (Grid3D_curr[torid(QR, i, j + 1, k)].QR + Grid3D_curr[torid(QR, i, j, k)].QR)
+						- Grid3D_curr[torid(V, i, j, k)].V * 0.5f * (Grid3D_curr[torid(QR, i, j, k)].QR + Grid3D_curr[torid(QR, i, j - 1, k)].QR)) // -dvqv/dy
 
-					- 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) * Grid3D1[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D1[torid(QR, i, j, k + 1)].QR + Grid3D1[torid(QR, i, j, k)].QR)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) * Grid3D1[torid(W, i, j, k)].W * 0.5f * (Grid3D1[torid(QR, i, j, k)].QR + Grid3D1[torid(QR, i, j, k - 1)].QR)) // -dpwqv/dz
-					+ Kx / powf(gridSizeI, 2) * (Grid3D0[torid(QR, i + 1, j, k)].QR - 2.0f * Grid3D0[torid(QR, i, j, k)].QR + Grid3D0[torid(QR, i - 1, j, k)].QR) // Diffusion (implicit)
-					+ Ky / powf(gridSizeI, 2) * (Grid3D0[torid(QR, i, j + 1, k)].QR - 2.0f * Grid3D0[torid(QR, i, j, k)].QR + Grid3D0[torid(QR, i, j - 1, k)].QR) // Diffusion (implicit)
-					+ Kz / powf(gridSizeK[k], 2) * (Grid3D0[torid(QR, i, j, k + 1)].QR - 2.0f * Grid3D0[torid(QR, i, j, k)].QR + Grid3D0[torid(QR, i, j, k - 1)].QR); // d2q/dx2+d2q/dz2
+					- 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) * Grid3D_curr[torid(W, i, j, k + 1)].W * 0.5f * (Grid3D_curr[torid(QR, i, j, k + 1)].QR + Grid3D_curr[torid(QR, i, j, k)].QR)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) * Grid3D_curr[torid(W, i, j, k)].W * 0.5f * (Grid3D_curr[torid(QR, i, j, k)].QR + Grid3D_curr[torid(QR, i, j, k - 1)].QR)) // -dpwqv/dz
+					+ Kx / powf(gridSizeI, 2) * (Grid3D_prev[torid(QR, i + 1, j, k)].QR - 2.0f * Grid3D_prev[torid(QR, i, j, k)].QR + Grid3D_prev[torid(QR, i - 1, j, k)].QR) // Diffusion (implicit)
+					+ Ky / powf(gridSizeI, 2) * (Grid3D_prev[torid(QR, i, j + 1, k)].QR - 2.0f * Grid3D_prev[torid(QR, i, j, k)].QR + Grid3D_prev[torid(QR, i, j - 1, k)].QR) // Diffusion (implicit)
+					+ Kz / powf(gridSizeK[k], 2) * (Grid3D_prev[torid(QR, i, j, k + 1)].QR - 2.0f * Grid3D_prev[torid(QR, i, j, k)].QR + Grid3D_prev[torid(QR, i, j, k - 1)].QR); // d2q/dx2+d2q/dz2
 
 				gridRslow[torid(RO, i, j, k)].RO = 0.0f;
 
@@ -438,9 +440,9 @@ void AWeatherManager::simulateSTEP2() {
 				// Order of calculation matters here
 
 				float A_conv = 0.0;
-				if (Grid3D0[torid(QC, i, j, k)].QC > 0.001) A_conv = FMath::Max<float>(0.0f, 0.001* (Grid3D0[torid(QC, i, j, k)].QC - 0.001)); // conversion cloud -> rain
+				if (Grid3D_prev[torid(QC, i, j, k)].QC > 0.001) A_conv = FMath::Max<float>(0.0f, 0.001* (Grid3D_prev[torid(QC, i, j, k)].QC - 0.001)); // conversion cloud -> rain
 
-				float B_acc = FMath::Max<float>(0.0f, gridInit[torid(RO, i, j, k)].RO * 2.2f * Grid3D0[torid(QC, i, j, k)].QC * powf(Grid3D0[torid(QR, i, j, k)].QR, 0.875f)); // accretion cloud -> rain
+				float B_acc = FMath::Max<float>(0.0f, gridInit[torid(RO, i, j, k)].RO * 2.2f * Grid3D_prev[torid(QC, i, j, k)].QC * powf(Grid3D_prev[torid(QR, i, j, k)].QR, 0.875f)); // accretion cloud -> rain
 
 				A_conv *= /*st.*/rainProbability;
 				B_acc *= /*st.*/rainProbability;
@@ -448,44 +450,46 @@ void AWeatherManager::simulateSTEP2() {
 				// Saturation adjustment (Soong & Ogura)
 				float pmean = powf(gridInit[torid(Pi, i, j, k)].Pi, cpd / Rd) *p_0; // Mean pressure
 				float qvs = (380.0f / pmean) * exp(7.5f *log(10.0f) *
-					((Grid3D0[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k)].THETA) * ((Grid3D0[torid(Pi, i, j, k)].Pi + gridInit[torid(Pi, i, j, k)].Pi)) - 273.0f) /
-					((Grid3D0[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k)].THETA) * ((Grid3D0[torid(Pi, i, j, k)].Pi + gridInit[torid(Pi, i, j, k)].Pi)) - 36.0f)); // Saturation mixing ratio
-				Grid3D0[torid(QV, i, j, k)].QV = FMath::Max<float>(Grid3D0[torid(QV, i, j, k)].QV, -1.0f * gridInit[torid(QV, i, j, k)].QV); // remove negative values
+					((Grid3D_prev[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k)].THETA) * ((Grid3D_prev[torid(Pi, i, j, k)].Pi + gridInit[torid(Pi, i, j, k)].Pi)) - 273.0f) /
+					((Grid3D_prev[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k)].THETA) * ((Grid3D_prev[torid(Pi, i, j, k)].Pi + gridInit[torid(Pi, i, j, k)].Pi)) - 36.0f)); // Saturation mixing ratio
+				Grid3D_prev[torid(QV, i, j, k)].QV = FMath::Max<float>(Grid3D_prev[torid(QV, i, j, k)].QV, -1.0f * gridInit[torid(QV, i, j, k)].QV); // remove negative values
 				float rsub = qvs * (7.5f * logf(10.0f) * (273.0f - 36.0f) *Llv / cpd) /
-					powf(gridInit[torid(Pi, i, j, k)].Pi * (Grid3D0[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k)].THETA), 2);
+					powf(gridInit[torid(Pi, i, j, k)].Pi * (Grid3D_prev[torid(THETA, i, j, k)].THETA + gridInit[torid(THETA, i, j, k)].THETA), 2);
 
-				float Cond = FMath::Min<float>(Grid3D0[torid(QV, i, j, k)].QV + gridInit[torid(QV, i, j, k)].QV,
-					FMath::Max<float>(0.0f, ((Grid3D0[torid(QV, i, j, k)].QV + gridInit[torid(QV, i, j, k)].QV) - qvs) / (1.0f + rsub))); // Condensation (qv -> qc)
+				float Cond = FMath::Min<float>(Grid3D_prev[torid(QV, i, j, k)].QV + gridInit[torid(QV, i, j, k)].QV,
+					FMath::Max<float>(0.0f, ((Grid3D_prev[torid(QV, i, j, k)].QV + gridInit[torid(QV, i, j, k)].QV) - qvs) / (1.0f + rsub))); // Condensation (qv -> qc)
 
-				float Cvent = 1.6f + 124.9f * powf(gridInit[torid(RO, i, j, k)].RO * Grid3D0[torid(QC, i, j, k)].QC, 0.2046f); // ventillation factor
-				float Evap = FMath::Min<float>(FMath::Min<float>(Grid3D0[torid(QR, i, j, k)].QR, FMath::Max<float>(-1.0f *Cond - Grid3D0[torid(QC, i, j, k)].QC, 0.0f)), // 3 options
-					dT * Cvent * powf(gridInit[torid(RO, i, j, k)].RO * Grid3D0[torid(QR, i, j, k)].QR, 0.525f) / (5.4e5 + 2.55e8 / (pmean*qvs))
-					*FMath::Max<float>(qvs - Grid3D0[torid(QV, i, j, k)].QV, 0.0f) / (gridInit[torid(RO, i, j, k)].RO *qvs));
-				Cond = FMath::Max<float>(Cond, -1.0f * Grid3D0[torid(QC, i, j, k)].QC);
+				float Cvent = 1.6f + 124.9f * powf(gridInit[torid(RO, i, j, k)].RO * Grid3D_prev[torid(QC, i, j, k)].QC, 0.2046f); // ventillation factor
+				float Evap = FMath::Min<float>(FMath::Min<float>(Grid3D_prev[torid(QR, i, j, k)].QR, FMath::Max<float>(-1.0f *Cond - Grid3D_prev[torid(QC, i, j, k)].QC, 0.0f)), // 3 options
+					dT * Cvent * powf(gridInit[torid(RO, i, j, k)].RO * Grid3D_prev[torid(QR, i, j, k)].QR, 0.525f) / (5.4e5 + 2.55e8 / (pmean*qvs))
+					*FMath::Max<float>(qvs - Grid3D_prev[torid(QV, i, j, k)].QV, 0.0f) / (gridInit[torid(RO, i, j, k)].RO *qvs));
+				Cond = FMath::Max<float>(Cond, -1.0f * Grid3D_prev[torid(QC, i, j, k)].QC);
 
+				float nowqv = gridRslow[torid(QV, i, j, k)].QV;
 				QV_Test =
 				gridRslow[torid(QV, i, j, k)].QV = gridRslow[torid(QV, i, j, k)].QV - Cond + Evap; // Net mass conversion
 
 				QC_Test =
 				gridRslow[torid(QC, i, j, k)].QC = gridRslow[torid(QC, i, j, k)].QC + Cond - A_conv - B_acc; // Net mass conversion
 
-				float vterm0 = 36.34f*sqrtf(gridInit[torid(RO, i, j, 0)].RO / gridInit[torid(RO, i, j, k)].RO) * powf(FMath::Max<float>(gridInit[torid(RO, i, j, k)].RO * Grid3D0[torid(QR, i, j, k)].QR, 0.0f), 0.1364f);
-				float vterm1 = 36.34f*sqrtf(gridInit[torid(RO, i, j, 0)].RO / gridInit[torid(RO, i, j, k + 1)].RO) * powf(FMath::Max<float>(gridInit[torid(RO, i, j, k + 1)].RO * Grid3D0[torid(QR, i, j, k + 1)].QR, 0.0f), 0.1364f); // vT terminal velocity
+				float vterm0 = 36.34f*sqrtf(gridInit[torid(RO, i, j, 0)].RO / gridInit[torid(RO, i, j, k)].RO) * powf(FMath::Max<float>(gridInit[torid(RO, i, j, k)].RO * Grid3D_prev[torid(QR, i, j, k)].QR, 0.0f), 0.1364f);
+				float vterm1 = 36.34f*sqrtf(gridInit[torid(RO, i, j, 0)].RO / gridInit[torid(RO, i, j, k + 1)].RO) * powf(FMath::Max<float>(gridInit[torid(RO, i, j, k + 1)].RO * Grid3D_prev[torid(QR, i, j, k + 1)].QR, 0.0f), 0.1364f); // vT terminal velocity
 				// note, it's possible that vT > CFL.
 
 				QR_Test =
 				gridRslow[torid(QR, i, j, k)].QR = gridRslow[torid(QR, i, j, k)].QR + A_conv + B_acc - Evap // Net mass change
-					+ 1.0f / (Grid3D1[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
-						0.5f * (Grid3D1[torid(RO, i, j, k + 1)].RO + Grid3D1[torid(RO, i, j, k)].RO) *vterm1* 0.5f * (Grid3D0[torid(QR, i, j, k + 1)].QR + Grid3D0[torid(QR, i, j, k)].QR)
-						- 0.5f * (Grid3D1[torid(RO, i, j, k)].RO + Grid3D1[torid(RO, i, j, k - 1)].RO) *vterm0* 0.5f * (Grid3D0[torid(QR, i, j, k)].QR + Grid3D0[torid(QR, i, j, k - 1)].QR)); // Falling rain
+					+ 1.0f / (Grid3D_curr[torid(RO, i, j, k)].RO * gridSizeK[k]) * (
+						0.5f * (Grid3D_curr[torid(RO, i, j, k + 1)].RO + Grid3D_curr[torid(RO, i, j, k)].RO) *vterm1* 0.5f * (Grid3D_prev[torid(QR, i, j, k + 1)].QR + Grid3D_prev[torid(QR, i, j, k)].QR)
+						- 0.5f * (Grid3D_curr[torid(RO, i, j, k)].RO + Grid3D_curr[torid(RO, i, j, k - 1)].RO) *vterm0* 0.5f * (Grid3D_prev[torid(QR, i, j, k)].QR + Grid3D_prev[torid(QR, i, j, k - 1)].QR)); // Falling rain
 
 				THETA_Test =
 				gridRslow[torid(THETA, i, j, k)].THETA = gridRslow[torid(THETA, i, j, k)].THETA + Llv / (cpd * gridInit[torid(Pi, i, j, k)].Pi) * (Cond - Evap); // latent heating Lv/(cpd * P) * (C-E);
 
-								//for quick verification
+
+
+				//for quick verification
 				Step2TestTotal += gridRslow[torid(THETA, i, j, k)].THETA
 					+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
-
 
 			}
 		}
@@ -496,51 +500,120 @@ void AWeatherManager::simulateSTEP2() {
 }
 /* STEP3: Move forward in time */
 void AWeatherManager::simulateSTEP3() {
+
+	float u_next_test = 0;
+	float v_next_test = 0;
+	float w_next_test = 0;
+	float pi_next_test = 0;
+	float theta_next_test = 0;
+	float qv_next_test = 0;
+	float qc_next_test = 0;
+	float qr_next_test = 0;
+	float ro_next_test = 0;
+
+	float u_curr_test = 0;
+	float v_curr_test = 0;
+	float w_curr_test = 0;
+	float pi_curr_test = 0;
+	float theta_curr_test = 0;
+	float qv_curr_test = 0;
+	float qc_curr_test = 0;
+	float qr_curr_test = 0;
+	float ro_curr_test = 0;
+
 	for (int k = 1; k < gridZ - 1; k++) {
 		for (int j = 0; j < gridY; j++) {
 			for (int i = 0; i < gridX; i++) {
 
 				if (simulationTime == 0.0f) { // 1st step: forward in time
 				  //	printf("first Iteration\n");
-					Grid3D2[torid(U, i, j, k)].U = Grid3D1[torid(U, i, j, k)].U + dT * gridRslow[torid(U, i, j, k)].U;
-					Grid3D2[torid(V, i, j, k)].V = Grid3D1[torid(V, i, j, k)].V + dT * gridRslow[torid(V, i, j, k)].V;
-					Grid3D2[torid(W, i, j, k)].W = Grid3D1[torid(W, i, j, k)].W + dT * gridRslow[torid(W, i, j, k)].W;
-					if ((k < 2)) Grid3D2[torid(W, i, j, k)].W = 0.0f; // top & bottom BCs //|| (k==zEnd)
-					Grid3D2[torid(Pi, i, j, k)].Pi = Grid3D1[torid(Pi, i, j, k)].Pi + dT * gridRslow[torid(Pi, i, j, k)].Pi;
-					Grid3D2[torid(THETA, i, j, k)].THETA = Grid3D1[torid(THETA, i, j, k)].THETA + dT * gridRslow[torid(THETA, i, j, k)].THETA;
-					Grid3D2[torid(QV, i, j, k)].QV = Grid3D1[torid(QV, i, j, k)].QV + dT * gridRslow[torid(QV, i, j, k)].QV;
-					Grid3D2[torid(QC, i, j, k)].QC = Grid3D1[torid(QC, i, j, k)].QC + dT * gridRslow[torid(QC, i, j, k)].QC;
-					Grid3D2[torid(QR, i, j, k)].QR = Grid3D1[torid(QR, i, j, k)].QR + dT * gridRslow[torid(QR, i, j, k)].QR;
-					Grid3D2[torid(RO, i, j, k)].RO = Grid3D1[torid(RO, i, j, k)].RO + dT * gridRslow[torid(RO, i, j, k)].RO;
+					u_next_test = Grid3D_next[torid(U, i, j, k)].U = Grid3D_curr[torid(U, i, j, k)].U + dT * gridRslow[torid(U, i, j, k)].U;
+					v_next_test = Grid3D_next[torid(V, i, j, k)].V = Grid3D_curr[torid(V, i, j, k)].V + dT * gridRslow[torid(V, i, j, k)].V;
+					w_next_test = Grid3D_next[torid(W, i, j, k)].W = Grid3D_curr[torid(W, i, j, k)].W + dT * gridRslow[torid(W, i, j, k)].W;
+					if ((k < 2)) {
+						w_next_test = Grid3D_next[torid(W, i, j, k)].W = 0.0f; // top & bottom BCs //|| (k==zEnd)
+					}
+					if ((w_next_test == 0.5 || w_next_test == 0)) {
+						int testtest = 1;
+					}
+					else {
+						int testtest = 1;
+					}
+					pi_next_test = Grid3D_next[torid(Pi, i, j, k)].Pi = Grid3D_curr[torid(Pi, i, j, k)].Pi + dT * gridRslow[torid(Pi, i, j, k)].Pi;
+					theta_next_test = Grid3D_next[torid(THETA, i, j, k)].THETA = Grid3D_curr[torid(THETA, i, j, k)].THETA + dT * gridRslow[torid(THETA, i, j, k)].THETA;
+					qv_next_test = Grid3D_next[torid(QV, i, j, k)].QV = Grid3D_curr[torid(QV, i, j, k)].QV + dT * gridRslow[torid(QV, i, j, k)].QV;
+					qc_next_test = Grid3D_next[torid(QC, i, j, k)].QC = Grid3D_curr[torid(QC, i, j, k)].QC + dT * gridRslow[torid(QC, i, j, k)].QC;
+					qr_next_test = Grid3D_next[torid(QR, i, j, k)].QR = Grid3D_curr[torid(QR, i, j, k)].QR + dT * gridRslow[torid(QR, i, j, k)].QR;
+					ro_next_test = Grid3D_next[torid(RO, i, j, k)].RO = Grid3D_curr[torid(RO, i, j, k)].RO + dT * gridRslow[torid(RO, i, j, k)].RO;
 
 				}
-				else { // subsequent steps: leapfrog
+				else 
+				{ // subsequent steps: leapfrog
 
-			   //	printf("No first Iteration\n");
-					Grid3D2[torid(U, i, j, k)].U = Grid3D0[torid(U, i, j, k)].U + 2.0f * dT * gridRslow[torid(U, i, j, k)].U;
-					Grid3D2[torid(V, i, j, k)].V = Grid3D0[torid(V, i, j, k)].V + 2.0f * dT * gridRslow[torid(V, i, j, k)].V;
-					Grid3D2[torid(W, i, j, k)].W = Grid3D0[torid(W, i, j, k)].W + 2.0f * dT * gridRslow[torid(W, i, j, k)].W;
-					if ((k < 2)) Grid3D2[torid(W, i, j, k)].W = 0.0f; // top & bottom BCs // || (k==zEnd)
-					Grid3D2[torid(Pi, i, j, k)].Pi = Grid3D0[torid(Pi, i, j, k)].Pi + 2.0f * dT * gridRslow[torid(Pi, i, j, k)].Pi;
-					Grid3D2[torid(THETA, i, j, k)].THETA = Grid3D0[torid(THETA, i, j, k)].THETA + 2.0f * dT * gridRslow[torid(THETA, i, j, k)].THETA;
-					Grid3D2[torid(QV, i, j, k)].QV = Grid3D0[torid(QV, i, j, k)].QV + 2.0f * dT * gridRslow[torid(QV, i, j, k)].QV;
-					Grid3D2[torid(QC, i, j, k)].QC = Grid3D0[torid(QC, i, j, k)].QC + 2.0f * dT * gridRslow[torid(QC, i, j, k)].QC;
-					Grid3D2[torid(QR, i, j, k)].QR = Grid3D0[torid(QR, i, j, k)].QR + 2.0f * dT * gridRslow[torid(QR, i, j, k)].QR;
-					Grid3D2[torid(RO, i, j, k)].RO = Grid3D0[torid(RO, i, j, k)].RO + 2.0f * dT * gridRslow[torid(RO, i, j, k)].RO;
+					//	printf("No first Iteration\n");
+					u_next_test = Grid3D_next[torid(U, i, j, k)].U = Grid3D_prev[torid(U, i, j, k)].U + 2.0f * dT * gridRslow[torid(U, i, j, k)].U;
+					v_next_test = Grid3D_next[torid(V, i, j, k)].V = Grid3D_prev[torid(V, i, j, k)].V + 2.0f * dT * gridRslow[torid(V, i, j, k)].V;
+					w_next_test = Grid3D_next[torid(W, i, j, k)].W = Grid3D_prev[torid(W, i, j, k)].W + 2.0f * dT * gridRslow[torid(W, i, j, k)].W;
+					if ((k < 2)) {
+						w_next_test = Grid3D_next[torid(W, i, j, k)].W = 0.0f; // top & bottom BCs // || (k==zEnd)
+					}
+					if ((w_next_test == 0.5 || w_next_test == 0)) {
+						int testtest = 1;
+					}
+					else {
+						int testtest = 1;
+					}
+					pi_next_test = Grid3D_next[torid(Pi, i, j, k)].Pi = Grid3D_prev[torid(Pi, i, j, k)].Pi + 2.0f * dT * gridRslow[torid(Pi, i, j, k)].Pi;
+					theta_next_test = Grid3D_next[torid(THETA, i, j, k)].THETA = Grid3D_prev[torid(THETA, i, j, k)].THETA + 2.0f * dT * gridRslow[torid(THETA, i, j, k)].THETA;
+					qv_next_test = Grid3D_next[torid(QV, i, j, k)].QV = Grid3D_prev[torid(QV, i, j, k)].QV + 2.0f * dT * gridRslow[torid(QV, i, j, k)].QV;
+					qc_next_test = Grid3D_next[torid(QC, i, j, k)].QC = Grid3D_prev[torid(QC, i, j, k)].QC + 2.0f * dT * gridRslow[torid(QC, i, j, k)].QC;
+					qr_next_test = Grid3D_next[torid(QR, i, j, k)].QR = Grid3D_prev[torid(QR, i, j, k)].QR + 2.0f * dT * gridRslow[torid(QR, i, j, k)].QR;
+					ro_next_test = Grid3D_next[torid(RO, i, j, k)].RO = Grid3D_prev[torid(RO, i, j, k)].RO + 2.0f * dT * gridRslow[torid(RO, i, j, k)].RO;
 
 					// Roberts-Asselin filter
-					Grid3D1[torid(U, i, j, k)].U = Grid3D1[torid(U, i, j, k)].U + 0.1f * (Grid3D2[torid(U, i, j, k)].U - 2.0f * Grid3D1[torid(U, i, j, k)].U + Grid3D0[torid(U, i, j, k)].U);
-					Grid3D1[torid(V, i, j, k)].V = Grid3D1[torid(V, i, j, k)].V + 0.1f * (Grid3D2[torid(V, i, j, k)].V - 2.0f * Grid3D1[torid(V, i, j, k)].V + Grid3D0[torid(V, i, j, k)].V);
-					Grid3D1[torid(W, i, j, k)].W = Grid3D1[torid(W, i, j, k)].W + 0.1f * (Grid3D2[torid(W, i, j, k)].W - 2.0f * Grid3D1[torid(W, i, j, k)].W + Grid3D0[torid(W, i, j, k)].W);
-					Grid3D1[torid(THETA, i, j, k)].THETA = Grid3D1[torid(THETA, i, j, k)].THETA + 0.1f * (Grid3D2[torid(THETA, i, j, k)].THETA - 2.0f * Grid3D1[torid(THETA, i, j, k)].THETA + Grid3D0[torid(THETA, i, j, k)].THETA);
-					Grid3D1[torid(Pi, i, j, k)].Pi = Grid3D1[torid(Pi, i, j, k)].Pi + 0.1f * (Grid3D2[torid(Pi, i, j, k)].Pi - 2.0f * Grid3D1[torid(Pi, i, j, k)].Pi + Grid3D0[torid(Pi, i, j, k)].Pi);
-					Grid3D1[torid(QV, i, j, k)].QV = Grid3D1[torid(QV, i, j, k)].QV + 0.1f * (Grid3D2[torid(QV, i, j, k)].QV - 2.0f * Grid3D1[torid(QV, i, j, k)].QV + Grid3D0[torid(QV, i, j, k)].QV);
-					Grid3D1[torid(QC, i, j, k)].QC = Grid3D1[torid(QC, i, j, k)].QC + 0.1f * (Grid3D2[torid(QC, i, j, k)].QC - 2.0f * Grid3D1[torid(QC, i, j, k)].QC + Grid3D0[torid(QC, i, j, k)].QC);
-					Grid3D1[torid(QR, i, j, k)].QR = Grid3D1[torid(QR, i, j, k)].QR + 0.1f * (Grid3D2[torid(QR, i, j, k)].QR - 2.0f * Grid3D1[torid(QR, i, j, k)].QR + Grid3D0[torid(QR, i, j, k)].QR);
-					Grid3D1[torid(RO, i, j, k)].RO = Grid3D1[torid(RO, i, j, k)].RO + 0.1f * (Grid3D2[torid(RO, i, j, k)].RO - 2.0f * Grid3D1[torid(RO, i, j, k)].RO + Grid3D0[torid(RO, i, j, k)].RO);
+					u_curr_test +=		Grid3D_curr[torid(U, i, j, k)].U =			Grid3D_curr[torid(U, i, j, k)].U + 0.1f * (			Grid3D_next[torid(U, i, j, k)].U - 2.0f *			Grid3D_curr[torid(U, i, j, k)].U +			Grid3D_prev[torid(U, i, j, k)].U);
+					v_curr_test +=		Grid3D_curr[torid(V, i, j, k)].V =			Grid3D_curr[torid(V, i, j, k)].V + 0.1f * (			Grid3D_next[torid(V, i, j, k)].V - 2.0f *			Grid3D_curr[torid(V, i, j, k)].V +			Grid3D_prev[torid(V, i, j, k)].V);
+
+					int test = torid(W, i, j, k);
+					w_curr_test +=		Grid3D_curr[torid(W, i, j, k)].W =			Grid3D_curr[torid(W, i, j, k)].W + 0.1f * (			Grid3D_next[torid(W, i, j, k)].W - 2.0f *			Grid3D_curr[torid(W, i, j, k)].W +			Grid3D_prev[torid(W, i, j, k)].W);
+					
+					pi_curr_test +=		Grid3D_curr[torid(THETA, i, j, k)].THETA =	Grid3D_curr[torid(THETA, i, j, k)].THETA + 0.1f * (	Grid3D_next[torid(THETA, i, j, k)].THETA - 2.0f *	Grid3D_curr[torid(THETA, i, j, k)].THETA +	Grid3D_prev[torid(THETA, i, j, k)].THETA);
+					theta_curr_test +=	Grid3D_curr[torid(Pi, i, j, k)].Pi =		Grid3D_curr[torid(Pi, i, j, k)].Pi + 0.1f * (		Grid3D_next[torid(Pi, i, j, k)].Pi - 2.0f *			Grid3D_curr[torid(Pi, i, j, k)].Pi +		Grid3D_prev[torid(Pi, i, j, k)].Pi);
+					qv_curr_test +=		Grid3D_curr[torid(QV, i, j, k)].QV =		Grid3D_curr[torid(QV, i, j, k)].QV + 0.1f * (		Grid3D_next[torid(QV, i, j, k)].QV - 2.0f *			Grid3D_curr[torid(QV, i, j, k)].QV +		Grid3D_prev[torid(QV, i, j, k)].QV);
+					qc_curr_test +=		Grid3D_curr[torid(QC, i, j, k)].QC =		Grid3D_curr[torid(QC, i, j, k)].QC + 0.1f * (		Grid3D_next[torid(QC, i, j, k)].QC - 2.0f *			Grid3D_curr[torid(QC, i, j, k)].QC +		Grid3D_prev[torid(QC, i, j, k)].QC);
+					qr_curr_test +=		Grid3D_curr[torid(QR, i, j, k)].QR =		Grid3D_curr[torid(QR, i, j, k)].QR + 0.1f * (		Grid3D_next[torid(QR, i, j, k)].QR - 2.0f *			Grid3D_curr[torid(QR, i, j, k)].QR +		Grid3D_prev[torid(QR, i, j, k)].QR);
+					ro_curr_test +=		Grid3D_curr[torid(RO, i, j, k)].RO =		Grid3D_curr[torid(RO, i, j, k)].RO + 0.1f * (		Grid3D_next[torid(RO, i, j, k)].RO - 2.0f *			Grid3D_curr[torid(RO, i, j, k)].RO +		Grid3D_prev[torid(RO, i, j, k)].RO);
+
 				}
+				//for quick verification
+				Step3NextTestTotal +=
+					u_next_test
+					+ v_next_test
+					+ w_next_test
+					+ pi_next_test
+					+ theta_next_test
+					+ qv_next_test
+					+ qc_next_test
+					+ qr_next_test
+					+ ro_next_test;
+				Step3CurrTestTotal +=
+					u_curr_test
+					+ v_curr_test
+					+ w_curr_test
+					+ pi_curr_test
+					+ theta_curr_test
+					+ qv_curr_test
+					+ qc_curr_test
+					+ qr_curr_test
+					+ ro_curr_test;
 			}
 		}
+	}
+	if (Step3NextTestTotal != 0) {
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step2 Next Test Total  '%f'"), Step3NextTestTotal);
+	}
+	if (Step3CurrTestTotal != 0) {
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step2 Curr Test Total  '%f'"), Step3CurrTestTotal);
 	}
 }
 /* STEP4: Radiation model */
@@ -555,7 +628,7 @@ void AWeatherManager::simulateSTEP4() {
 			////////////////////////////////////////
 			// INIT VALUES
 			if (simulationTime == 0.0f) { // 1st step: forward in time 
-				Grid3D1[torid(THETA, i, j, 0)].THETA = 0;
+				Grid3D_curr[torid(THETA, i, j, 0)].THETA = 0;
 
 				ground[torid_2(i, j)].GR_TG = 23.5f + 273.15f;
 				ground[torid_2(i, j)].GR_TA = gridInit[torid(THETA, i, j, 0)].THETA;
@@ -574,7 +647,7 @@ void AWeatherManager::simulateSTEP4() {
 			if ((int(simulationTime / dT) % (60 * 5)) == 0) {  // each 300 steps
 				float cloudTotal = 0.0f;
 				for (int z = static_cast<int>(0.33f * gridZ); z < static_cast<int>(0.83f * gridZ); z++) {
-					float density = Grid3D2[torid(QC, i, j, z)].QC;
+					float density = Grid3D_next[torid(QC, i, j, z)].QC;
 					if (density == 0.0f)
 						continue;
 					if (density > 2e-3f) {
@@ -676,7 +749,7 @@ void AWeatherManager::simulateSTEP4() {
 				ground[torid_2(i, j)].GR_TA_CORR = (TA_diff / (24.0f * 3600.0f)) * dT * 1.2f;
 			}
 
-			Grid3D2[torid(THETA, i, j, 0)].THETA = ground[torid_2(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA;//transfer of Ta to THETA
+			Grid3D_next[torid(THETA, i, j, 0)].THETA = ground[torid_2(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA;//transfer of Ta to THETA
 		}
 	}
 }

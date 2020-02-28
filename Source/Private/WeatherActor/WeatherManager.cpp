@@ -610,14 +610,23 @@ void AWeatherManager::simulateSTEP3() {
 		}
 	}
 	if (Step3NextTestTotal != 0) {
-		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step2 Next Test Total  '%f'"), Step3NextTestTotal);
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step3 Next Test Total  '%f'"), Step3NextTestTotal);
 	}
 	if (Step3CurrTestTotal != 0) {
-		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step2 Curr Test Total  '%f'"), Step3CurrTestTotal);
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step3 Curr Test Total  '%f'"), Step3CurrTestTotal);
 	}
 }
 /* STEP4: Radiation model */
 void AWeatherManager::simulateSTEP4() {
+
+	float gr_cloud_cover = 0;
+	float theta_next_test = 0;
+	float gr_tg_test = 0;
+	float gr_ta_test = 0;
+	float gr_tg_reset = 0;
+	float gr_ta_reset = 0;
+	float gr_ta_corr = 0;
+
 	for (int j = 0; j < gridY; j++) {
 		for (int i = 0; i < gridX; i++) {
 
@@ -640,6 +649,7 @@ void AWeatherManager::simulateSTEP4() {
 
 				ground[torid_2(i, j)].GR_CLOUD_COVER = 0.0f;
 			}
+
 
 			////////////////////////////////////////
 			// CLOUD COVERAGE
@@ -666,8 +676,10 @@ void AWeatherManager::simulateSTEP4() {
 						break; // not necessary to check more
 					}
 				}
-				ground[torid_2(i, j)].GR_CLOUD_COVER = fmin(cloudTotal, 1.0f);
+				gr_cloud_cover =
+					ground[torid_2(i, j)].GR_CLOUD_COVER = fmin(cloudTotal, 1.0f);
 			}
+
 
 
 			////////////////////////////////////////
@@ -720,22 +732,29 @@ void AWeatherManager::simulateSTEP4() {
 				a_fr = 1.1e-4f;
 			}
 
+
 			float T_G_t = ((-Q_net / c_g_a) + (2.0f * M_PI / dur * (T_M - ground[torid_2(i, j)].GR_TG)) - (a_fr* (ground[torid_2(i, j)].GR_TG - ground[torid_2(i, j)].GR_TA)));
 			float Q_g = -1.0f * ((c_g_a * T_G_t) + (2.0f * M_PI*c_g_a / dur * (ground[torid_2(i, j)].GR_TG - T_M)));  //Units are fomd
 			float  Q_h = (-Q_net + Q_g) / ground[torid_2(i, j)].GR_BETA_INV;
 
-			ground[torid_2(i, j)].GR_TG += (dT *T_G_t) + ground[torid_2(i, j)].GR_TG_CORR;// NEW TG
-			ground[torid_2(i, j)].GR_TA += (dT * Q_h * 1.0e-3f) + ground[torid_2(i, j)].GR_TA_CORR; // Introduced this new time parameterization //NEW TA
+			gr_tg_test = 
+				ground[torid_2(i, j)].GR_TG += (dT *T_G_t) + ground[torid_2(i, j)].GR_TG_CORR;// NEW TG
+			gr_ta_test =
+				ground[torid_2(i, j)].GR_TA += (dT * Q_h * 1.0e-3f) + ground[torid_2(i, j)].GR_TA_CORR; // Introduced this new time parameterization //NEW TA
+
 
 			///////////////////////////////////
 			// STEP 0: Save ref value after 2 hours of simulation
 			if ((ground[torid_2(i, j)].GR_TG_RESET == FLT_MAX) && (simulationTime >= 3600.0f * 2.0f)) {  // put first FLT_MAX to avoid to comparisons
-				ground[torid_2(i, j)].GR_TG_RESET = ground[torid_2(i, j)].GR_TG;
-				ground[torid_2(i, j)].GR_TA_RESET = ground[torid_2(i, j)].GR_TA;
+				gr_tg_reset =
+					ground[torid_2(i, j)].GR_TG_RESET = ground[torid_2(i, j)].GR_TG;
+				gr_ta_reset =
+					ground[torid_2(i, j)].GR_TA_RESET = ground[torid_2(i, j)].GR_TA;
 				if (i == 0 && j == 0) {
 					//printf("** Save Ref: %f (%.2f)\n", simulationTime, simulationTime / 3600.0f);
 				}
 			}
+
 
 			///////////////////////////////////
 			// STEP1: Update Correction after Each 24hours (+2h)
@@ -746,11 +765,27 @@ void AWeatherManager::simulateSTEP4() {
 				float TG_diff = ground[torid_2(i, j)].GR_TG_RESET - ground[torid_2(i, j)].GR_TG;
 				float TA_diff = ground[torid_2(i, j)].GR_TA_RESET - ground[torid_2(i, j)].GR_TA;
 				ground[torid_2(i, j)].GR_TG_CORR = (TG_diff / (24.0f * 3600.0f)) * dT * 1.2f; //1.2f correction factor
-				ground[torid_2(i, j)].GR_TA_CORR = (TA_diff / (24.0f * 3600.0f)) * dT * 1.2f;
+				gr_ta_corr = 
+					ground[torid_2(i, j)].GR_TA_CORR = (TA_diff / (24.0f * 3600.0f)) * dT * 1.2f;
 			}
 
-			Grid3D_next[torid(THETA, i, j, 0)].THETA = ground[torid_2(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA;//transfer of Ta to THETA
+			theta_next_test = 
+				Grid3D_next[torid(THETA, i, j, 0)].THETA = ground[torid_2(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA;//transfer of Ta to THETA
+
+			Step4TestTotal +=
+				+gr_cloud_cover
+				+ theta_next_test
+				+ gr_tg_test
+				+ gr_ta_test
+				+ gr_tg_reset
+				+ gr_ta_reset
+				+ gr_ta_corr;
 		}
+	}
+
+
+	if (Step4TestTotal != 0) {
+		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step4 Test Total  '%f'"), Step4TestTotal);
 	}
 }
 

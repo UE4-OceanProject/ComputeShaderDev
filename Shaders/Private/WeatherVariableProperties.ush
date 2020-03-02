@@ -38,6 +38,7 @@ struct FStruct_GroundCellColumns_GPU
     float1 GR_CLOUD_COVER; // Cloud coverage: Used in simulation and shadows
 };
 
+RWStructuredBuffer<float>StepTotal;
 
 RWStructuredBuffer<float1> gridSizeK;
 RWStructuredBuffer<FStruct_GroundCellColumns_GPU> ground; //100

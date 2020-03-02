@@ -11,6 +11,7 @@
 #include "RenderGraph.h" //The only thing you need for RDG
 #include "ShaderPrintParameters.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(WeatherShaderInterface, Verbose, All);
 
 
 ///*****************************************************************************/
@@ -30,8 +31,8 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 		SHADER_PARAMETER(float, gridSizeJ)
 		SHADER_PARAMETER(float, dT)
 		SHADER_PARAMETER(float, simulationTime)
-		SHADER_PARAMETER(float, StepTotal)
-		
+
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<float>, StepTotal)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<float>, gridSizeK)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_GroundCellColumns_GPU>, ground)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_GPU>, gridRslow)
@@ -71,6 +72,8 @@ public:
 
 	//This is a reference to our data on the GPU, without it, we would need to pass the entire buffer to the GPU for our next itteration
 
+	TArray<float> StepTotalDebug = { 0 };
+	FUnorderedAccessViewRHIRef StepTotal_UAV_;
 
 	FUnorderedAccessViewRHIRef gridSizeK_UAV_;
 	FUnorderedAccessViewRHIRef ground_UAV_;

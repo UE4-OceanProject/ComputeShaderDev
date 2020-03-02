@@ -15,6 +15,12 @@
 #define fmin min
 #define sqrtf sqrt
 
+extern float1 Step1TestTotal = 0;
+extern float1 Step2TestTotal = 0;
+extern float1 Step3CurrTestTotal = 0;
+extern float1 Step3NextTestTotal = 0;
+extern float1 Step4TestTotal = 0;
+
 ///////////////////////////////////////////////////////////////////////////
 
 int torid_ground(int x, int y)
@@ -659,12 +665,7 @@ void simulateSTEP4()
 
 ///////////////////////////////////////////////////////////////////////////
 
-extern float1 StepTotal = 0;
-extern float1 Step1TestTotal = 0;
-extern float1 Step2TestTotal = 0;
-extern float1 Step3CurrTestTotal = 0;
-extern float1 Step3NextTestTotal = 0;
-extern float1 Step4TestTotal = 0;
+//float1 StepTotal = 0;
 
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
@@ -686,7 +687,9 @@ void simulateStep(uint GroupIndex : SV_GroupIndex, uint3 DispatchThreadId : SV_D
     // Radiation.
     simulateSTEP4();
 
-    StepTotal = Step1TestTotal + Step2TestTotal + Step3CurrTestTotal + Step3NextTestTotal + Step4TestTotal;
+    StepTotal[0] = Step1TestTotal + Step2TestTotal + Step3CurrTestTotal + Step3NextTestTotal + Step4TestTotal;
+    
+    StepTotal[0] = 1;
 
     //simulationTime += dT;
 }

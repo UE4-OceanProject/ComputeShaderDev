@@ -4,6 +4,9 @@
 
 #include "Containers/DynamicRHIResourceArray.h" // Core module
 
+
+DEFINE_LOG_CATEGORY(WeatherShaderInterface);
+
 //This links our setup code here, to the actual shader, and entry point (function) we want.
 ///Declare our shader:   ShaderClassType					ShaderFilePath										    Shader function name		Type
 IMPLEMENT_GLOBAL_SHADER(FGlobalComputeShader_Interface, "/Plugin/ComputeShaderDev/Private/WeatherShader.usf", "simulateStep", SF_Compute);
@@ -42,6 +45,9 @@ void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHI
 	//Hardcode our data for now
 	int num_input_ = gridZ; //Number of rows in our array
 
+	TResourceArray<float> StepTotal_RA_;
+	FRHIResourceCreateInfo StepTotal_resource_;
+	FStructuredBufferRHIRef StepTotal_buffer_;
 
 		TResourceArray<FStruct_AirCellColumns_CPU> gridSizeK_RA_;
 	FRHIResourceCreateInfo gridSizeK_resource_;
@@ -74,6 +80,11 @@ void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHI
 	FStructuredBufferRHIRef Grid3D_prev_buffer_;
 
 
+	StepTotal_RA_.SetNum(1);
+	FMemory::Memcpy(StepTotal_RA_.GetData(), StepTotalDebug.GetData(), sizeof(float) * 1);
+	StepTotal_resource_.ResourceArray = &StepTotal_RA_;
+	StepTotal_buffer_ = RHICreateStructuredBuffer(sizeof(float), sizeof(float) * 1, BUF_ShaderResource | BUF_UnorderedAccess, StepTotal_resource_);
+	StepTotal_UAV_ = RHICreateUnorderedAccessView(StepTotal_buffer_, /* bool bUseUAVCounter */ false, /* bool bAppendBuffer */ false);
 
 	gridSizeK_RA_.SetNum(num_input_);
 	FMemory::Memcpy(gridSizeK_RA_.GetData(), gridSizeK.GetData(), sizeof(FStruct_AirCellColumns_CPU) * num_input_);
@@ -132,6 +143,8 @@ void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHI
 	PassParameters->dT = dT;
 	PassParameters->simulationTime = simulationTime;
 
+	PassParameters->StepTotal = StepTotal_UAV_;
+
 	PassParameters->gridSizeK = gridSizeK_UAV_;
 	PassParameters->ground = ground_UAV_;
 	PassParameters->gridRslow = gridRslow_UAV_;
@@ -154,6 +167,29 @@ void FGlobalComputeShader_Interface::SetParameters(FRHICommandListImmediate& RHI
 		FIntVector(1, 1, 1));
 
 	GraphBuilder.Execute();
+
+
+	//Lock buffer to enable CPU read
+	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(StepTotal_buffer_, 0, sizeof(float), EResourceLockMode::RLM_ReadOnly);
+
+	//Copy the GPU data back to CPU side (&currentStates)
+	//RHICmdList.WriteGPUFence();
+	//float* q = (float*)shaderData;
+	//float StepTotalDebugA = *q;
+
+	//TArray<float>* p = (TArray<float>*)shaderData;
+	//StepTotalDebug = *p;
+
+
+
+	const float* shader_data = (const float*)RHICmdList.LockStructuredBuffer(StepTotal_buffer_, 0, sizeof(float) * 1, EResourceLockMode::RLM_ReadOnly);
+	FMemory::Memcpy(StepTotalDebug.GetData(), shader_data, sizeof(float) * 1);
+
+
+	RHICmdList.UnlockStructuredBuffer(StepTotal_buffer_);
+
+	UE_LOG(WeatherShaderInterface, Display, TEXT("\n //////////////////////////// Step Total Debug  '%f'"), StepTotalDebug[0]);
+	//UE_LOG(WeatherShaderInterface, Display, TEXT("\n //////////////////////////// Step Total Debug  '%f'"), StepTotalDebugA);
 
 }
 

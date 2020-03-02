@@ -34,6 +34,10 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step4"), Category = "Weather")
 		void simulateSTEP4();
 
+	UPROPERTY(VisibleAnywhere)
+		class UStaticMeshComponent* MyMesh;
+
+
 	int torid(int arr, int i, int j, int k);
 	int torid_ground(int x, int y);
 

@@ -235,9 +235,9 @@ void simulateSTEP1()
                 gridRslow[torid(RO, i, j, k)].RO = 0.0f;
 
 				//for quick verification
-     //           Step1TestTotal += gridRslow[torid(U, i, j, k)].U + gridRslow[torid(V, i, j, k)].V + gridRslow[torid(W, i, j, k)].W
-					//+ gridRslow[torid(THETA, i, j, k)].THETA + gridRslow[torid(Pi, i, j, k)].Pi
-					//+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
+                Step1TestTotal += gridRslow[torid(U, i, j, k)].U + gridRslow[torid(V, i, j, k)].V + gridRslow[torid(W, i, j, k)].W
+					+ gridRslow[torid(THETA, i, j, k)].THETA + gridRslow[torid(Pi, i, j, k)].Pi
+					+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
 
 
             }
@@ -321,9 +321,9 @@ void simulateSTEP2()
 
 
 
-				//for quick verification
-     //           Step2TestTotal += gridRslow[torid(THETA, i, j, k)].THETA
-					//+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
+                //for quick verification
+                Step2TestTotal += gridRslow[torid(THETA, i, j, k)].THETA
+					+ gridRslow[torid(QV, i, j, k)].QV + gridRslow[torid(QC, i, j, k)].QC + gridRslow[torid(QR, i, j, k)].QR;
 
             }
         }
@@ -432,26 +432,26 @@ void simulateSTEP3()
 
                 }
 				//for quick verification
-     //           Step3NextTestTotal +=
-					//u_next_test
-					//+ v_next_test
-					//+ w_next_test
-					//+ pi_next_test
-					//+ theta_next_test
-					//+ qv_next_test
-					//+ qc_next_test
-					//+ qr_next_test
-					//+ ro_next_test;
-     //           Step3CurrTestTotal +=
-					//u_curr_test
-					//+ v_curr_test
-					//+ w_curr_test
-					//+ pi_curr_test
-					//+ theta_curr_test
-					//+ qv_curr_test
-					//+ qc_curr_test
-					//+ qr_curr_test
-					//+ ro_curr_test;
+                Step3NextTestTotal +=
+					u_next_test
+					+ v_next_test
+					+ w_next_test
+					+ pi_next_test
+					+ theta_next_test
+					+ qv_next_test
+					+ qc_next_test
+					+ qr_next_test
+					+ ro_next_test;
+                Step3CurrTestTotal +=
+					u_curr_test
+					+ v_curr_test
+					+ w_curr_test
+					+ pi_curr_test
+					+ theta_curr_test
+					+ qv_curr_test
+					+ qc_curr_test
+					+ qr_curr_test
+					+ ro_curr_test;
             }
         }
     }
@@ -639,14 +639,14 @@ void simulateSTEP4()
             theta_next_test =
 				Grid3D_next[torid(THETA, i, j, 0)].THETA = ground[torid_ground(i, j)].GR_TA + gamma * gridSizeK[0] / 100.0f - gridInit[torid(THETA, i, j, 0)].THETA; //transfer of Ta to THETA
 
-    //        Step4TestTotal +=
-				//+gr_cloud_cover
-				//+ theta_next_test
-				//+ gr_tg_test
-				//+ gr_ta_test
-				//+ gr_tg_reset
-				//+ gr_ta_reset
-				//+ gr_ta_corr;
+            Step4TestTotal +=
+				+gr_cloud_cover
+				+ theta_next_test
+				+ gr_tg_test
+				+ gr_ta_test
+				+ gr_tg_reset
+				+ gr_ta_reset
+				+ gr_ta_corr;
         }
     }
 
@@ -658,6 +658,13 @@ void simulateSTEP4()
 }
 
 ///////////////////////////////////////////////////////////////////////////
+
+extern float1 StepTotal = 0;
+extern float1 Step1TestTotal = 0;
+extern float1 Step2TestTotal = 0;
+extern float1 Step3CurrTestTotal = 0;
+extern float1 Step3NextTestTotal = 0;
+extern float1 Step4TestTotal = 0;
 
 // RUN SIMULATION
 [numthreads(1, 1, 1)]
@@ -678,6 +685,8 @@ void simulateStep(uint GroupIndex : SV_GroupIndex, uint3 DispatchThreadId : SV_D
 
     // Radiation.
     simulateSTEP4();
+
+    StepTotal = Step1TestTotal + Step2TestTotal + Step3CurrTestTotal + Step3NextTestTotal + Step4TestTotal;
 
     //simulationTime += dT;
 }

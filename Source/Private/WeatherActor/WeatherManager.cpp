@@ -6,7 +6,6 @@
 #include "RenderGraph.h"
 #include "RenderGraphUtils.h"
 #include "RenderTargetPool.h"
-#include "ShaderPrintParameters.h"
 
 DEFINE_LOG_CATEGORY(WeatherManager);
 
@@ -15,6 +14,9 @@ AWeatherManager::AWeatherManager(const class FObjectInitializer& PCIP) : Super(P
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	MyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MyMesh"));
+	RootComponent = MyMesh;
 }
 
 void AWeatherManager::OnConstruction(const FTransform& Transform)

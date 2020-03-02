@@ -30,6 +30,7 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 		SHADER_PARAMETER(float, gridSizeJ)
 		SHADER_PARAMETER(float, dT)
 		SHADER_PARAMETER(float, simulationTime)
+		SHADER_PARAMETER(float, StepTotal)
 		
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<float>, gridSizeK)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_GroundCellColumns_GPU>, ground)

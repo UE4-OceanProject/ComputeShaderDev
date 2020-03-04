@@ -88,10 +88,31 @@ bool AWeatherManager::Calculate()
 	TShaderMap<FGlobalShaderType>* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
 	TShaderMapRef< FGlobalComputeShader_Interface > ComputeShader(GlobalShaderMap);
 
+	int gridX_out = gridX;
+	int gridY_out = gridY;
+	int gridZ_out = gridZ;
+
+	float gridSizeI_out = gridXSize;
+	float gridSizeJ_out = gridYSize;
+	float dT_out = dT;
+	float simulationTime_out = simulationTime;
+
+	TArray<float> gridSizeK_out = gridSizeK;
+	TArray<FStruct_GroundCellColumns_CPU> ground_out = ground;
+	TArray<FStruct_AirCellColumns_CPU> gridRslow_out = gridRslow;
+	TArray<FStruct_AirCellColumns_CPU> gridInit_out = gridInit;
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_curr_out = Grid3D_curr;
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_next_out = Grid3D_next;
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_prev_out = Grid3D_prev;
+
 	ENQUEUE_RENDER_COMMAND(WeatherCompute)(
-		[ComputeShader](FRHICommandListImmediate& RHICmdList)
+		[ComputeShader, gridX_out, gridY_out, gridZ_out,
+		gridSizeI_out, gridSizeJ_out, dT_out, simulationTime_out,
+		gridSizeK_out, ground_out, gridRslow_out, gridInit_out, Grid3D_curr_out, Grid3D_next_out, Grid3D_prev_out](FRHICommandListImmediate& RHICmdList)
 		{
-			ComputeShader->Compute(RHICmdList);
+			ComputeShader->Compute(RHICmdList, gridX_out, gridY_out, gridZ_out,
+				gridSizeI_out, gridSizeJ_out, dT_out, simulationTime_out,
+				gridSizeK_out, ground_out, gridRslow_out, gridInit_out, Grid3D_curr_out, Grid3D_next_out, Grid3D_prev_out);
 		});
 
 
@@ -731,5 +752,9 @@ void AWeatherManager::simulateSTEP4() {
 	if (Step4TestTotal != 0) {
 		UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step4 Test Total  '%f'"), Step4TestTotal);
 	}
+}
+
+float AWeatherManager::GetDebugTotal() {
+	return Step1TestTotal + Step2TestTotal + Step3CurrTestTotal + Step3NextTestTotal + Step4TestTotal;
 }
 

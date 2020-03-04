@@ -15,11 +15,6 @@
 #define fmin min
 #define sqrtf sqrt
 
-extern float1 Step1TestTotal = 0;
-extern float1 Step2TestTotal = 0;
-extern float1 Step3CurrTestTotal = 0;
-extern float1 Step3NextTestTotal = 0;
-extern float1 Step4TestTotal = 0;
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -69,7 +64,7 @@ int torid(int arr, int x, int y, int z)
 ///////////////////////////////////////////////////////////////////////////
 
 /* STEP 1 Fundamental Equations */
-void simulateSTEP1()
+float simulateSTEP1()
 {
     float u_test = 0;
     float v_test = 0;
@@ -79,6 +74,7 @@ void simulateSTEP1()
     float qv_test = 0;
     float qc_test = 0;
     float qr_test = 0;
+    float Step1TestTotal = 0;
 
     for (int k = 1; k < gridZ - 1; k++)
     {
@@ -253,15 +249,17 @@ void simulateSTEP1()
     //{
     //    UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step1 Test Total  '%f'"), Step1TestTotal);
     //}
+    return Step1TestTotal;
 }
 /* STEP2: Kelsner Microphicis */
-void simulateSTEP2()
+float simulateSTEP2()
 {
 
     float QV_Test = 0;
     float QC_Test = 0;
     float QR_Test = 0;
     float THETA_Test = 0;
+    float Step2TestTotal = 0;
 
     for (int k = 1; k < gridZ - 1; k++)
     {
@@ -338,9 +336,11 @@ void simulateSTEP2()
     //{
     //    UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step2 Test Total  '%f'"), Step2TestTotal);
     //}
+    return Step2TestTotal;
+
 }
 /* STEP3: Move forward in time */
-void simulateSTEP3()
+float simulateSTEP3()
 {
 
     float u_next_test = 0;
@@ -362,6 +362,7 @@ void simulateSTEP3()
     float qc_curr_test = 0;
     float qr_curr_test = 0;
     float ro_curr_test = 0;
+    float Step3TestTotal = 0;
 
     for (int k = 1; k < gridZ - 1; k++)
     {
@@ -438,7 +439,7 @@ void simulateSTEP3()
 
                 }
 				//for quick verification
-                Step3NextTestTotal +=
+                Step3TestTotal +=
 					u_next_test
 					+ v_next_test
 					+ w_next_test
@@ -448,7 +449,7 @@ void simulateSTEP3()
 					+ qc_next_test
 					+ qr_next_test
 					+ ro_next_test;
-                Step3CurrTestTotal +=
+                Step3TestTotal +=
 					u_curr_test
 					+ v_curr_test
 					+ w_curr_test
@@ -469,9 +470,11 @@ void simulateSTEP3()
     //{
     //    UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step3 Curr Test Total  '%f'"), Step3CurrTestTotal);
     //}
+    return Step3TestTotal;
+
 }
 /* STEP4: Radiation model */
-void simulateSTEP4()
+float simulateSTEP4()
 {
 
     float gr_cloud_cover = 0;
@@ -481,6 +484,7 @@ void simulateSTEP4()
     float gr_tg_reset = 0;
     float gr_ta_reset = 0;
     float gr_ta_corr = 0;
+    float Step4TestTotal = 0;
 
     for (int j = 0; j < gridY; j++)
     {
@@ -661,6 +665,8 @@ void simulateSTEP4()
     //{
     //    UE_LOG(WeatherManager, Display, TEXT("\n //////////////////////////// Step4 Test Total  '%f'"), Step4TestTotal);
     //}
+    return Step4TestTotal;
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -671,25 +677,30 @@ void simulateSTEP4()
 [numthreads(1, 1, 1)]
 void simulateStep(uint GroupIndex : SV_GroupIndex, uint3 DispatchThreadId : SV_DispatchThreadID)
 {
+    
+    float Step1TestTotal = 0;
+    float Step2TestTotal = 0;
+    float Step3TestTotal = 0;
+    float Step4TestTotal = 0;
     //Grid3D_prev[0].U = Grid3D_prev[0].U + 1;
     //Grid3D_curr[0].U = Grid3D_curr[0].U + 2;
     //Grid3D_next[0].U = Grid3D_next[0].U + 3;
 
     // Fundamental equations.
-    simulateSTEP1();
+    Step1TestTotal = simulateSTEP1();
     
     // Microphysics.
-    simulateSTEP2();
+    Step2TestTotal = simulateSTEP2();
 
     // Move in time.
-    simulateSTEP3();
+    Step3TestTotal = simulateSTEP3();
 
     // Radiation.
-    simulateSTEP4();
+    Step4TestTotal = simulateSTEP4();
 
-    StepTotal[0] = Step1TestTotal + Step2TestTotal + Step3CurrTestTotal + Step3NextTestTotal + Step4TestTotal;
+    StepTotal[0] += Step1TestTotal + Step2TestTotal + Step3TestTotal + Step4TestTotal;
     
-    StepTotal[0] = 1;
+    //StepTotal[0] = 1;
 
     //simulationTime += dT;
 }

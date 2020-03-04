@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step4"), Category = "Weather")
 		void simulateSTEP4();
 
+	UFUNCTION(BlueprintCallable, meta = (Keywords = "Step4"), Category = "Weather")
+		float GetDebugTotal();
+
 	UPROPERTY(VisibleAnywhere)
 		class UStaticMeshComponent* MyMesh;
 

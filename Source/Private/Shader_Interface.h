@@ -67,21 +67,64 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 public:
 
 	//We have 3 grids, past, current, future. The simulation rotates these around as needed to prevent copying
-	int buffer_index_rotator = 1;
+	int buffer_index_rotator = 2; //we start at 2, so when we first run, rotation sets this to 0.
 	TArray<FUnorderedAccessViewRHIRef>RotateableBufers;
 
 	//This is a reference to our data on the GPU, without it, we would need to pass the entire buffer to the GPU for our next itteration
 
+
+
+
+
+
+
+
+
+
+
+
+
 	TArray<float> StepTotalDebug = { 0 };
+	TResourceArray<float> StepTotal_RA_;
+	FRHIResourceCreateInfo StepTotal_resource_;
+	FStructuredBufferRHIRef StepTotal_buffer_;
 	FUnorderedAccessViewRHIRef StepTotal_UAV_;
 
+
+
+	TResourceArray<float> gridSizeK_RA_;
+	FRHIResourceCreateInfo gridSizeK_resource_;
+	FStructuredBufferRHIRef gridSizeK_buffer_;
 	FUnorderedAccessViewRHIRef gridSizeK_UAV_;
+
+	TResourceArray<FStruct_GroundCellColumns_CPU> ground_RA_;
+	FRHIResourceCreateInfo ground_resource_;
+	FStructuredBufferRHIRef ground_buffer_;
 	FUnorderedAccessViewRHIRef ground_UAV_;
+
+	TResourceArray<FStruct_AirCellColumns_CPU> gridRslow_RA_;
+	FRHIResourceCreateInfo gridRslow_resource_;
+	FStructuredBufferRHIRef gridRslow_buffer_;
 	FUnorderedAccessViewRHIRef gridRslow_UAV_;
+
+	TResourceArray<FStruct_AirCellColumns_CPU> gridInit_RA_;
+	FRHIResourceCreateInfo gridInit_resource_;
+	FStructuredBufferRHIRef gridInit_buffer_;
 	FUnorderedAccessViewRHIRef gridInit_UAV_;
 
+	TResourceArray<FStruct_AirCellColumns_CPU> Grid3D_curr_RA_;
+	FRHIResourceCreateInfo Grid3D_curr_resource_;
+	FStructuredBufferRHIRef Grid3D_curr_buffer_;
 	FUnorderedAccessViewRHIRef Grid3D_curr_UAV_;
+
+	TResourceArray<FStruct_AirCellColumns_CPU> Grid3D_next_RB_;
+	FRHIResourceCreateInfo Grid3D_next_resource_;
+	FStructuredBufferRHIRef Grid3D_next_buffer_;
 	FUnorderedAccessViewRHIRef Grid3D_next_UAV_;
+
+	TResourceArray<FStruct_AirCellColumns_CPU> Grid3D_prev_RC_;
+	FRHIResourceCreateInfo Grid3D_prev_resource_;
+	FStructuredBufferRHIRef Grid3D_prev_buffer_;
 	FUnorderedAccessViewRHIRef Grid3D_prev_UAV_;
 
 	//Send our data to the gpu, and do our first itteration
@@ -102,6 +145,21 @@ public:
 		TArray<FStruct_AirCellColumns_CPU> Grid3D_prev);
 
 	//Data is already on GPU, do a single itteration
-	void Compute(FRHICommandListImmediate& RHICmdList);
+	void Compute(FRHICommandListImmediate& RHICmdList,
+		int gridX,
+		int gridY,
+		int gridZ,
+		float gridSizeI,
+		float gridSizeJ,
+		float dT,
+		float simulationTime,
+		TArray<float> gridSizeK,
+		TArray<FStruct_GroundCellColumns_CPU> ground,
+		TArray<FStruct_AirCellColumns_CPU> gridRslow,
+		TArray<FStruct_AirCellColumns_CPU> gridInit,
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_curr,
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_next,
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_prev
+	);
 };
 

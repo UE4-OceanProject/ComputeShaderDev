@@ -104,15 +104,18 @@ bool AWeatherManager::Calculate()
 	TArray<FStruct_AirCellColumns_CPU> Grid3D_curr_out = Grid3D_curr;
 	TArray<FStruct_AirCellColumns_CPU> Grid3D_next_out = Grid3D_next;
 	TArray<FStruct_AirCellColumns_CPU> Grid3D_prev_out = Grid3D_prev;
+	UTextureRenderTarget2D* RenderTarget_Output_out = RenderTarget_Output;
 
 	ENQUEUE_RENDER_COMMAND(WeatherCompute)(
 		[ComputeShader, gridX_out, gridY_out, gridZ_out,
 		gridSizeI_out, gridSizeJ_out, dT_out, simulationTime_out,
-		gridSizeK_out, ground_out, gridRslow_out, gridInit_out, Grid3D_curr_out, Grid3D_next_out, Grid3D_prev_out](FRHICommandListImmediate& RHICmdList)
+		gridSizeK_out, ground_out, gridRslow_out, gridInit_out, Grid3D_curr_out, Grid3D_next_out, Grid3D_prev_out,
+		RenderTarget_Output_out](FRHICommandListImmediate& RHICmdList)
 		{
 			ComputeShader->Compute(RHICmdList, gridX_out, gridY_out, gridZ_out,
 				gridSizeI_out, gridSizeJ_out, dT_out, simulationTime_out,
-				gridSizeK_out, ground_out, gridRslow_out, gridInit_out, Grid3D_curr_out, Grid3D_next_out, Grid3D_prev_out);
+				gridSizeK_out, ground_out, gridRslow_out, gridInit_out, Grid3D_curr_out, Grid3D_next_out, Grid3D_prev_out,
+				RenderTarget_Output_out);
 		});
 
 

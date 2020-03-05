@@ -40,6 +40,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		class UStaticMeshComponent* MyMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weather")
+		class UTextureRenderTarget2D* RenderTarget_Output;
+
 
 	int torid(int arr, int i, int j, int k);
 	int torid_ground(int x, int y);

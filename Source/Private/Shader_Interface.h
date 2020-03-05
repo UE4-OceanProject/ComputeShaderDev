@@ -5,7 +5,7 @@
 #include "Shader_Interface.h"
 #include "WeatherStructs.h"
 
-
+#include "Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h"
 
 
 #include "RenderGraph.h" //The only thing you need for RDG
@@ -40,6 +40,7 @@ class /*COMPUTESHADERTEST419_API*/ FGlobalComputeShader_Interface : public FGlob
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_CPU>, Grid3D_curr)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_CPU>, Grid3D_next)
 		SHADER_PARAMETER_UAV(RWStructuredBuffer<FStruct_AirCellColumns_CPU>, Grid3D_prev)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<FVector4>, OutputTexture)
 		END_SHADER_PARAMETER_STRUCT()
 
 
@@ -127,6 +128,8 @@ public:
 	FStructuredBufferRHIRef Grid3D_prev_buffer_;
 	FUnorderedAccessViewRHIRef Grid3D_prev_UAV_;
 
+	TRefCountPtr<IPooledRenderTarget> ComputeShaderOutput;
+
 	//Send our data to the gpu, and do our first itteration
 	void SetParameters(FRHICommandListImmediate& RHICmdList,
 		int gridX,
@@ -159,7 +162,8 @@ public:
 		TArray<FStruct_AirCellColumns_CPU> gridInit,
 		TArray<FStruct_AirCellColumns_CPU> Grid3D_curr,
 		TArray<FStruct_AirCellColumns_CPU> Grid3D_next,
-		TArray<FStruct_AirCellColumns_CPU> Grid3D_prev
+		TArray<FStruct_AirCellColumns_CPU> Grid3D_prev,
+		UTextureRenderTarget2D* RenderTarget
 	);
 };
 

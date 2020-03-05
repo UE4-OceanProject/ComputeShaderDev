@@ -2,6 +2,8 @@
 #include "WeatherStructs.h"
 #include "ShaderPrint.h"
 
+#include "RenderTargetPool.h"
+
 #include "Containers/DynamicRHIResourceArray.h" // Core module
 
 
@@ -182,7 +184,8 @@ void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdLis
 	TArray<FStruct_AirCellColumns_CPU> gridInit,
 	TArray<FStruct_AirCellColumns_CPU> Grid3D_curr,
 	TArray<FStruct_AirCellColumns_CPU> Grid3D_next,
-	TArray<FStruct_AirCellColumns_CPU> Grid3D_prev
+	TArray<FStruct_AirCellColumns_CPU> Grid3D_prev,
+	UTextureRenderTarget2D* RenderTarget
 )
 {
 	check(IsInRenderingThread());
@@ -219,6 +222,52 @@ void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdLis
 	PassParameters->gridRslow = gridRslow_UAV_;
 	PassParameters->gridInit = gridInit_UAV_;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (!RenderTarget)
+	{
+		return;
+	}
+
+
+
+	FRDGTextureDesc OutputDesc;
+	OutputDesc.Extent.X = 512;
+	OutputDesc.Extent.Y = 512;
+	OutputDesc.Depth = 0;
+	OutputDesc.Format = PF_FloatRGBA;
+	OutputDesc.NumMips = 1;
+	//OutputDesc.Flags = TexCreate_ShaderResource;
+	OutputDesc.Flags = TexCreate_None;
+	OutputDesc.TargetableFlags = TexCreate_ShaderResource | TexCreate_UAV;
+	OutputDesc.bForceSeparateTargetAndShaderResource = false;
+	
+	           
+	FRDGTextureRef HairLUTTexture = GraphBuilder.CreateTexture(OutputDesc, TEXT("HairLUT"));
+	PassParameters->OutputTexture = GraphBuilder.CreateUAV(FRDGTextureUAVDesc(HairLUTTexture, 0));
+
+
+
+
+
+
+
+
+
+
+
+
 	//Set these into an array we will use to rotate these buffers every itteration (past, current, future)
 	RotateableBufers = { {Grid3D_curr_UAV_,Grid3D_next_UAV_,Grid3D_prev_UAV_} };
 
@@ -244,7 +293,12 @@ void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdLis
 		RDG_EVENT_NAME("Weather compute"),
 		this,
 		PassParameters,
-		FIntVector(1,1,1));  
+		//This is different than the grouping in shader
+		//This will create "Groups of threads"
+		//The on in the shader, is the number of thread per group
+		FIntVector(16,16,1));  
+
+	GraphBuilder.QueueTextureExtraction(HairLUTTexture, &ComputeShaderOutput, true);
 
 	GraphBuilder.Execute();
 
@@ -252,22 +306,16 @@ void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdLis
 	//Lock buffer to enable CPU read
 	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(StepTotal_buffer_, 0, sizeof(float), EResourceLockMode::RLM_ReadOnly);
 
-	//Copy the GPU data back to CPU side (&currentStates)
-	//RHICmdList.WriteGPUFence();
-	//float* q = (float*)shaderData;
-	//float StepTotalDebugA = *q;
-
-	//TArray<float>* p = (TArray<float>*)shaderData;
-	//StepTotalDebug = *p;
-
-
 
 	const float* shader_data = (const float*)RHICmdList.LockStructuredBuffer(StepTotal_buffer_, 0, sizeof(float) * 1, EResourceLockMode::RLM_ReadOnly);
 	FMemory::Memcpy(StepTotalDebug.GetData(), shader_data, sizeof(float) * 1);
+
+	// Resolve render target
+	//RHICmdList.CopyToResolveTarget(RenderTarget->GetRenderTargetResource()->GetRenderTargetTexture(), RenderTarget->GetRenderTargetResource()->TextureRHI, FResolveParams());
+
 
 
 	RHICmdList.UnlockStructuredBuffer(StepTotal_buffer_);
 
 	UE_LOG(WeatherShaderInterface, Display, TEXT("\n //////////////////////////// Step Total Debug  '%f'"), StepTotalDebug[0]);
-	//UE_LOG(WeatherShaderInterface, Display, TEXT("\n //////////////////////////// Step Total Debug  '%f'"), StepTotalDebugA);
 }

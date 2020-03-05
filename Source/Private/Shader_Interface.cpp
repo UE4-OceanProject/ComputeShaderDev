@@ -298,20 +298,18 @@ void FGlobalComputeShader_Interface::Compute(FRHICommandListImmediate& RHICmdLis
 		//The on in the shader, is the number of thread per group
 		FIntVector(16,16,1));  
 
+
 	GraphBuilder.QueueTextureExtraction(HairLUTTexture, &ComputeShaderOutput, true);
 
 	GraphBuilder.Execute();
-
-
 	//Lock buffer to enable CPU read
 	char* shaderData = (char*)RHICmdList.LockStructuredBuffer(StepTotal_buffer_, 0, sizeof(float), EResourceLockMode::RLM_ReadOnly);
-
-
+	
 	const float* shader_data = (const float*)RHICmdList.LockStructuredBuffer(StepTotal_buffer_, 0, sizeof(float) * 1, EResourceLockMode::RLM_ReadOnly);
 	FMemory::Memcpy(StepTotalDebug.GetData(), shader_data, sizeof(float) * 1);
 
 	// Resolve render target
-	//RHICmdList.CopyToResolveTarget(RenderTarget->GetRenderTargetResource()->GetRenderTargetTexture(), RenderTarget->GetRenderTargetResource()->TextureRHI, FResolveParams());
+	RHICmdList.CopyToResolveTarget(ComputeShaderOutput.GetReference()->GetRenderTargetItem().TargetableTexture, RenderTarget->GetRenderTargetResource()->TextureRHI, FResolveParams());
 
 
 
